@@ -1,0 +1,22 @@
+#pragma once
+#include "SDL.h"
+#include <stdbool.h>
+#include "SDL_image.h"
+#include "lib.h"
+#include "player.h"
+
+#include <stdio.h>
+
+void init(const char* window_title, int xpos, int ypos, int window_width, int window_height, bool fullscreen);
+
+void Clean();
+void Update();
+void Render();
+void event_handler();
+
+extern SDL_Window* window;
+extern SDL_Renderer* renderer;
+extern bool GameActive;
+
+static int screen_height = 500;
+static int screen_width = 500;
