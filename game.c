@@ -7,6 +7,7 @@ SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
 SDL_Window* window;
 SDL_Renderer* renderer;
 bool GameActive;
+bool onGround;
 
 void Update()
 {
@@ -20,9 +21,12 @@ void Update()
 
 	if (playerRect.y <= (screen_height - playerRect.h - 1) || jumping) {
 		playerRect.y += gravity + velocity;
+		onGround = false;
 	}
-	else if (playerRect.y > screen_height)
+	else if (playerRect.y > screen_height) {
 		playerRect.y = 0;
+	} else 
+		onGround = true;
 
 	if (jumping) {
 		velocity += 0.05f;
@@ -44,7 +48,6 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 
 void Render()
 {
-
 	SDL_RenderClear(renderer);
 	SDL_RenderFillRect(renderer, &playerRect);
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
@@ -93,7 +96,7 @@ void event_handler() {
 
 			}
 			else if (keyboard_state[SDL_SCANCODE_SPACE]) {
-				if (!jumping)
+				if (onGround)
 					PlayerJump();
 			}
 			else if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
