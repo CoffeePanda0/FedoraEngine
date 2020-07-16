@@ -3,17 +3,25 @@
 be warned this code is a wreck, and will give you a new reason to hate life
 still has more documentation than quakeC at least :P
 
-Changing game resolution:
-the ints are just in game.h it's not hard
+Changing parameters:
+VSYNC (main.c) - Enables/disables vsync. If vsync is off just be warned that movement is very buggy.
+showfps (main.c) - Logs the average FPS to console
+Screen width and height (game.h)
 
 MAIN.C
 This file is responsible for calling the main functions (bet you couldnt tell that)
+Most of the main loops for the game are in game.c
 
 Creating a game object:
 Initialize it first with a name, e.g (struct GameObject NAME_HERE)
-use the function CreateObject() to set the values
-call render object with the GameObject in the args
-to "free up memory", call DestroyObject(MEMORY LOC FOR GAMEOBJECT)
+use the function CreateObject(int xPos, int yPos, int width, int height, const char *texture_location, struct Gameobject *obj)
 
-q: do game objects cause a memory leak?
-a: yes so please dont use many until i "come up with" a memory management function
+The function RenderObjects() renders all GameObjects simultaneously and is already called in the Render() function
+
+Logging:
+Logs are written to "log.txt" and to the console. Different logging features are:
+Notice, Warn (Not urgent)
+Error: Displays the erorr message in a pop up on screen and exits the application
+
+
+cheers to Gibson for the code for lib.h and help with gameobjects
