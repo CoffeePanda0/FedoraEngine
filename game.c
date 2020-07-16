@@ -8,14 +8,13 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Texture* text;
 
+struct GameObject doge;
+
 bool GameActive;
 bool onGround;
-struct GameObject doge;
-struct GameObject doge2;
 
 void Update()
 {
-	RenderObject(doge);
 	if (moving) {
 		if (acceleration < maxAccel)
 			acceleration += 0.02f;
@@ -44,7 +43,7 @@ void Update()
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
-	SDL_Surface* tmpSurface = IMG_Load(texture);
+	SDL_Surface* tmpSurface = IMG_Load(texture); 
 	SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
 	SDL_FreeSurface(tmpSurface);
 	return text;
@@ -53,9 +52,8 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 void Render()
 {
 	SDL_RenderClear(renderer);
-	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
 	RenderObject(doge);
-	RenderObject(doge2);
+	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
 	SDL_RenderPresent(renderer);
 }
@@ -76,7 +74,7 @@ void event_handler() {
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				screen_width = event.window.data1;
 				screen_height = event.window.data2;
-				info("Window size changed\n");
+				info("Window size changed");
 				break;
 			}
 			break;
@@ -105,7 +103,7 @@ void event_handler() {
 					PlayerJump();
 			}
 			else if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
-				DestroyObject(&doge);
+				Clean();
 			}
 
 			break;
@@ -127,25 +125,25 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
 
-		info("SDL Fully Initialised\n");
+		info("SDL Fully Initialised");
 
 		window = SDL_CreateWindow(window_title, xpos, ypos, window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 		if (window) {
-			info("Window Created\n");
+			info("Window Created");
 		}
 		else if (window == NULL) {
-			info("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+			error("Window could not be created! SDL_Error: %s", SDL_GetError());
 			Clean();
 		}
 
 		renderer = SDL_CreateRenderer(window, -1, 0);
 	
 		if (renderer) {
-			info("Renderer Created\n");
+			info("Renderer Created");
 			
 		}
 		else {
-			info("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
 			Clean();
 		}
 
@@ -153,10 +151,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		InitPlayer(50, 50, 100, 100);
 		
 		playerText = TextureManager("game/player.png", renderer);
-		
-		CreateObject(200, 300, 50, 50, "game/doge.png", &doge);
-		CreateObject(300, 300, 50, 50, "game/doge.png", &doge2);
-
+		CreateObject(300, 300, 100, 100, "game/doge.png", &doge);
 	}
 	else {
 		GameActive = false;
@@ -168,6 +163,6 @@ void Clean()
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	SDL_Quit();
-	info("SDL Exited\n");
+	info("SDL Exited");
 	log_close();
 }

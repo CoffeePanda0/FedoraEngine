@@ -1,3 +1,4 @@
+// Contains commonly used functions e.g logging`
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
@@ -12,7 +13,7 @@
 static FILE* f;
 
 void log_init(void) {
-	f = fopen("log.txt", "w");
+	f = fopen("log.txt", "a");
 }
 
 void log_close(void) {
@@ -57,7 +58,7 @@ void die (enum dietypes type, const char *s, ...) {
 
 	IMG_Quit();
 	SDL_Quit();
-
+	fflush(f);
 	exit(1);
 }
 
@@ -65,15 +66,14 @@ void vlog (enum logtypes type, const char *s, ...) {
 	va_list ap;
 	time_t t;
 	struct tm *tm;
-	char tstr[11];
+	char tstr[12];
 
 	if (!f)
 		return;
 
-// time doesn't work /shrug -gibson
 	time(&t);
 	tm = gmtime(&t);
-	strftime(tstr, 11, "[%H:%M:%S] ", tm);
+	strftime(tstr, 12, "[%H:%M:%S] ", tm);
 
 	fputs(tstr, f);
 
@@ -95,4 +95,5 @@ void vlog (enum logtypes type, const char *s, ...) {
 	printf("\n");
 	va_end(ap);
 	fputc('\n', f);
+	fflush(f);
 }
