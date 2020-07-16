@@ -4,11 +4,15 @@
 SDL_Texture* playerText;
 SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
 
-struct GameObject doge;
 SDL_Window* window;
 SDL_Renderer* renderer;
+SDL_Texture* text;
+
+struct GameObject doge;
+
 bool GameActive;
 bool onGround;
+
 
 void Update()
 {
@@ -36,21 +40,20 @@ void Update()
 			velocity = 0;
 		}
 	}
-
 }
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
-	SDL_Surface* tmpSurface = IMG_Load(texture);
+	SDL_Surface* tmpSurface = IMG_Load(texture); 
 	SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
+	SDL_FreeSurface(tmpSurface);
 	return text;
-	SDL_DestroyTexture(text);
 }
 
 void Render()
 {
 	SDL_RenderClear(renderer);
-	SDL_RenderFillRect(renderer, &playerRect);
+	RenderObject(doge);
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
 	SDL_RenderPresent(renderer);
@@ -72,14 +75,14 @@ void event_handler() {
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				screen_width = event.window.data1;
 				screen_height = event.window.data2;
-				info("Window size changed\n");
+				info("Window size changed");
 				break;
 			}
 			break;
 
 
 		case SDL_KEYDOWN: // ALL KEYBOARD INPUTS HANDLED HERE
-			//printf << "X: " << playerRect.x << " Y: " << playerRect.y << " Accel: " << acceleration << "\n"; // Debugging purposes	
+			//std::cout << "X: " << playerRect.x << " Y: " << playerRect.y << " Accel: " << acceleration << std::endl; // Debugging purposes	
 
 			if (keyboard_state[SDL_SCANCODE_LEFT]) {
 				if (playerRect.x >= movAmount) {
@@ -88,7 +91,7 @@ void event_handler() {
 					moving = true;
 				}
 			}
-			if (keyboard_state[SDL_SCANCODE_RIGHT]) {
+			else if (keyboard_state[SDL_SCANCODE_RIGHT]) {
 				if (playerRect.x <= (screen_width - playerRect.w - 1)) {
 					PlayerMove(movAmount * acceleration, 0);
 					playerFlip = SDL_FLIP_HORIZONTAL;
@@ -96,12 +99,12 @@ void event_handler() {
 				}
 
 			}
-			if (keyboard_state[SDL_SCANCODE_SPACE]) {
+			else if (keyboard_state[SDL_SCANCODE_SPACE]) {
 				if (onGround)
 					PlayerJump();
 			}
-			if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
-				GameActive = false;
+			else if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
+				Clean();
 			}
 
 			break;
@@ -114,46 +117,50 @@ void event_handler() {
 		}
 	}
 
-void init(const char* window_title, int xpos, int ypos, int window_width, int window_height, bool fullscreen)
+void init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
 {
-	int flags = 0;
-	if (fullscreen)
-		flags = SDL_WINDOW_FULLSCREEN;
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
-
-		info("SDL Fully Initialised\n");
+		// Check that everything has loaded in correctly
+		info("SDL Fully Initialised");
 
 		window = SDL_CreateWindow(window_title, xpos, ypos, window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+		
 		if (window) {
-			info("Window Created\n");
-		}
-		else if (window == NULL) {
-			info("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-			Clean();
-		}
+			info("Window Created");
+		} else 
+			error("Window could not be created! SDL_Error: %s", SDL_GetError());
 
-		renderer = SDL_CreateRenderer(window, -1, 0);
+		if (vsync)
+			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+		else
+			renderer = SDL_CreateRenderer(window, -1, 0);
+		
 	
 		if (renderer) {
-			info("Renderer Created\n");
-			
-		}
-		else {
-			info("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
-			Clean();
-		}
+			info("Renderer Created");
+		} else
+			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
+		if (TTF_Init() == -1) {
+    		error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
+		} else
+			info("Created TTF");
+		if (IMG_Init(IMG_INIT_PNG) == 0) {
+    		error("IMG Failed to initialize. SDL_Error: %s", TTF_GetError());
+		} else
+			info("Created IMG");
+
+
 
 		GameActive = true;
 		InitPlayer(50, 50, 100, 100);
-	
-		
 		playerText = TextureManager("game/player.png", renderer);
-		CreateObject(200, 200, 100, 100, "game/doge.png", &doge);
+		CreateObject(300, 300, 100, 100, "game/doge.png", &doge);
 	}
 	else {
 		GameActive = false;
+		error("Could not start SDL. SDL_Error: %s", SDL_GetError());
 	}
 }
 
@@ -161,6 +168,8 @@ void Clean()
 {
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
+	TTF_Quit();
+	IMG_Quit();
 	SDL_Quit();
 	info("SDL Exited\n");
 	log_close();

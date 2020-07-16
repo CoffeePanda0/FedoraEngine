@@ -1,13 +1,15 @@
 #pragma once
-#include "SDL.h"
+#include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+#include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_ttf.h"
+#include "gameobject.h"
 #include "lib.h"
 #include "player.h"
-#include "gameobject.h"
-#include <stdio.h>
 
-void init(const char* window_title, int xpos, int ypos, int window_width, int window_height, bool fullscreen);
+void init(const char* window_title, int xpos, int ypos, int window_width, int window_height);
 
 void Clean();
 void Update();
@@ -21,3 +23,5 @@ extern bool GameActive;
 
 static int screen_height = 500;
 static int screen_width = 500;
+
+extern bool vsync;

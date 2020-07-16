@@ -51,13 +51,8 @@ void die (enum dietypes type, const char *s, ...) {
 	vlog(LT_ERROR, "%s", out);
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", out, NULL);
 
-	if (renderer)
-		SDL_DestroyRenderer(renderer);
-	if (window)
-		SDL_DestroyWindow(window);
-
-	IMG_Quit();
-	SDL_Quit();
+	Clean();
+	
 	fflush(f);
 	exit(1);
 }
