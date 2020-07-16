@@ -96,4 +96,3 @@ void vlog (enum logtypes type, const char *s, ...) {
 	va_end(ap);
 	fputc('\n', f);
 }
-

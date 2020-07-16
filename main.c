@@ -2,7 +2,8 @@
 #include "game.h"
 
 /* TODO:
-game objects
+render all game objects 
+haha memory leak go BRRRRRRRRRRRRRRRRRRRR
 fps counter
 smooth movement
 multiple inputs at once

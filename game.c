@@ -6,11 +6,16 @@ SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
+SDL_Texture* text;
+
 bool GameActive;
 bool onGround;
+struct GameObject doge;
+struct GameObject doge2;
 
 void Update()
 {
+	RenderObject(doge);
 	if (moving) {
 		if (acceleration < maxAccel)
 			acceleration += 0.02f;
@@ -35,22 +40,22 @@ void Update()
 			velocity = 0;
 		}
 	}
-
 }
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
 	SDL_Surface* tmpSurface = IMG_Load(texture);
 	SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
+	SDL_FreeSurface(tmpSurface);
 	return text;
-	SDL_DestroyTexture(text);
 }
 
 void Render()
 {
 	SDL_RenderClear(renderer);
-	SDL_RenderFillRect(renderer, &playerRect);
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
+	RenderObject(doge);
+	RenderObject(doge2);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
 	SDL_RenderPresent(renderer);
 }
@@ -100,7 +105,7 @@ void event_handler() {
 					PlayerJump();
 			}
 			else if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
-				GameActive = false;
+				DestroyObject(&doge);
 			}
 
 			break;
@@ -146,9 +151,11 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 
 		GameActive = true;
 		InitPlayer(50, 50, 100, 100);
-	
 		
 		playerText = TextureManager("game/player.png", renderer);
+		
+		CreateObject(200, 300, 50, 50, "game/doge.png", &doge);
+		CreateObject(300, 300, 50, 50, "game/doge.png", &doge2);
 
 	}
 	else {

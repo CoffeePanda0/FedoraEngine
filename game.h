@@ -4,7 +4,7 @@
 #include "SDL_image.h"
 #include "lib.h"
 #include "player.h"
-
+#include "gameobject.h"
 #include <stdio.h>
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height, bool fullscreen);
@@ -13,6 +13,7 @@ void Clean();
 void Update();
 void Render();
 void event_handler();
+SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren);
 
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
