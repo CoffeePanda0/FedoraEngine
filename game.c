@@ -4,12 +4,9 @@
 SDL_Texture* playerText;
 SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
 
+struct GameObject doge;
 SDL_Window* window;
 SDL_Renderer* renderer;
-SDL_Texture* text;
-
-struct GameObject doge;
-
 bool GameActive;
 bool onGround;
 
@@ -39,20 +36,21 @@ void Update()
 			velocity = 0;
 		}
 	}
+
 }
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
-	SDL_Surface* tmpSurface = IMG_Load(texture); 
+	SDL_Surface* tmpSurface = IMG_Load(texture);
 	SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
-	SDL_FreeSurface(tmpSurface);
 	return text;
+	SDL_DestroyTexture(text);
 }
 
 void Render()
 {
 	SDL_RenderClear(renderer);
-	RenderObject(doge);
+	SDL_RenderFillRect(renderer, &playerRect);
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
 	SDL_RenderPresent(renderer);
@@ -74,14 +72,14 @@ void event_handler() {
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				screen_width = event.window.data1;
 				screen_height = event.window.data2;
-				info("Window size changed");
+				info("Window size changed\n");
 				break;
 			}
 			break;
 
 
 		case SDL_KEYDOWN: // ALL KEYBOARD INPUTS HANDLED HERE
-			//std::cout << "X: " << playerRect.x << " Y: " << playerRect.y << " Accel: " << acceleration << std::endl; // Debugging purposes	
+			//printf << "X: " << playerRect.x << " Y: " << playerRect.y << " Accel: " << acceleration << "\n"; // Debugging purposes	
 
 			if (keyboard_state[SDL_SCANCODE_LEFT]) {
 				if (playerRect.x >= movAmount) {
@@ -90,7 +88,7 @@ void event_handler() {
 					moving = true;
 				}
 			}
-			else if (keyboard_state[SDL_SCANCODE_RIGHT]) {
+			if (keyboard_state[SDL_SCANCODE_RIGHT]) {
 				if (playerRect.x <= (screen_width - playerRect.w - 1)) {
 					PlayerMove(movAmount * acceleration, 0);
 					playerFlip = SDL_FLIP_HORIZONTAL;
@@ -98,12 +96,12 @@ void event_handler() {
 				}
 
 			}
-			else if (keyboard_state[SDL_SCANCODE_SPACE]) {
+			if (keyboard_state[SDL_SCANCODE_SPACE]) {
 				if (onGround)
 					PlayerJump();
 			}
-			else if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
-				Clean();
+			if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
+				GameActive = false;
 			}
 
 			break;
@@ -125,33 +123,34 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{
 
-		info("SDL Fully Initialised");
+		info("SDL Fully Initialised\n");
 
 		window = SDL_CreateWindow(window_title, xpos, ypos, window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 		if (window) {
-			info("Window Created");
+			info("Window Created\n");
 		}
 		else if (window == NULL) {
-			error("Window could not be created! SDL_Error: %s", SDL_GetError());
+			info("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 			Clean();
 		}
 
 		renderer = SDL_CreateRenderer(window, -1, 0);
 	
 		if (renderer) {
-			info("Renderer Created");
+			info("Renderer Created\n");
 			
 		}
 		else {
-			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
+			info("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
 			Clean();
 		}
 
 		GameActive = true;
 		InitPlayer(50, 50, 100, 100);
+	
 		
 		playerText = TextureManager("game/player.png", renderer);
-		CreateObject(300, 300, 100, 100, "game/doge.png", &doge);
+		CreateObject(200, 200, 100, 100, "game/doge.png", &doge);
 	}
 	else {
 		GameActive = false;
@@ -163,6 +162,6 @@ void Clean()
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	SDL_Quit();
-	info("SDL Exited");
+	info("SDL Exited\n");
 	log_close();
 }
