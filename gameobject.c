@@ -43,8 +43,8 @@ void DestroyObject(struct GameObject* obj) {
 		tmp = objlist;
 		objlist = objlist->next;
 		SDL_DestroyTexture(tmp->obj->texture);
-		SDL_free(tmp->obj)
-			SDL_free(tmp);
+		SDL_free(tmp->obj);
+		SDL_free(tmp);
 		return;
 	}
 	for (struct ObjList* o = objlist; o; o = o->next) {
@@ -52,8 +52,8 @@ void DestroyObject(struct GameObject* obj) {
 			tmp = o->next;
 			o->next = o->next->next;
 			SDL_DestroyTexture(tmp->obj->texture);
-			SDL_free(tmp->obj)
-				SDL_free(tmp);
+			SDL_free(tmp->obj);
+			SDL_free(tmp);
 			return;
 		}
 	}
