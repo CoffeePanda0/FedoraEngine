@@ -1,5 +1,6 @@
 //Main loops and functions for game operation
 #include "game.h"
+#include <sys/stat.h>
 
 SDL_Texture* playerText;
 SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
@@ -44,10 +45,20 @@ void Update()
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
-	SDL_Surface* tmpSurface = IMG_Load(texture); 
-	SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
-	SDL_FreeSurface(tmpSurface);
-	return text;
+	SDL_Surface *s = IMG_Load(texture);
+	if (s) {
+		SDL_Surface* tmpSurface = IMG_Load(texture); 
+		SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
+		SDL_FreeSurface(tmpSurface);
+		return text;
+	} else {
+		warn("Texture %s not found", texture);
+		SDL_Surface* tmpSurface = SDL_CreateRGBSurface(0,50,50,32,0,0,0,0);
+		SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
+		SDL_FreeSurface(tmpSurface);
+		return text;
+	}
+	SDL_FreeSurface(s);
 }
 
 void Render()
