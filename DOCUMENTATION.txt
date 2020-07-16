@@ -1,0 +1,19 @@
+*****FedoraEngine Documentation****
+
+be warned this code is a wreck, and will give you a new reason to hate life
+still has more documentation than quakeC at least :P
+
+Changing game resolution:
+the ints are just in game.h it's not hard
+
+MAIN.C
+This file is responsible for calling the main functions (bet you couldnt tell that)
+
+Creating a game object:
+Initialize it first with a name, e.g (struct GameObject NAME_HERE)
+use the function CreateObject() to set the values
+call render object with the GameObject in the args
+to "free up memory", call DestroyObject(MEMORY LOC FOR GAMEOBJECT)
+
+q: do game objects cause a memory leak?
+a: yes so please dont use many until i "come up with" a memory management function
