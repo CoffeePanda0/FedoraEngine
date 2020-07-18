@@ -5,7 +5,7 @@ still has more documentation than quakeC at least :P
 
 Changing parameters:
 VSYNC (main.c) - Enables/disables vsync. If vsync is off just be warned that movement is very buggy.
-showfps (main.c) - Logs the average FPS to console
+Overlay (main.c) - Shows a few variables
 Screen width and height (game.h)
 
 MAIN.C
@@ -22,6 +22,12 @@ Logging:
 Logs are written to "log.txt" and to the console. Different logging features are:
 Notice, Warn (Not urgent)
 Error: Displays the erorr message in a pop up on screen and exits the application
-
-
 cheers to Gibson for the code for lib.h and help with gameobjects
+
+TEXT:
+At the moment, text is very dodgy and will result in a severe drop in fps (like 7,000fps to 900fps)
+To create the text, use the function "SDL_Texture* CreateText(char *text, SDL_Color color, TTF_Font *font)" which returns a texture
+For a simple render, use RenderText(SDL_Texture* textTexture, SDL_Rect txtRect)
+
+OVERLAY:
+There is a simple overlay that shows fps, position, acceleration and velocity. However this has the same issue as all text and massively decreases fps. You can toggle this in "main.c"
