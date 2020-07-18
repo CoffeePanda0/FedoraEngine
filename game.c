@@ -7,13 +7,12 @@ SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
-SDL_Texture* text;
+TTF_Font* Sans;
 
-struct GameObject doge;
+struct GameObject doge; // using doge as an example gameobject because why not :P
 
 bool GameActive;
 bool onGround;
-
 
 void Update()
 {
@@ -21,9 +20,8 @@ void Update()
 		if (acceleration < maxAccel)
 			acceleration += 0.02f;
 	}
-	else {
+	else
 		acceleration = 1.0;
-	}
 
 	if (playerRect.y <= (screen_height - playerRect.h - 1) || jumping) {
 		playerRect.y += gravity + velocity;
@@ -64,7 +62,8 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 void Render()
 {
 	SDL_RenderClear(renderer);
-	RenderObject(doge);
+	if (overlay) { TextDebugOverlay(); }
+	RenderObject();
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
 	SDL_RenderPresent(renderer);
@@ -126,7 +125,7 @@ void event_handler() {
 				moving = false;
 			break;
 		}
-	}
+}
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
 {
@@ -153,6 +152,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 			info("Renderer Created");
 		} else
 			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
+
 		if (TTF_Init() == -1) {
     		error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
 		} else
@@ -163,11 +163,17 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 			info("Created IMG");
 
 
+		// Set up the game here
+		if (overlay)
+			InitDebugOverlay();
 
-		GameActive = true;
+		Sans = TTF_OpenFont("game/opensans.ttf", 25);
 		InitPlayer(50, 50, 100, 100);
 		playerText = TextureManager("game/player.png", renderer);
 		CreateObject(300, 300, 100, 100, "game/doge.png", &doge);
+
+		GameActive = true;
+		
 	}
 	else {
 		GameActive = false;
@@ -177,6 +183,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 
 void Clean()
 {
+	//TTF_CloseFont(Sans);
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	TTF_Quit();
