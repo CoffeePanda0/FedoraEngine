@@ -9,6 +9,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
  - Basic SDL2 boilerplate code
  - Ability to create and render multiple GameObjects easily
  - Vsync and fps counter
+ - a somewhat broken text renderer and overlay
  - A very *accurate* and *mathematical* "gravity", "velocity", and "acceleration"
  - Load a sprite and move around (although only one keypress at a time atm)
  
