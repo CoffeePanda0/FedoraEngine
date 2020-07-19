@@ -2,8 +2,8 @@
 #include "game.h"
 
 /* TODO:
-game objects
-fps counter
+game object memory management
+fix text fps hit
 smooth movement
 multiple inputs at once
 multithreading
