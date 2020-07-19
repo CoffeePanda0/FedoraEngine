@@ -92,8 +92,6 @@ void event_handler() {
 
 
 		case SDL_KEYDOWN: // ALL KEYBOARD INPUTS HANDLED HERE
-			//std::cout << "X: " << playerRect.x << " Y: " << playerRect.y << " Accel: " << acceleration << std::endl; // Debugging purposes	
-
 			if (keyboard_state[SDL_SCANCODE_LEFT]) {
 				if (playerRect.x >= movAmount) {
 					PlayerMove(-movAmount * acceleration, 0);
