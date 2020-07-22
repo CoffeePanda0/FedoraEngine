@@ -8,36 +8,37 @@ SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
 SDL_Window* window;
 SDL_Renderer* renderer;
 TTF_Font* Sans;
+SDL_Texture* title;
+SDL_Rect titleRect;
 
 struct GameObject doge; // using doge as an example gameobject because why not :P
 
 bool GameActive;
 bool onGround;
+struct TextObject test;
 
 void Update()
 {
 	if (moving) {
 		if (acceleration < maxAccel)
 			acceleration += 0.02f;
-	}
-	else
+	} else
 		acceleration = 1.0;
 
 	if (playerRect.y <= (screen_height - playerRect.h - 1) || jumping) {
 		playerRect.y += gravity + velocity;
 		onGround = false;
-	}
-	else if (playerRect.y > screen_height) {
-		playerRect.y = 0;
+		
 	} else 
 		onGround = true;
 
 	if (jumping) {
-		velocity += 0.05f;
+		if (velocity > -0.1)
+			velocity += 0.07f;
 		if (playerRect.y < screen_height / 1.5) {
 			jumping = false;
 			velocity = 0;
-		}
+		} 
 	}
 }
 
@@ -62,7 +63,7 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 void Render()
 {
 	SDL_RenderClear(renderer);
-	if (overlay) { TextDebugOverlay(); }
+	RenderText();
 	RenderObject();
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
@@ -85,13 +86,14 @@ void event_handler() {
 			case SDL_WINDOWEVENT_SIZE_CHANGED:
 				screen_width = event.window.data1;
 				screen_height = event.window.data2;
-				info("Window size changed");
 				break;
 			}
 			break;
 
 
 		case SDL_KEYDOWN: // ALL KEYBOARD INPUTS HANDLED HERE
+			//std::cout << "X: " << playerRect.x << " Y: " << playerRect.y << " Accel: " << acceleration << std::endl; // Debugging purposes	
+
 			if (keyboard_state[SDL_SCANCODE_LEFT]) {
 				if (playerRect.x >= movAmount) {
 					PlayerMove(-movAmount * acceleration, 0);
@@ -145,19 +147,19 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		else
 			renderer = SDL_CreateRenderer(window, -1, 0);
 		
-	
 		if (renderer) {
 			info("Renderer Created");
 		} else
 			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
 
-		if (TTF_Init() == -1) {
+		if (TTF_Init() == -1)
     		error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
-		} else
+		else
 			info("Created TTF");
-		if (IMG_Init(IMG_INIT_PNG) == 0) {
+
+		if (IMG_Init(IMG_INIT_PNG) == 0)
     		error("IMG Failed to initialize. SDL_Error: %s", TTF_GetError());
-		} else
+		else
 			info("Created IMG");
 
 
@@ -165,10 +167,12 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		if (overlay)
 			InitDebugOverlay();
 
-		Sans = TTF_OpenFont("game/opensans.ttf", 25);
+		Sans = TTF_OpenFont("game/opensans.ttf", 75);
 		InitPlayer(50, 50, 100, 100);
 		playerText = TextureManager("game/player.png", renderer);
 		CreateObject(300, 300, 100, 100, "game/doge.png", &doge);
+
+		NewText(&test, "mr whitley", Black, 50, 50);
 
 		GameActive = true;
 		
@@ -181,12 +185,12 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 
 void Clean()
 {
-	//TTF_CloseFont(Sans);
+	TTF_CloseFont(Sans);
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	TTF_Quit();
 	IMG_Quit();
-	SDL_Quit();
 	info("SDL Exited\n");
 	log_close();
+	SDL_Quit();
 }
