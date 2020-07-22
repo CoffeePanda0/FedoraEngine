@@ -75,9 +75,9 @@ void TextDebugOverlay() // Updates the text on the overlay, as we can't use NewT
 	snprintf(xBuffer, sizeof(xBuffer), "X: %d", playerRect.x);
 	snprintf(yBuffer, sizeof(yBuffer), "Y: %d", playerRect.y);
 	if (strcmp(oldy, yBuffer))
-		UpdateText(&ui_xpos, xBuffer, Black);
+		UpdateText(&ui_xpos, yBuffer, Black);
 	if (strcmp(oldx, xBuffer)) 
-		UpdateText(&ui_ypos, yBuffer, Black);
+		UpdateText(&ui_ypos, xBuffer, Black);
 
 
 	// RENDER ACCELERATION AND VELOCITY
