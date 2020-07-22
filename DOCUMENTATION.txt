@@ -25,9 +25,7 @@ Error: Displays the erorr message in a pop up on screen and exits the applicatio
 cheers to Gibson for the code for lib.h and help with gameobjects
 
 TEXT:
-At the moment, text is very dodgy and will result in a severe drop in fps (like 7,000fps to 900fps)
-To create the text, use the function "SDL_Texture* CreateText(char *text, SDL_Color color, TTF_Font *font)" which returns a texture
-For a simple render, use RenderText(SDL_Texture* textTexture, SDL_Rect txtRect)
+Text creation works similar to the gameobject, and text is defined as a TextObject(). All text and UI code is currently in uitext.c 
+To create text, define the struct with a name, e.g (struct TextObject NAME_HERE). Initialise the text whenever you need with the function NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int yPos)
 
-OVERLAY:
-There is a simple overlay that shows fps, position, acceleration and velocity. However this has the same issue as all text and massively decreases fps. You can toggle this in "main.c"
+All text is automatically rendered whenever added and does not need to be rendered inividually, as long as RenderText() is called while the game is active
