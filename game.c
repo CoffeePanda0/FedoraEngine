@@ -63,6 +63,7 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 void Render()
 {
 	SDL_RenderClear(renderer);
+	if (overlay) {TextDebugOverlay();}
 	RenderText();
 	RenderObject();
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
@@ -135,7 +136,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		// Check that everything has loaded in correctly
 		info("SDL Fully Initialised");
 
-		window = SDL_CreateWindow(window_title, xpos, ypos, window_width, window_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+		window = SDL_CreateWindow(window_title, xpos, ypos, window_width, window_height, SDL_WINDOW_ALLOW_HIGHDPI);
 		
 		if (window) {
 			info("Window Created");
@@ -164,15 +165,14 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 
 
 		// Set up the game here
-		if (overlay)
-			InitDebugOverlay();
 
-		Sans = TTF_OpenFont("game/opensans.ttf", 75);
-		InitPlayer(50, 50, 100, 100); playerText = TextureManager("game/player.png", renderer);  // EXAMPLE OF SETTING UP AND RENDERING PLAYER
-		CreateObject(300, 300, 100, 100, "game/doge.png", &doge);  // EXAMPLE OF SETTING UP AND RENDERING GAMEOBJECT
+		Sans = TTF_OpenFont("game/opensans.ttf", 20);
+		InitPlayer(50, 50, 100, 100);
+		playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
+		CreateObject(300, 300, 100, 100, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 
-		NewText(&test, "FedoraEngine!", Black, 50, 50); // EXAMPLE OF SETTING UP AND RENDERING TEXT
-
+		NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
+		InitDebugOverlay();
 		GameActive = true;
 		
 	}

@@ -19,5 +19,6 @@ void NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int 
 
 void RenderText();
 
+void UpdateText(struct TextObject *obj, char *text, SDL_Color color);
 
 extern SDL_Color Black;
