@@ -168,11 +168,10 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 			InitDebugOverlay();
 
 		Sans = TTF_OpenFont("game/opensans.ttf", 75);
-		InitPlayer(50, 50, 100, 100);
-		playerText = TextureManager("game/player.png", renderer);
-		CreateObject(300, 300, 100, 100, "game/doge.png", &doge);
+		InitPlayer(50, 50, 100, 100); playerText = TextureManager("game/player.png", renderer);  // EXAMPLE OF SETTING UP AND RENDERING PLAYER
+		CreateObject(300, 300, 100, 100, "game/doge.png", &doge);  // EXAMPLE OF SETTING UP AND RENDERING GAMEOBJECT
 
-		NewText(&test, "mr whitley", Black, 50, 50);
+		NewText(&test, "FedoraEngine!", Black, 50, 50); // EXAMPLE OF SETTING UP AND RENDERING TEXT
 
 		GameActive = true;
 		
