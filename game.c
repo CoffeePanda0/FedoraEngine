@@ -115,10 +115,19 @@ void event_handler() {
 					PlayerJump();
 			}
 			else if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
-				Clean();
+				FreeText(&ui_fps);
 			}
-
+			else if (keyboard_state[SDL_SCANCODE_C]) {
+				if (overlay) {
+					overlay = false;
+					FreeOverlay();
+				} else {
+					overlay = true;
+					InitDebugOverlay();
+				}
+			}
 			break;
+	
 		case SDL_KEYUP:
 			if (!keyboard_state[SDL_SCANCODE_LEFT])
 				moving = false;
@@ -163,16 +172,15 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		else
 			info("Created IMG");
 
-
 		// Set up the game here
 
-		Sans = TTF_OpenFont("game/opensans.ttf", 20);
+		Sans = TTF_OpenFont("game/baloo.ttf", 20);
 		InitPlayer(50, 50, 100, 100);
 		playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
 		CreateObject(300, 300, 100, 100, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 
 		NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
-		InitDebugOverlay();
+		if (overlay) InitDebugOverlay();
 		GameActive = true;
 		
 	}

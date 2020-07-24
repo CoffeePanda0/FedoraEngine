@@ -24,6 +24,16 @@ void tPush (struct TextObject *obj)
 	objlist = newobj;
 }
 
+void FreeText(struct TextObject *obj)
+{
+	struct TextList *tmp;
+
+	for (struct TextList *o = objlist; o; o = o->next) {
+		if (o->obj == obj)
+			SDL_DestroyTexture(o->obj->texture);
+	}
+}
+
 void NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int yPos) // Responsible for creating textures and the rect for them in the struct
 {
 	SDL_Surface* tmpSurface = TTF_RenderText_Blended(Sans, text, color);
@@ -91,6 +101,8 @@ void TextDebugOverlay() // Updates the text on the overlay, as we can't use NewT
 		UpdateText(&ui_accel, accBuffer, Black);
 	if (strcmp(velocityBuffer, oldvel)) 
 		UpdateText(&ui_vel, velocityBuffer, Black);
+	
+	free(oldfps); free(oldy); free(oldx); free(oldaccel); free(oldvel);
 
 }
 
@@ -112,4 +124,9 @@ void InitDebugOverlay() // creates text objects and adds them to the render
 	snprintf(accBuffer, sizeof(accBuffer), "Acceleration: %.2f", acceleration);
 	snprintf(velocityBuffer, sizeof(velocityBuffer), "Velocity: %.2f", (-1 * velocity));
 	NewText(&ui_accel, accBuffer, Black, 0, 60); NewText(&ui_vel, velocityBuffer, Black, 0, 80);
+}
+
+void FreeOverlay() // frees up memory and removes overlay from screen
+{
+	FreeText(&ui_fps); FreeText(&ui_xpos); FreeText(&ui_ypos); FreeText(&ui_accel); FreeText(&ui_vel);
 }
