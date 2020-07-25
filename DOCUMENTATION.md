@@ -32,3 +32,6 @@ Notice, Warn (Not urgent)
 
 ## Overlay:  
 - The overlay does have a slight fps of roughly 500fps (from 6,000 to ~5,500 in my experience) but displays debugging info on screen, and can of course be modified in the uitext.c file to add more things or change items if you wanted to. You can enable/disable this in main.
+
+## Maps:
+- i wrote these at 3am so the code is currently the biggest horror possible, and even scares the devil himself. 
