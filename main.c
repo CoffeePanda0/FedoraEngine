@@ -2,8 +2,7 @@
 #include "game.h"
 
 /* TODO:
-game object memory management
-fix text fps hit
+game objects and text objects memory management
 smooth movement
 multiple inputs at once
 multithreading
@@ -30,20 +29,18 @@ int main(int argc, char* argv[])
 	init("FedoraEngine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height);
 	
 	info("Application started");
-	
+
 	while (GameActive) {
 		frame_start = SDL_GetTicks();
-
 		Render();
 		Update();
 		event_handler();
+
 		fps_frames++;
    		if (fps_lasttime < SDL_GetTicks() - 1000)
    		{
       		fps_lasttime = SDL_GetTicks();
       		fps_current = fps_frames;
-			if (fps_current != 1)
-					printf("FPS: %s \n", itoa(fps_current, buffer, 10));
       		fps_frames = 0;
 		}
 	}
@@ -51,4 +48,3 @@ int main(int argc, char* argv[])
 	return 0;
 
 }
-

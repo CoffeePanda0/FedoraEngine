@@ -37,25 +37,6 @@ void RenderObject() {
 		SDL_RenderCopy(renderer, o->obj->texture, NULL, &o->obj->objRect);
 }
 
-void DestroyObject(struct GameObject* obj) {
-	struct ObjList* tmp;
-	if (objlist->obj == obj) {
-		tmp = objlist;
-		objlist = objlist->next;
-		SDL_DestroyTexture(tmp->obj->texture);
-		SDL_free(tmp->obj);
-		SDL_free(tmp);
-		return;
-	}
-	for (struct ObjList* o = objlist; o; o = o->next) {
-		if (o->next == obj) {
-			tmp = o->next;
-			o->next = o->next->next;
-			SDL_DestroyTexture(tmp->obj->texture);
-			SDL_free(tmp->obj);
-			SDL_free(tmp);
-			return;
-		}
-	}
+void DestroyObject(struct GameObject *obj) {
 	error("DestroyObject: Object not found!");
 }
