@@ -10,6 +10,7 @@ SDL_Renderer* renderer;
 TTF_Font* Sans;
 SDL_Texture* title;
 SDL_Rect titleRect;
+SDL_Surface *s;
 
 struct GameObject doge; // using doge as an example gameobject because why not :P
 
@@ -25,7 +26,7 @@ void Update()
 	} else
 		acceleration = 1.0;
 
-	if (playerRect.y <= (screen_height - playerRect.h - 1) || jumping) {
+	if (playerRect.y <= (screen_height - GroundCollideHeight - playerRect.h - 1) || jumping) {
 		playerRect.y += gravity + velocity;
 		onGround = false;
 		
@@ -35,7 +36,7 @@ void Update()
 	if (jumping) {
 		if (velocity > -0.1)
 			velocity += 0.07f;
-		if (playerRect.y < screen_height / 1.5) {
+		if (playerRect.y + GroundCollideHeight < screen_height / 1.5) {
 			jumping = false;
 			velocity = 0;
 		} 
@@ -44,7 +45,7 @@ void Update()
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
-	SDL_Surface *s = IMG_Load(texture);
+	s = IMG_Load(texture);
 	if (s) {
 		SDL_Surface* tmpSurface = IMG_Load(texture); 
 		SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
@@ -63,6 +64,7 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 void Render()
 {
 	SDL_RenderClear(renderer);
+	RenderMap(testmap);
 	if (overlay) {TextDebugOverlay();}
 	RenderText();
 	RenderObject();
@@ -181,6 +183,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 
 		NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 		if (overlay) InitDebugOverlay();
+		InitMap();
 		GameActive = true;
 		
 	}
