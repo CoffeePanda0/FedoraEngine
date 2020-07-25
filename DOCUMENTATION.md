@@ -35,3 +35,4 @@ Notice, Warn (Not urgent)
 
 ## Maps:
 - i wrote these at 3am so the code is currently the biggest horror possible, and even scares the devil himself. 
+- i would reccomend not using this feature right now, ill rewrite it all with ~~some sanity~~ with scrolling, *actual collision* and reading from a file
