@@ -1,5 +1,5 @@
 # FedoraEngine
-![](https://i.imgur.com/aDUhU5s.png)  
+![](https://i.imgur.com/HlRj1T2.png)  
 The *most advanced game engine* to ever be released  
 
 (still a very much work in progress so watch the page for actual features)
