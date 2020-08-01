@@ -34,5 +34,5 @@ Notice, Warn (Not urgent)
 - The overlay does have a slight fps of roughly 500fps (from 6,000 to ~5,500 in my experience) but displays debugging info on screen, and can of course be modified in the uitext.c file to add more things or change items if you wanted to. You can enable/disable this in main.
 
 ## Maps:
-- i wrote these at 3am so the code is currently the biggest horror possible, and even scares the devil himself. 
-- i would reccomend not using this feature right now, ill rewrite it all with ~~some sanity~~ with scrolling, *actual collision* and reading from a file
+- Maps are loaded from a text file, and is cqalled in game.c with InitMap(char* file_path). See the example map in /map for details, and the readme to explain. Each int has to be separated by a space, and extra spaces can cause issues with loading maps.
+
