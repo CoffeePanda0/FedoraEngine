@@ -9,7 +9,6 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 TTF_Font* Sans;
 SDL_Texture* title;
-SDL_Rect titleRect;
 SDL_Surface *s;
 
 struct GameObject doge; // using doge as an example gameobject because why not :P
