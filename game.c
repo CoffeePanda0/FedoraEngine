@@ -187,7 +187,8 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 		
 		InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
-
+		
+		SDL_FreeSurface(s);
 		GameActive = true;
 		
 	}
