@@ -12,6 +12,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
  - Vsync and fps counter
  - A very *accurate* and *mathematical* "gravity", "velocity", and "acceleration"
  - Load a sprite and move around (although only one keypress at a time atm)
+ - Load maps from a file
  
 # Q&A's
 1. What is this code useful for? A: Probably nothing unless you just need to learn the basics of SDL2 in C
