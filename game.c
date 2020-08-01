@@ -16,6 +16,22 @@ bool GameActive;
 bool onGround;
 struct TextObject test;
 
+void InitGame() // initialises the things like game objects and maps
+{
+	Sans = TTF_OpenFont("game/baloo.ttf", 20);
+	if (overlay) InitDebugOverlay();
+
+	InitPlayer(50, 50, 100, 100);
+	playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
+	
+	CreateObject(300, 300, 100, 100, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
+
+	NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
+	
+	InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
+	SDL_FreeSurface(s);
+}
+
 void Update()
 {
 	if (moving) {
@@ -173,20 +189,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 			info("Created IMG");
 
 		// Set up the game here
-
-		Sans = TTF_OpenFont("game/baloo.ttf", 20);
-		if (overlay) InitDebugOverlay();
-
-		InitPlayer(50, 50, 100, 100);
-		playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
-
-		CreateObject(300, 300, 100, 100, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
-
-		NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
-		
-		InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
-		
-		SDL_FreeSurface(s);
+		InitGame();
 		GameActive = true;
 		
 	}
