@@ -64,7 +64,7 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 void Render()
 {
 	SDL_RenderClear(renderer);
-	RenderMap(testmap);
+	RenderMap();
 	if (overlay) {TextDebugOverlay();}
 	RenderText();
 	RenderObject();
@@ -177,13 +177,17 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		// Set up the game here
 
 		Sans = TTF_OpenFont("game/baloo.ttf", 20);
+		if (overlay) InitDebugOverlay();
+
 		InitPlayer(50, 50, 100, 100);
 		playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
+
 		CreateObject(300, 300, 100, 100, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 
 		NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
-		if (overlay) InitDebugOverlay();
-		InitMap();
+		
+		InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
+
 		GameActive = true;
 		
 	}

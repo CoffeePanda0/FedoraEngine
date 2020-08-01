@@ -1,8 +1,7 @@
 #include "SDL.h"
 
-void RenderMap(int map[16][16]);
-void InitMap();
+void RenderMap();
+void InitMap(char* map);
 
-extern int testmap[16][16];
 extern int GroundCollideHeight;
 

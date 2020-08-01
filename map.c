@@ -1,65 +1,106 @@
 #include "game.h"
-int tile_size = 32;
-
+int tile_size;
 int GroundCollideHeight = 96; // CHANGE THIS FOR YOUR MAP 
 
 SDL_Texture* grass;
 SDL_Texture* sky;
 SDL_Texture* dirt;
-
 SDL_Rect tilerect;
 
-int testmap[16][16] = {
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
-{2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2},
-};
-
-char buffer[20];
-
-void InitMap()
+SDL_Texture* LoadTile(const char* tiletext)
 {
-	grass = IMG_LoadTexture(renderer, "game/grass.png");
-	sky = IMG_LoadTexture(renderer, "game/sky.png");
-	dirt = IMG_LoadTexture(renderer, "game/dirt.png");
+	SDL_Texture* tmptile = IMG_LoadTexture(renderer, tiletext);
+	if (!tmptile)
+		warn("Error loading tile texture. SDL Error: %s", IMG_GetError());
+	return tmptile;
+}
+int rowcount;
+int columncount;
+
+int** array;
+
+void InitMap(char* map)
+{
+	// Read 2d array in from a text file for a map
+	FILE *f = fopen(map, "r");
+	if (!f)
+		error("Could not open map %s", map);
+
+	// Work out amount of rows and columns for memory allocation
+	char ch;
+
+	while ((ch = fgetc(f)) != EOF)
+	{	
+		if (ch == ' ') {
+			columncount += 1;
+		}
+		if (ch == '\n')
+			break;
+	}
+	while ((ch = fgetc(f)) != EOF)
+	{	
+		if (ch == '\n')
+			rowcount +=1;
+	}
+	columncount += 1;
+	rowcount += 2;
+
+	if (!rowcount) error("Map %s has no rows.", map);
+	if (!columncount) error("Map %s has no columns", map);
+
+ 	array = malloc(rowcount * sizeof(*array));
+
+    for (size_t i = 0; i < columncount; i++)
+        array[i] = malloc(columncount * sizeof(**array));
+
+	if (!array)
+		error("Could not allocate memory for 2D map array %s", map); 
+
+	rewind(f);
+	for (int row = 0; row < rowcount; row++) {
+		for (int col = 0; col < columncount; col++)
+			fscanf(f, " %d ", &array[row][col]);
+	} 
+
+	info("Loaded map %s to memory succesfully", map);
+	fclose(f);
+	// Load in textures
+	grass = LoadTile("game/map/grass.png");
+	sky = LoadTile("game/map/sky.png");
+	dirt = LoadTile("game/map/dirt.png");
+
+	tile_size = screen_height / rowcount;
 	tilerect.h = tile_size;
 	tilerect.w = tile_size;
 }
 
-void RenderMap(int map[16][16])
+void DrawTile(SDL_Texture* t)
+{
+	SDL_RenderCopy(renderer, t, NULL, &tilerect);
+}
+
+void RenderMap()
 {
 	int type = 0;
-	for (int row = 0; row < 16; row++) {
+	for (int row = 0; row < rowcount; row++) {
 		tilerect.y = row * tile_size;
 
-		for (int column = 0; column < 16; column++) {
+		for (int column = 0; column < columncount; column++) {
 			tilerect.x = column * tile_size;
 
-			type = map[row][column];
-			
+			type = array[row][column];
 			switch (type) {
 				case 0:
-					SDL_RenderCopy(renderer, sky, NULL, &tilerect);
+					DrawTile(sky);
 					break;
 				case 1:
-					SDL_RenderCopy(renderer, grass, NULL, &tilerect);
+					DrawTile(grass);
 					break;
 				case 2:
-					SDL_RenderCopy(renderer, dirt, NULL, &tilerect);
+					DrawTile(dirt);
 					break;
+				default:
+					warn("Could not render tile. Map tile ID: %i", type);
 			}
 		}
 	}
