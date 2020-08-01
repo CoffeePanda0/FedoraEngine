@@ -1,6 +1,5 @@
 //Main loops and functions for game operation
 #include "game.h"
-#include <sys/stat.h>
 
 SDL_Texture* playerText;
 SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
