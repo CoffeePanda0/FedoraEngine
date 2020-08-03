@@ -30,15 +30,15 @@ void FreeText(struct TextObject *obj)
 
 	for (struct TextList *o = objlist; o; o = o->next) {
 		if (o->obj == obj)
-			SDL_DestroyTexture(o->obj->texture);
+			SDL_DestroyTexture(o->obj->texture); // haha this causes a memory leak and doesnt work properly
 	}
 }
 
 void NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int yPos) // Responsible for creating textures and the rect for them in the struct
 {
+	
 	SDL_Surface* tmpSurface = TTF_RenderText_Blended(Sans, text, color);
 	obj->texture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
-
 	SDL_QueryTexture(obj->texture, NULL, NULL, &txtw, &txth); // query texture size so rect doesnt look odd 
 	
 	obj->rect.x = xPos; obj->rect.y = yPos; obj->rect.h = txth; obj->rect.w = txtw;
@@ -85,9 +85,9 @@ void TextDebugOverlay() // Updates the text on the overlay, as we can't use NewT
 	snprintf(xBuffer, sizeof(xBuffer), "X: %d", playerRect.x);
 	snprintf(yBuffer, sizeof(yBuffer), "Y: %d", playerRect.y);
 	if (strcmp(oldy, yBuffer))
-		UpdateText(&ui_xpos, yBuffer, Black);
+		UpdateText(&ui_ypos, yBuffer, Black);
 	if (strcmp(oldx, xBuffer)) 
-		UpdateText(&ui_ypos, xBuffer, Black);
+		UpdateText(&ui_xpos, xBuffer, Black);
 
 
 	// RENDER ACCELERATION AND VELOCITY
@@ -113,8 +113,9 @@ void InitDebugOverlay() // creates text objects and adds them to the render
 		snprintf(fpsbuffer, sizeof(fpsbuffer), "FPS (VSYNC ON): %d", fps_current);
 	else
 		snprintf(fpsbuffer, sizeof(fpsbuffer), "FPS (VSYNC OFF): %d", fps_current);
+	
 	NewText(&ui_fps, fpsbuffer, Black, 0, 0);
-
+	
 	// RENDER XPOS, YPOS
 	snprintf(xBuffer, sizeof(xBuffer), "X: %d", playerRect.x);
 	snprintf(yBuffer, sizeof(yBuffer), "Y: %d", playerRect.y);
