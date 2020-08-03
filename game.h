@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_mixer.h"
 #include "SDL_ttf.h"
 #include "gameobject.h"
 #include "lib.h"
@@ -18,6 +19,10 @@ void Clean();
 void Update();
 void Render();
 void event_handler();
+void LoadMusic(Mix_Music* m, const char* path);
+void LoadSFX(Mix_Chunk* c, const char* path);
+
+extern bool onGround;
 
 extern Uint32 fps_current;
 

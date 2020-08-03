@@ -13,7 +13,7 @@ everything lol
 
 // CHANGE THESE IF YOU WANT
 bool vsync = true;
-bool overlay = true;
+bool overlay = false;
 
 Uint32 fps_current; 
 

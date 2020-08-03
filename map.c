@@ -1,6 +1,5 @@
 #include "game.h"
 int tile_size;
-int GroundCollideHeight = 96; // CHANGE THIS FOR YOUR MAP 
 
 SDL_Texture* grass;
 SDL_Texture* sky;
@@ -55,7 +54,7 @@ void InitMap(char* map)
 
 	if (!array)
 		error("Could not allocate memory for 2D map array %s", map); 
-
+		
 	rewind(f);
 	for (int row = 0; row < rowcount; row++) {
 		for (int col = 0; col < columncount; col++)
@@ -74,14 +73,26 @@ void InitMap(char* map)
 	tilerect.w = tile_size;
 }
 
-void DrawTile(SDL_Texture* t)
+int type = 0;
+
+void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 {
 	SDL_RenderCopy(renderer, t, NULL, &tilerect);
+	if (SDL_HasIntersection(&playerRect, &tilerect)) {
+		switch (type) {
+			case 1:
+				onGround = true;
+				break;
+			default:
+				onGround = false;
+				break;
+		}
+	}
 }
 
+
 void RenderMap()
-{
-	int type = 0;
+{	
 	for (int row = 0; row < rowcount; row++) {
 		tilerect.y = row * tile_size;
 

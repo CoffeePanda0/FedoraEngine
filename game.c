@@ -8,49 +8,58 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 TTF_Font* Sans;
 SDL_Texture* title;
-SDL_Surface *s;
+SDL_Surface* s;
 
 struct GameObject doge; // using doge as an example gameobject because why not :P
+struct TextObject test;
+Mix_Music* bgMusic;
 
 bool GameActive;
-bool onGround;
-struct TextObject test;
+bool onGround = false;
+bool jumping = false;
+
+enum CollDir dir;
 
 void InitGame() // initialises the things like game objects and maps
-{
+{	
 	Sans = TTF_OpenFont("game/baloo.ttf", 20);
 	if (overlay) InitDebugOverlay();
-
+	
 	InitPlayer(50, 50, 100, 100);
 	playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
 	
-	CreateObject(300, 300, 100, 100, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
+	CreateObject(300, 370, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 
 	NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 	
 	InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
+
+	bgMusic = Mix_LoadMUS("game/audio/Sweden.mp3"); // load in background music
+	if( Mix_PlayingMusic() == 0 ) {
+    	if( Mix_PlayMusic( bgMusic, -1 ) == -1 )
+			warn("Could not play music %s", Mix_GetError());
+    }
+
 	SDL_FreeSurface(s);
 }
 
 void Update()
 {
+	CollisionDetection();
+
 	if (moving) {
 		if (acceleration < maxAccel)
 			acceleration += 0.02f;
 	} else
 		acceleration = 1.0;
 
-	if (playerRect.y <= (screen_height - GroundCollideHeight - playerRect.h - 1) || jumping) {
+	if (!onGround || jumping) 
 		playerRect.y += gravity + velocity;
-		onGround = false;
-		
-	} else 
-		onGround = true;
 
 	if (jumping) {
-		if (velocity > -0.1)
-			velocity += 0.07f;
-		if (playerRect.y + GroundCollideHeight < screen_height / 1.5) {
+		if (velocity < 0.1)
+			velocity += 0.08f;
+		if (velocity >= 0) {
 			jumping = false;
 			velocity = 0;
 		} 
@@ -75,6 +84,20 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 	SDL_FreeSurface(s);
 }
 
+void LoadMusic(Mix_Music* m, const char* path)
+{
+	m = Mix_LoadMUS(path);
+	if (!m)
+		warn("Could not load music %s, SDL_Error: %s", path, Mix_GetError());
+}
+
+void LoadSFX(Mix_Chunk* c, const char* path)
+{
+	c = Mix_LoadWAV(path);
+	if (!c)
+		warn("Could not load SFX %s, SDL_Error: %s", path, Mix_GetError());
+}
+
 void Render()
 {
 	SDL_RenderClear(renderer);
@@ -93,8 +116,8 @@ void event_handler() {
 	SDL_Event event;
 	SDL_PollEvent(&event);
 
-		switch (event.type)
-		{
+	switch (event.type)
+	{
 		case SDL_QUIT:
 			GameActive = false;
 			break;
@@ -107,18 +130,16 @@ void event_handler() {
 			}
 			break;
 
-
 		case SDL_KEYDOWN: // ALL KEYBOARD INPUTS HANDLED HERE
-			//std::cout << "X: " << playerRect.x << " Y: " << playerRect.y << " Accel: " << acceleration << std::endl; // Debugging purposes	
 
-			if (keyboard_state[SDL_SCANCODE_LEFT]) {
+			if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_RIGHT) {
 				if (playerRect.x >= movAmount) {
 					PlayerMove(-movAmount * acceleration, 0);
 					playerFlip = SDL_FLIP_NONE;
 					moving = true;
 				}
 			}
-			else if (keyboard_state[SDL_SCANCODE_RIGHT]) {
+			else if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_LEFT) {
 				if (playerRect.x <= (screen_width - playerRect.w - 1)) {
 					PlayerMove(movAmount * acceleration, 0);
 					playerFlip = SDL_FLIP_HORIZONTAL;
@@ -130,9 +151,7 @@ void event_handler() {
 				if (onGround)
 					PlayerJump();
 			}
-			else if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
-				FreeText(&ui_fps);
-			}
+
 			else if (keyboard_state[SDL_SCANCODE_C]) {
 				if (overlay) {
 					overlay = false;
@@ -142,15 +161,15 @@ void event_handler() {
 					InitDebugOverlay();
 				}
 			}
-			break;
+		break;
 	
 		case SDL_KEYUP:
 			if (!keyboard_state[SDL_SCANCODE_LEFT])
 				moving = false;
 			if (!keyboard_state[SDL_SCANCODE_RIGHT])
 				moving = false;
-			break;
-		}
+		break;
+	}
 }
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
@@ -188,6 +207,11 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		else
 			info("Created IMG");
 
+		if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) < 0)
+            error("SDL_mixer failed to initialize! SDL_Error: %s", Mix_GetError());
+		else
+			info("Initialized Mixer");
+		
 		// Set up the game here
 		InitGame();
 		GameActive = true;
@@ -206,6 +230,7 @@ void Clean()
 	SDL_DestroyRenderer(renderer);
 	TTF_Quit();
 	IMG_Quit();
+	Mix_Quit();
 	info("SDL Exited\n");
 	log_close();
 	SDL_Quit();
