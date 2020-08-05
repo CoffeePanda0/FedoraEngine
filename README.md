@@ -20,7 +20,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 
 # Requirements
 - A C compiler (e.g gcc)
-- SDL2, SDL_TTF and SDL_Image libraries
+- SDL2, SDL_TTF, SDL_Mixer and SDL_Image libraries
 - ~~a will to live~~
 
 # Todo
