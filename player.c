@@ -11,8 +11,6 @@ float gravity = 3.0;
 float movAmount = 5.0;
 float maxAccel = 4.0;
 
-bool jumping = false;
-
 void PlayerMove(int xAmount, int yAmount)
 {
 	playerRect.x += xAmount;
