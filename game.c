@@ -34,7 +34,7 @@ void InitGame() // initialises the things like game objects and maps
 	
 	InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
 
-	bgMusic = Mix_LoadMUS("game/audio/Sweden.mp3"); // load in background music
+	bgMusic = Mix_LoadMUS("game/audio/CoffeeTime.mp3"); // load in background music
 	if( Mix_PlayingMusic() == 0 ) {
     	if( Mix_PlayMusic( bgMusic, -1 ) == -1 )
 			warn("Could not play music %s", Mix_GetError());
@@ -58,7 +58,7 @@ void Update()
 
 	if (jumping) {
 		if (velocity < 0.1)
-			velocity += 0.08f;
+			velocity += 0.1f;
 		if (velocity >= 0) {
 			jumping = false;
 			velocity = 0;
