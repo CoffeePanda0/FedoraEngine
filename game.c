@@ -45,7 +45,6 @@ void InitGame() // initialises the things like game objects and maps
 
 void Update()
 {
-	CollisionDetection();
 
 	if (moving) {
 		if (acceleration < maxAccel)
