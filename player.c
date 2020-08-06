@@ -20,7 +20,6 @@ void PlayerMove(int xAmount, int yAmount)
 void PlayerJump()
 {
 	jumping = true;
-	moving = true;
 	velocity = -6;
 }
 

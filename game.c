@@ -8,7 +8,6 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 TTF_Font* Sans;
 SDL_Texture* title;
-SDL_Surface* s;
 
 struct GameObject doge; // using doge as an example gameobject because why not :P
 struct TextObject test;
@@ -28,19 +27,19 @@ void InitGame() // initialises the things like game objects and maps
 	InitPlayer(50, 50, 100, 100);
 	playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
 	
-	CreateObject(300, 370, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
+	CreateObject(300, 280, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 
 	NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 	
 	InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
 
-	bgMusic = Mix_LoadMUS("game/audio/CoffeeTime.mp3"); // load in background music
+	bgMusic = LoadMusic("game/audio/CoffeeTime.mp3"); // load in background music
+
 	if( Mix_PlayingMusic() == 0 ) {
     	if( Mix_PlayMusic( bgMusic, -1 ) == -1 )
 			warn("Could not play music %s", Mix_GetError());
     }
 
-	SDL_FreeSurface(s);
 }
 
 void Update()
@@ -53,9 +52,12 @@ void Update()
 	} else
 		acceleration = 1.0;
 
-	if (!onGround || jumping) 
-		playerRect.y += gravity + velocity;
+	if (!onGround && dir != DIR_ABOVE)  
+			playerRect.y += gravity;
 
+	if (jumping && dir != DIR_BELOW)
+			playerRect.y += velocity;
+			
 	if (jumping) {
 		if (velocity < 0.1)
 			velocity += 0.1f;
@@ -68,7 +70,7 @@ void Update()
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
-	s = IMG_Load(texture);
+	SDL_Surface* s = IMG_Load(texture);
 	if (s) {
 		SDL_Surface* tmpSurface = IMG_Load(texture); 
 		SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
@@ -81,14 +83,17 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 		SDL_FreeSurface(tmpSurface);
 		return text;
 	}
-	SDL_FreeSurface(s);
 }
 
-void LoadMusic(Mix_Music* m, const char* path)
+Mix_Music* LoadMusic(const char* path)
 {
-	m = Mix_LoadMUS(path);
-	if (!m)
+	Mix_Music* tmp = Mix_LoadMUS(path);
+	if (!tmp) {
 		warn("Could not load music %s, SDL_Error: %s", path, Mix_GetError());
+	} else
+		info("Loaded music %s", path);
+	
+	return tmp;
 }
 
 void LoadSFX(Mix_Chunk* c, const char* path)
@@ -132,14 +137,14 @@ void event_handler() {
 
 		case SDL_KEYDOWN: // ALL KEYBOARD INPUTS HANDLED HERE
 
-			if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_RIGHT) {
+			if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT) {
 				if (playerRect.x >= movAmount) {
 					PlayerMove(-movAmount * acceleration, 0);
 					playerFlip = SDL_FLIP_NONE;
 					moving = true;
 				}
 			}
-			else if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_LEFT) {
+			else if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT) {
 				if (playerRect.x <= (screen_width - playerRect.w - 1)) {
 					PlayerMove(movAmount * acceleration, 0);
 					playerFlip = SDL_FLIP_HORIZONTAL;
@@ -148,7 +153,7 @@ void event_handler() {
 
 			}
 			else if (keyboard_state[SDL_SCANCODE_SPACE]) {
-				if (onGround)
+				if (onGround || dir == DIR_ABOVE) 
 					PlayerJump();
 			}
 

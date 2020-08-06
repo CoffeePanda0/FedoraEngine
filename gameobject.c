@@ -45,7 +45,21 @@ void CollisionDetection()
 			SDL_Rect out;
 			SDL_IntersectRect(&playerRect, &o->obj->objRect, &out);
 
-			SDL_free(&out);
+			int RightDifference = out.x - playerRect.x;
+			int LeftDifference = out.x - playerRect.x - playerRect.w;
+
+			int TopDifference = o->obj->objRect.y - playerRect.y - o->obj->objRect.h;
+			int Bottom = o->obj->objRect.y + o->obj->objRect.h;
+
+
+			if (TopDifference > o->obj->objRect.h) {
+				dir = DIR_ABOVE;
+			} else if (playerRect.y + playerRect.h > Bottom) {
+				dir = DIR_BELOW;
+			} else if (RightDifference > 0) {
+				dir = DIR_RIGHT;
+			} else if (LeftDifference < 0 && RightDifference == 0)
+				dir = DIR_LEFT;
 		} else
 			dir = DIR_NONE;
 	}
