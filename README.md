@@ -6,12 +6,9 @@ The *most advanced game engine* to ever be released
 
 # Current features
 FedoraEngine is still very much in development. Current groundbreaking features are:
- - Making and resizing a window
- - Basic SDL2 boilerplate code
- - Ability to create, render and manage multiple GameObjects and text on screen easily
- - Vsync and fps counter
+ - Ability to create, render and manage multiple GameObjects and text on screen easily for game developers
  - A very *accurate* and *mathematical* "gravity", "velocity", and "acceleration"
- - Load a sprite and move around (although only one keypress at a time atm)
+ - Load a sprite and move around, then collide and jump on objects
  - Load maps from a file
  
 # Q&A's
