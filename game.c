@@ -51,10 +51,10 @@ void Update()
 	} else
 		acceleration = 1.0;
 
-	if (!onGround && dir != DIR_ABOVE)  
+	if (!onGround && gDir != DIR_ABOVE && dir != DIR_ABOVE)  
 			playerRect.y += gravity;
 
-	if (jumping && dir != DIR_BELOW)
+	if (jumping && gDir != DIR_BELOW && dir != DIR_BELOW)
 			playerRect.y += velocity;
 			
 	if (jumping) {

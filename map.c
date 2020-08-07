@@ -100,6 +100,12 @@ void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 					} else if (LeftDifference < 0 && RightDifference == 0) {
 						gDir = DIR_LEFT;
 					} 
+					if (tilerect.y - tilerect.h < playerRect.y) {
+						gDir = DIR_BELOW;
+					}
+					if (playerRect.y < tilerect.y - tilerect.h) {
+						gDir = DIR_ABOVE;
+					}
 				}
 
 				onGround = true;
