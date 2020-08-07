@@ -24,10 +24,9 @@ void InitGame() // initialises the things like game objects and maps
 	Sans = TTF_OpenFont("game/baloo.ttf", 20);
 	if (overlay) InitDebugOverlay();
 	
-	InitPlayer(50, 50, 100, 100);
+	InitPlayer(200, 50, 100, 100);
 	playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
-	
-	CreateObject(300, 280, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
+	// CreateObject(300, 280, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 
 	NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 	
@@ -88,19 +87,17 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 Mix_Music* LoadMusic(const char* path)
 {
 	Mix_Music* tmp = Mix_LoadMUS(path);
-	if (!tmp) {
+	if (!tmp) 
 		warn("Could not load music %s, SDL_Error: %s", path, Mix_GetError());
-	} else
-		info("Loaded music %s", path);
-	
 	return tmp;
 }
 
-void LoadSFX(Mix_Chunk* c, const char* path)
+Mix_Chunk* LoadSFX(const char* path)
 {
-	c = Mix_LoadWAV(path);
-	if (!c)
+	Mix_Chunk* tmp = Mix_LoadWAV(path);
+	if (!tmp)
 		warn("Could not load SFX %s, SDL_Error: %s", path, Mix_GetError());
+	return tmp;
 }
 
 void Render()
@@ -136,15 +133,15 @@ void event_handler() {
 			break;
 
 		case SDL_KEYDOWN: // ALL KEYBOARD INPUTS HANDLED HERE
-
-			if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT) {
+			
+			if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && gDir != DIR_LEFT) {
 				if (playerRect.x >= movAmount) {
 					PlayerMove(-movAmount * acceleration, 0);
 					playerFlip = SDL_FLIP_NONE;
 					moving = true;
 				}
 			}
-			else if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT) {
+			else if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && gDir != DIR_RIGHT) {
 				if (playerRect.x <= (screen_width - playerRect.w - 1)) {
 					PlayerMove(movAmount * acceleration, 0);
 					playerFlip = SDL_FLIP_HORIZONTAL;
@@ -153,7 +150,7 @@ void event_handler() {
 
 			}
 			else if (keyboard_state[SDL_SCANCODE_SPACE]) {
-				if (onGround || dir == DIR_ABOVE) 
+				if (onGround || dir == DIR_ABOVE && dir != DIR_BELOW) 
 					PlayerJump();
 			}
 
@@ -166,6 +163,13 @@ void event_handler() {
 					InitDebugOverlay();
 				}
 			}
+			else if (keyboard_state[SDL_SCANCODE_M]) {
+				if (Mix_PausedMusic())
+					Mix_PlayMusic(bgMusic, -1);
+				else 
+					Mix_PauseMusic();
+			}
+		gDir = DIR_NONE;
 		break;
 	
 		case SDL_KEYUP:

@@ -6,6 +6,8 @@ SDL_Texture* sky;
 SDL_Texture* dirt;
 SDL_Rect tilerect;
 
+enum CollDir gDir;
+
 SDL_Texture* LoadTile(const char* tiletext)
 {
 	SDL_Texture* tmptile = IMG_LoadTexture(renderer, tiletext);
@@ -20,6 +22,7 @@ int** array;
 
 void InitMap(char* map)
 {
+	gDir = DIR_NONE;
 	// Read 2d array in from a text file for a map
 	FILE *f = fopen(map, "r");
 	if (!f)
@@ -81,9 +84,29 @@ void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 	if (SDL_HasIntersection(&playerRect, &tilerect)) {
 		switch (type) {
 			case 1:
+			{
+				SDL_Rect out;
+				SDL_IntersectRect(&playerRect, &tilerect, &out);
+
+				int offset = -5;
+				int TilePlayerHeight = tilerect.y - playerRect.y - playerRect.h - offset;
+				
+				int RightDifference = out.x - playerRect.x;
+				int LeftDifference = out.x - playerRect.x - playerRect.w;
+
+				if (TilePlayerHeight < 0) {
+					if (RightDifference > 0) {
+						gDir = DIR_RIGHT;
+					} else if (LeftDifference < 0 && RightDifference == 0) {
+						gDir = DIR_LEFT;
+					} 
+				}
+
 				onGround = true;
 				break;
+			} 
 			default:
+				
 				onGround = false;
 				break;
 		}
@@ -112,6 +135,7 @@ void RenderMap()
 					break;
 				default:
 					warn("Could not render tile. Map tile ID: %i", type);
+					break;
 			}
 		}
 	}

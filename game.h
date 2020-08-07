@@ -20,7 +20,7 @@ void Update();
 void Render();
 void event_handler();
 Mix_Music* LoadMusic(const char* path);
-void LoadSFX(Mix_Chunk* c, const char* path);
+Mix_Chunk* LoadSFX(const char* path);
 
 extern bool onGround;
 
