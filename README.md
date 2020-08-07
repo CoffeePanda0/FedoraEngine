@@ -23,5 +23,12 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 # Todo
 - everything
 
+# Known bugs
+- Player clips one tile too early when walking to the right (map.c)
+- Currently no system to destory game or text objects (gameobject.c, uitext.c)
+- Cannot use multiple inputs at once (game.c)
+
+if anyone would be able to contribute to fix these, you'll be epic
+
 # Credits
 me (CoffeePanda0)
