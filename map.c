@@ -5,6 +5,7 @@ SDL_Texture* grass;
 SDL_Texture* sky;
 SDL_Texture* dirt;
 SDL_Rect tilerect;
+int type = 0;
 
 enum CollDir gDir;
 
@@ -32,7 +33,7 @@ void InitMap(char* map)
 	char ch;
 
 	while ((ch = fgetc(f)) != EOF)
-	{	
+	{
 		if (ch == ' ') {
 			columncount += 1;
 		}
@@ -40,7 +41,7 @@ void InitMap(char* map)
 			break;
 	}
 	while ((ch = fgetc(f)) != EOF)
-	{	
+	{
 		if (ch == '\n')
 			rowcount +=1;
 	}
@@ -56,13 +57,13 @@ void InitMap(char* map)
         array[i] = malloc(columncount * sizeof(**array));
 
 	if (!array)
-		error("Could not allocate memory for 2D map array %s", map); 
-		
+		error("Could not allocate memory for 2D map array %s", map);
+
 	rewind(f);
 	for (int row = 0; row < rowcount; row++) {
 		for (int col = 0; col < columncount; col++)
 			fscanf(f, " %d ", &array[row][col]);
-	} 
+	}
 
 	info("Loaded map %s to memory succesfully", map);
 	fclose(f);
@@ -76,43 +77,45 @@ void InitMap(char* map)
 	tilerect.w = tile_size;
 }
 
-int type = 0;
+void TileCollision()
+{
+	SDL_Rect out;
+	SDL_IntersectRect(&playerRect, &tilerect, &out);
+
+	int offset = -4;
+	int TilePlayerHeight = tilerect.y - playerRect.y - playerRect.h - offset;
+
+	int RightDifference = out.x - playerRect.x;
+	int LeftDifference = out.x - playerRect.x - playerRect.w;
+
+	if (TilePlayerHeight < 0) {
+		if (RightDifference > 0) {
+			gDir = DIR_RIGHT;
+		} else if (LeftDifference < 0 && RightDifference == 0) {
+			gDir = DIR_LEFT;
+		}
+		if (tilerect.y - tilerect.h < playerRect.y) {
+			gDir = DIR_BELOW;
+		}
+
+	} else {
+		onGround = true;
+		dir = DIR_ABOVE;
+	}
+}
 
 void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 {
 	SDL_RenderCopy(renderer, t, NULL, &tilerect);
+
 	if (SDL_HasIntersection(&playerRect, &tilerect)) {
 		switch (type) {
+
 			case 1:
-			{
-				SDL_Rect out;
-				SDL_IntersectRect(&playerRect, &tilerect, &out);
-
-				int offset = -5;
-				int TilePlayerHeight = tilerect.y - playerRect.y - playerRect.h - offset;
-				
-				int RightDifference = out.x - playerRect.x;
-				int LeftDifference = out.x - playerRect.x - playerRect.w;
-
-				if (TilePlayerHeight < 0) {
-					if (RightDifference > 0) {
-						gDir = DIR_RIGHT;
-					} else if (LeftDifference < 0 && RightDifference == 0) {
-						gDir = DIR_LEFT;
-					} 
-					if (tilerect.y - tilerect.h < playerRect.y) {
-						gDir = DIR_BELOW;
-					}
-					if (playerRect.y < tilerect.y - tilerect.h) {
-						gDir = DIR_ABOVE;
-					}
-				}
-
-				onGround = true;
+				TileCollision(); // CALL THIS IF YOU WANT TO CHECK FOR COLLISION FOR SOME TILES
 				break;
-			} 
+
 			default:
-				
 				onGround = false;
 				break;
 		}
@@ -121,7 +124,7 @@ void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 
 
 void RenderMap()
-{	
+{
 	for (int row = 0; row < rowcount; row++) {
 		tilerect.y = row * tile_size;
 

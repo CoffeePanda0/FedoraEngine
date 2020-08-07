@@ -24,8 +24,8 @@ void InitGame() // initialises the things like game objects and maps
 	Sans = TTF_OpenFont("game/baloo.ttf", 20);
 	if (overlay) InitDebugOverlay();
 	
-	InitPlayer(200, 50, 100, 100);
-	playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
+	InitPlayer(200, 50, 50, 75);
+	playerText = TextureManager("game/ireland.png", renderer); // EXAMPLE PLAYER
 	// CreateObject(300, 280, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 
 	NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
@@ -169,6 +169,7 @@ void event_handler() {
 				else 
 					Mix_PauseMusic();
 			}
+
 		gDir = DIR_NONE;
 		break;
 	

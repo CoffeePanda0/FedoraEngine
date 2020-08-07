@@ -40,6 +40,7 @@ void RenderObject() {
 void CollisionDetection()
 {
 	for (struct ObjList *o = objlist; o; o = o->next) {
+
 		if (SDL_HasIntersection(&playerRect, &o->obj->objRect)) {
 			// If collided check which direction
 			SDL_Rect out;
@@ -50,7 +51,6 @@ void CollisionDetection()
 
 			int TopDifference = o->obj->objRect.y - playerRect.y - o->obj->objRect.h;
 			int Bottom = o->obj->objRect.y + o->obj->objRect.h;
-
 
 			if (TopDifference > o->obj->objRect.h) {
 				dir = DIR_ABOVE;
