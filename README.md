@@ -4,6 +4,8 @@ The *most advanced game engine* to ever be released
 
 (still a very much work in progress so watch the page for actual features)
 
+currently *lots* of major code is broke, but im working on a big patch
+
 # Current features
 FedoraEngine is still very much in development. Current groundbreaking features are:
  - Ability to create, render and manage multiple GameObjects and text on screen easily for game developers
