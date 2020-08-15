@@ -20,7 +20,6 @@ void push (struct GameObject *obj)
 
 void CreateObject(int xPos, int yPos, int height, int width, const char* textPath, struct GameObject *obj)
 {
-	struct objList *objList;
 	SDL_Rect objRect;
 	SDL_Texture* texture;
 
@@ -39,32 +38,53 @@ void RenderObject() {
 
 void CollisionDetection()
 {
-	for (struct ObjList *o = objlist; o; o = o->next) {
+	if (objlist != NULL) {
+		for (struct ObjList *o = objlist; o; o = o->next) {
 
-		if (SDL_HasIntersection(&playerRect, &o->obj->objRect)) {
-			// If collided check which direction
-			SDL_Rect out;
-			SDL_IntersectRect(&playerRect, &o->obj->objRect, &out);
+			if (SDL_HasIntersection(&playerRect, &o->obj->objRect)) {
+				// If collided check which direction
+				SDL_Rect out;
+				SDL_IntersectRect(&playerRect, &o->obj->objRect, &out);
 
-			int RightDifference = out.x - playerRect.x;
-			int LeftDifference = out.x - playerRect.x - playerRect.w;
+				int RightDifference = out.x - playerRect.x;
+				int LeftDifference = out.x - playerRect.x - playerRect.w;
 
-			int TopDifference = o->obj->objRect.y - playerRect.y - o->obj->objRect.h;
-			int Bottom = o->obj->objRect.y + o->obj->objRect.h;
-
-			if (TopDifference > o->obj->objRect.h) {
-				dir = DIR_ABOVE;
-			} else if (playerRect.y + playerRect.h > Bottom) {
-				dir = DIR_BELOW;
-			} else if (RightDifference > 0) {
-				dir = DIR_RIGHT;
-			} else if (LeftDifference < 0 && RightDifference == 0)
-				dir = DIR_LEFT;
-		} else
-			dir = DIR_NONE;
-	}
+				int TopDifference = playerRect.y - o->obj->objRect.y + o->obj->objRect.h;
+				
+				if (TopDifference < 0) {
+					dir = DIR_ABOVE;
+				} else if (TopDifference > playerRect.h){
+					dir = DIR_BELOW;
+				} else if (RightDifference > 0) {
+					dir = DIR_RIGHT;
+				} else if (LeftDifference < 0 && RightDifference == 0) {
+					dir = DIR_LEFT;
+				}
+			} else
+				dir = DIR_NONE;
+		}
+	} else 
+		dir = DIR_NONE;
+	
 }
 
-void DestroyObject(struct GameObject *obj) {
-	error("DestroyObject: Object not found!");
+void DestroyObject (struct GameObject *obj) {
+
+	struct ObjList *tmp;
+	// cheers to gibson for help writing this, pointer and linked lists go aee
+	if (objlist->obj == obj) {
+		SDL_DestroyTexture(obj->texture);
+		tmp = objlist;
+		objlist = objlist->next;
+		free(tmp);
+	} else {
+		for (struct ObjList *t = objlist; t && t->next; t = t->next) {
+			if (t->next->obj == obj) {
+				SDL_DestroyTexture(t->next->obj->texture);
+				tmp = t->next;
+				t->next = t->next->next;
+				free(tmp);
+			}
+		}
+	}
 }

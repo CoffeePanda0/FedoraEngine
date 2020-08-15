@@ -10,7 +10,7 @@ TTF_Font* Sans;
 SDL_Texture* title;
 
 struct GameObject doge; // using doge as an example gameobject because why not :P
-struct TextObject test;
+struct TextObject testText;
 Mix_Music* bgMusic;
 
 bool GameActive;
@@ -24,11 +24,11 @@ void InitGame() // initialises the things like game objects and maps
 	Sans = TTF_OpenFont("game/baloo.ttf", 20);
 	if (overlay) InitDebugOverlay();
 	
-	InitPlayer(200, 50, 50, 75);
-	playerText = TextureManager("game/ireland.png", renderer); // EXAMPLE PLAYER
-	// CreateObject(300, 280, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
+	InitPlayer(200, 50, 95, 90);
+	playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
 
-	NewText(&test, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
+	CreateObject(300, 250, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
+	NewText(&testText, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 	
 	InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
 
@@ -152,12 +152,13 @@ void event_handler() {
 			else if (keyboard_state[SDL_SCANCODE_SPACE]) {
 				if (onGround || dir == DIR_ABOVE && dir != DIR_BELOW) 
 					PlayerJump();
+
 			}
 
 			else if (keyboard_state[SDL_SCANCODE_C]) {
 				if (overlay) {
-					overlay = false;
 					FreeOverlay();
+					overlay = false;
 				} else {
 					overlay = true;
 					InitDebugOverlay();
@@ -222,6 +223,8 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		else
 			info("Initialized Mixer");
 		
+		dir = DIR_NONE;
+		gDir = DIR_NONE;
 		// Set up the game here
 		InitGame();
 		GameActive = true;

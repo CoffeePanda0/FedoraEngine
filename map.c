@@ -122,7 +122,6 @@ void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 	}
 }
 
-
 void RenderMap()
 {
 	for (int row = 0; row < rowcount; row++) {

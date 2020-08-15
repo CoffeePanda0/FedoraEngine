@@ -13,30 +13,40 @@ struct TextList {
 	struct TextList *next;
 }; 
 
-struct TextList *objlist;
+struct TextList *txtlist;
 
 void tPush (struct TextObject *obj)
 {
 	struct TextList *newobj;
 	newobj = malloc(sizeof(*newobj));
 	newobj->obj = obj;
-	newobj->next = objlist;
-	objlist = newobj;
+	newobj->next = txtlist;
+	txtlist = newobj;
 }
 
-void FreeText(struct TextObject *obj)
-{
-	struct TextList *tmp;
+void FreeText (struct TextObject *obj) {
 
-	for (struct TextList *o = objlist; o; o = o->next) {
-		if (o->obj == obj)
-			SDL_DestroyTexture(o->obj->texture); // haha this causes a memory leak and doesnt work properly
+	struct TextList *tmp;
+	// cheers to gibson for help writing this, pointer and linked lists go aee
+	if (txtlist->obj == obj) {
+		SDL_DestroyTexture(obj->texture);
+		tmp = txtlist;
+		txtlist = txtlist->next;
+		free(tmp);
+	} else {
+		for (struct TextList *t = txtlist; t && t->next; t = t->next) {
+			if (t->next->obj == obj) {
+				SDL_DestroyTexture(t->next->obj->texture);
+				tmp = t->next;
+				t->next = t->next->next;
+				free(tmp);
+			}
+		}
 	}
 }
 
 void NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int yPos) // Responsible for creating textures and the rect for them in the struct
 {
-	
 	SDL_Surface* tmpSurface = TTF_RenderText_Blended(Sans, text, color);
 	obj->texture = SDL_CreateTextureFromSurface(renderer, tmpSurface);
 	SDL_QueryTexture(obj->texture, NULL, NULL, &txtw, &txth); // query texture size so rect doesnt look odd 
@@ -48,7 +58,7 @@ void NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int 
 }
 
 void RenderText() {
-	for (struct TextList *o = objlist; o; o = o->next)
+	for (struct TextList *o = txtlist; o; o = o->next)
 		SDL_RenderCopy(renderer, o->obj->texture, NULL, &o->obj->rect);
 }
 

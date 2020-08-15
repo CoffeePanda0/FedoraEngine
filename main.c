@@ -2,12 +2,10 @@
 #include "game.h"
 
 /* TODO:
-game objects
-text objects memory management
 smooth movement
 multiple inputs at once
 multithreading
-audio
+better audio
 everything lol
 */
 
