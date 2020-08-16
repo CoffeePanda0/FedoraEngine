@@ -8,7 +8,7 @@ float acceleration = 1;
 float velocity = 0;
 float gravity = 3.0;
 
-float movAmount = 5.0;
+float movAmount = 2.5;
 float maxAccel = 4.0;
 
 void PlayerMove(int xAmount, int yAmount)

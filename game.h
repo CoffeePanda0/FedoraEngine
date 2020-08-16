@@ -11,6 +11,7 @@
 #include "player.h"
 #include "uitext.h"
 #include "map.h"
+#include "menu.h"
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height);
 
@@ -23,6 +24,7 @@ Mix_Music* LoadMusic(const char* path);
 Mix_Chunk* LoadSFX(const char* path);
 
 extern bool onGround;
+extern bool paused;
 
 extern Uint32 fps_current;
 

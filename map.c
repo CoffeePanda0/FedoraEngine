@@ -114,7 +114,9 @@ void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 			case 1:
 				TileCollision(); // CALL THIS IF YOU WANT TO CHECK FOR COLLISION FOR SOME TILES
 				break;
-
+			case 3:
+				TileCollision();
+				break;
 			default:
 				onGround = false;
 				break;

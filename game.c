@@ -27,13 +27,13 @@ void InitGame() // initialises the things like game objects and maps
 	InitPlayer(200, 50, 95, 90);
 	playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
 
-	CreateObject(300, 250, 45, 45, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
+	CreateObject(300, 350, 40, 40, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 	NewText(&testText, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 	
 	InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
 
 	bgMusic = LoadMusic("game/audio/CoffeeTime.mp3"); // load in background music
-
+	
 	if( Mix_PlayingMusic() == 0 ) {
     	if( Mix_PlayMusic( bgMusic, -1 ) == -1 )
 			warn("Could not play music %s", Mix_GetError());
@@ -51,12 +51,14 @@ void Update()
 	} else
 		acceleration = 1.0;
 
-	if (!onGround && gDir != DIR_ABOVE && dir != DIR_ABOVE)  
+	if (!onGround && gDir != DIR_ABOVE && dir != DIR_ABOVE) {
+			velocity += 0.001;
 			playerRect.y += gravity;
+	}
 
 	if (jumping && gDir != DIR_BELOW && dir != DIR_BELOW)
 			playerRect.y += velocity;
-			
+		
 	if (jumping) {
 		if (velocity < 0.1)
 			velocity += 0.1f;
@@ -113,74 +115,76 @@ void Render()
 }
 
 void event_handler() {
-	const Uint8* keyboard_state = SDL_GetKeyboardState(NULL);
+	const Uint8*  keyboard_state = SDL_GetKeyboardState(NULL);
 
 	SDL_Event event;
-	SDL_PollEvent(&event);
+	while (SDL_PollEvent(&event)) {
 
-	switch (event.type)
-	{
-		case SDL_QUIT:
-			GameActive = false;
-			break;
-		case SDL_WINDOWEVENT:
-			switch (event.window.event) {
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
-				screen_width = event.window.data1;
-				screen_height = event.window.data2;
+		switch (event.type)
+		{
+			case SDL_QUIT:
+				GameActive = false;
 				break;
-			}
+			case SDL_WINDOWEVENT:
+				switch (event.window.event) {
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+					screen_width = event.window.data1;
+					screen_height = event.window.data2;
+					break;
+				}
+				break;
+
+			gDir = DIR_NONE;
 			break;
 
-		case SDL_KEYDOWN: // ALL KEYBOARD INPUTS HANDLED HERE
-			
-			if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && gDir != DIR_LEFT) {
-				if (playerRect.x >= movAmount) {
-					PlayerMove(-movAmount * acceleration, 0);
-					playerFlip = SDL_FLIP_NONE;
-					moving = true;
-				}
-			}
-			else if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && gDir != DIR_RIGHT) {
-				if (playerRect.x <= (screen_width - playerRect.w - 1)) {
-					PlayerMove(movAmount * acceleration, 0);
-					playerFlip = SDL_FLIP_HORIZONTAL;
-					moving = true;
-				}
-
-			}
-			else if (keyboard_state[SDL_SCANCODE_SPACE]) {
-				if (onGround || dir == DIR_ABOVE && dir != DIR_BELOW) 
-					PlayerJump();
-
-			}
-
-			else if (keyboard_state[SDL_SCANCODE_C]) {
-				if (overlay) {
-					FreeOverlay();
-					overlay = false;
-				} else {
-					overlay = true;
-					InitDebugOverlay();
-				}
-			}
-			else if (keyboard_state[SDL_SCANCODE_M]) {
-				if (Mix_PausedMusic())
-					Mix_PlayMusic(bgMusic, -1);
-				else 
-					Mix_PauseMusic();
-			}
-
-		gDir = DIR_NONE;
-		break;
-	
-		case SDL_KEYUP:
-			if (!keyboard_state[SDL_SCANCODE_LEFT])
-				moving = false;
-			if (!keyboard_state[SDL_SCANCODE_RIGHT])
-				moving = false;
-		break;
+			case SDL_KEYUP:
+				if (!keyboard_state[SDL_SCANCODE_LEFT])
+					moving = false;
+				if (!keyboard_state[SDL_SCANCODE_RIGHT])
+					moving = false;
+			break;
+		}
 	}
+
+	if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && gDir != DIR_LEFT) {
+		if (playerRect.x >= movAmount) {
+			moving = true;
+			playerFlip = SDL_FLIP_NONE;
+			PlayerMove(-movAmount * acceleration, 0);
+		}
+		}
+		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && gDir != DIR_RIGHT) {
+			if (playerRect.x <= (screen_width - playerRect.w - 1)) {
+				moving = true;
+				playerFlip = SDL_FLIP_HORIZONTAL;
+				PlayerMove(movAmount * acceleration, 0);
+			}
+		}
+
+		if (keyboard_state[SDL_SCANCODE_SPACE]) {
+			if (onGround || dir == DIR_ABOVE && dir != DIR_BELOW) 
+				PlayerJump();
+		}
+
+		if (keyboard_state[SDL_SCANCODE_C] && event.key.repeat == 0) {
+			if (overlay) {
+				FreeOverlay();
+				overlay = false;
+			} else {
+				overlay = true;
+				InitDebugOverlay();
+			}
+		}
+		if (keyboard_state[SDL_SCANCODE_M] && event.key.repeat == 0) {
+			if (Mix_PausedMusic())
+				Mix_PlayMusic(bgMusic, -1);
+			else 
+				Mix_PauseMusic();
+		}
+		if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0) {
+				CreateMenu();
+				paused = true;
+		}
 }
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
@@ -222,7 +226,8 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
             error("SDL_mixer failed to initialize! SDL_Error: %s", Mix_GetError());
 		else
 			info("Initialized Mixer");
-		
+
+		paused = false;
 		dir = DIR_NONE;
 		gDir = DIR_NONE;
 		// Set up the game here
