@@ -137,44 +137,17 @@ void event_handler() {
 			gDir = DIR_NONE;
 			break;
 
-			case SDL_KEYUP:
-				if (!keyboard_state[SDL_SCANCODE_LEFT])
-					moving = false;
-				if (!keyboard_state[SDL_SCANCODE_RIGHT])
-					moving = false;
-			break;
-		}
-	}
 
-	if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && gDir != DIR_LEFT) {
-		if (playerRect.x >= movAmount) {
-			moving = true;
-			playerFlip = SDL_FLIP_NONE;
-			PlayerMove(-movAmount * acceleration, 0);
-		}
-		}
-		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && gDir != DIR_RIGHT) {
-			if (playerRect.x <= (screen_width - playerRect.w - 1)) {
-				moving = true;
-				playerFlip = SDL_FLIP_HORIZONTAL;
-				PlayerMove(movAmount * acceleration, 0);
+			case SDL_KEYDOWN: // SINGLE KEY PRESS NON IMPORTANT HERE
+				if (keyboard_state[SDL_SCANCODE_C] && event.key.repeat == 0) {
+				if (overlay) {
+					FreeOverlay();
+					overlay = false;
+				} else {
+					overlay = true;
+					InitDebugOverlay();
+				}
 			}
-		}
-
-		if (keyboard_state[SDL_SCANCODE_SPACE]) {
-			if (onGround || dir == DIR_ABOVE && dir != DIR_BELOW) 
-				PlayerJump();
-		}
-
-		if (keyboard_state[SDL_SCANCODE_C] && event.key.repeat == 0) {
-			if (overlay) {
-				FreeOverlay();
-				overlay = false;
-			} else {
-				overlay = true;
-				InitDebugOverlay();
-			}
-		}
 		if (keyboard_state[SDL_SCANCODE_M] && event.key.repeat == 0) {
 			if (Mix_PausedMusic())
 				Mix_PlayMusic(bgMusic, -1);
@@ -185,6 +158,36 @@ void event_handler() {
 				CreateMenu();
 				paused = true;
 		}
+			case SDL_KEYUP:
+				if (!keyboard_state[SDL_SCANCODE_LEFT])
+					moving = false;
+				if (!keyboard_state[SDL_SCANCODE_RIGHT])
+					moving = false;
+			break;
+		}
+	}
+
+	// MORE IMPORTANT MULTI PRESS OUT THE FUNCTION
+	if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && gDir != DIR_LEFT) {
+		if (playerRect.x >= movAmount) {
+			moving = true;
+			playerFlip = SDL_FLIP_NONE;
+			PlayerMove(-movAmount * acceleration, 0);
+		}
+	}
+	if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && gDir != DIR_RIGHT) {
+		if (playerRect.x <= (screen_width - playerRect.w - 1)) {
+			moving = true;
+			playerFlip = SDL_FLIP_HORIZONTAL;
+			PlayerMove(movAmount * acceleration, 0);
+		}
+	}
+
+	if (keyboard_state[SDL_SCANCODE_SPACE]) {
+		if (onGround && gDir != DIR_BELOW && dir != DIR_BELOW)
+			PlayerJump();
+	} 
+
 }
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height)

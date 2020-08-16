@@ -79,6 +79,7 @@ void InitMap(char* map)
 
 void TileCollision()
 {
+	gDir = DIR_NONE;
 	SDL_Rect out;
 	SDL_IntersectRect(&playerRect, &tilerect, &out);
 
