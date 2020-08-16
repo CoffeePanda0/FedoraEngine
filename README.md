@@ -4,13 +4,12 @@ The *most advanced game engine* to ever be released
 
 (still a very much work in progress so watch the page for actual features)
 
-currently *lots* of major code is broke, but im working on a big patch
 
 # Current features
 FedoraEngine is still very much in development. Current groundbreaking features are:
  - Ability to create, render and manage multiple GameObjects and text on screen easily for game developers
  - A very *accurate* and *mathematical* "gravity", "velocity", and "acceleration"
- - Load a sprite and move around, then collide and jump on objects
+ - Load a sprite and move around with buttery smooth movement, then collide, jump, and parkour on objects
  - Load maps from a file
  
 # Q&A's
@@ -27,10 +26,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 
 # Known bugs
 - Player clips one tile too early when walking to the right (map.c)
-- Currently no system to destory game or text objects (gameobject.c, uitext.c)
-- Cannot use multiple inputs at once (game.c)
-
-if anyone would be able to contribute to fix these, you'll be epic
+- Loading an empty map crashes to desktop (map.c)
 
 # Credits
 me (CoffeePanda0)
