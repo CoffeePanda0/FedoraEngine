@@ -26,6 +26,10 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 
 # Known bugs
 - Loading an empty map crashes to desktop (map.c)
+- Larger resolution maps can result in a white border (map.c)
+- Very slow memory leak somewhere (0.2mb/min) (not sure where from)
+- Broken / faulty object collision
+- Overlay X and Y positions can sometimes be off by 100
 
 # Credits
 me (CoffeePanda0)
