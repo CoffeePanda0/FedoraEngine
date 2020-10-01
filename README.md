@@ -10,7 +10,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
  - Ability to create, render and manage multiple GameObjects and text on screen easily for game developers
  - A very *accurate* and *mathematical* "gravity", "velocity", and "acceleration"
  - Load a sprite and move around with buttery smooth movement, then collide, jump, and parkour on objects
- - Load maps from a file
+ - Load maps from a file and ground collision
  
 # Q&A's
 1. What is this code useful for? A: Probably nothing unless you just need to learn the basics of SDL2 in C
@@ -25,7 +25,6 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 - everything
 
 # Known bugs
-- Player clips one tile too early when walking to the right (map.c)
 - Loading an empty map crashes to desktop (map.c)
 
 # Credits
