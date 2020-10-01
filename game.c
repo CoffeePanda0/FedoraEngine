@@ -14,18 +14,16 @@ struct TextObject testText;
 Mix_Music* bgMusic;
 
 bool GameActive;
-bool onGround = false;
 bool jumping = false;
 
 enum CollDir dir;
 
-void InitGame() // initialises the things like game objects and maps
+void InitGame() // initializes the things like game objects and maps
 {	
 	Sans = TTF_OpenFont("game/baloo.ttf", 20);
 	if (overlay) InitDebugOverlay();
-	
-	InitPlayer(200, 50, 95, 90);
-	playerText = TextureManager("game/player.png", renderer); // EXAMPLE PLAYER
+
+	InitPlayer();
 
 	CreateObject(300, 350, 40, 40, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 	NewText(&testText, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
@@ -41,24 +39,43 @@ void InitGame() // initialises the things like game objects and maps
 
 }
 
+void InitPlayer() // change this for your player
+{
+	SpawnPlayer(200, 50, 75, 90);
+	playerText = TextureManager("game/duck.png", renderer); // EXAMPLE PLAYER
+	JumpSound = LoadSFX("game/audio/jump.wav");
+}
+
+void DebugCollision() 
+{
+	if (gAbove)
+		info("collided above");
+	if (gBelow)
+		info("collided below");
+}
+
 void Update()
 {
-	CollisionDetection();
+	CollisionDetection(); // checks for collision with each game objects
 
-	if (moving) {
+	if (moving && !jumping) {
 		if (acceleration < maxAccel)
-			acceleration += 0.02f;
-	} else
+			acceleration += 0.01f;
+	} else if (jumping && acceleration > 1.0f)
+		acceleration -= 0.03f; // decel player left-right in the air so they are not too speedy
+	else
 		acceleration = 1.0;
 
-	if (!onGround && gDir != DIR_ABOVE && dir != DIR_ABOVE) {
-			velocity += 0.001;
-			playerRect.y += gravity;
-	}
+	if (!gAbove)
+		playerRect.y += gravity;
 
-	if (jumping && gDir != DIR_BELOW && dir != DIR_BELOW)
-			playerRect.y += velocity;
-		
+	
+	if (jumping && !gBelow && dir != DIR_BELOW)
+			playerRect.y += velocity;	
+	else if (jumping && !gBelow || dir == DIR_BELOW)
+			velocity = 0;
+
+
 	if (jumping) {
 		if (velocity < 0.1)
 			velocity += 0.1f;
@@ -89,16 +106,22 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 Mix_Music* LoadMusic(const char* path)
 {
 	Mix_Music* tmp = Mix_LoadMUS(path);
-	if (!tmp) 
+	if (!tmp) {
 		warn("Could not load music %s, SDL_Error: %s", path, Mix_GetError());
+	} else
+		info("Loaded music %s", path);
+	
 	return tmp;
 }
 
 Mix_Chunk* LoadSFX(const char* path)
 {
 	Mix_Chunk* tmp = Mix_LoadWAV(path);
-	if (!tmp)
+	if (!tmp) {
 		warn("Could not load SFX %s, SDL_Error: %s", path, Mix_GetError());
+	} else
+		info("Loaded SFX %s", path);
+
 	return tmp;
 }
 
@@ -112,6 +135,7 @@ void Render()
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
 	SDL_RenderPresent(renderer);
+	
 }
 
 void event_handler() {
@@ -132,32 +156,32 @@ void event_handler() {
 					screen_height = event.window.data2;
 					break;
 				}
+				
 				break;
-
-			gDir = DIR_NONE;
 			break;
 
 
 			case SDL_KEYDOWN: // SINGLE KEY PRESS NON IMPORTANT HERE
 				if (keyboard_state[SDL_SCANCODE_C] && event.key.repeat == 0) {
-				if (overlay) {
-					FreeOverlay();
-					overlay = false;
-				} else {
-					overlay = true;
-					InitDebugOverlay();
+					if (overlay) {
+						FreeOverlay();
+						overlay = false;
+					} else {
+						overlay = true;
+						InitDebugOverlay();
+					}
 				}
-			}
-		if (keyboard_state[SDL_SCANCODE_M] && event.key.repeat == 0) {
-			if (Mix_PausedMusic())
-				Mix_PlayMusic(bgMusic, -1);
-			else 
-				Mix_PauseMusic();
-		}
-		if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0) {
-				CreateMenu();
-				paused = true;
-		}
+				if (keyboard_state[SDL_SCANCODE_M] && event.key.repeat == 0) {
+					if (Mix_PausedMusic())
+						Mix_PlayMusic(bgMusic, -1);
+					else 
+						Mix_PauseMusic();
+				}
+				if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0) {
+						CreateMenu();
+						paused = true;
+				}
+
 			case SDL_KEYUP:
 				if (!keyboard_state[SDL_SCANCODE_LEFT])
 					moving = false;
@@ -165,17 +189,18 @@ void event_handler() {
 					moving = false;
 			break;
 		}
+				 
 	}
 
 	// MORE IMPORTANT MULTI PRESS OUT THE FUNCTION
-	if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && gDir != DIR_LEFT) {
+	if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && !gLeft) {
 		if (playerRect.x >= movAmount) {
 			moving = true;
 			playerFlip = SDL_FLIP_NONE;
 			PlayerMove(-movAmount * acceleration, 0);
 		}
 	}
-	if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && gDir != DIR_RIGHT) {
+	if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && !gRight) {
 		if (playerRect.x <= (screen_width - playerRect.w - 1)) {
 			moving = true;
 			playerFlip = SDL_FLIP_HORIZONTAL;
@@ -184,9 +209,9 @@ void event_handler() {
 	}
 
 	if (keyboard_state[SDL_SCANCODE_SPACE]) {
-		if (onGround && gDir != DIR_BELOW && dir != DIR_BELOW)
-			PlayerJump();
-	} 
+		if (!gBelow && dir != DIR_BELOW && !jumping)
+		PlayerJump();
+	}
 
 }
 
@@ -232,7 +257,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 
 		paused = false;
 		dir = DIR_NONE;
-		gDir = DIR_NONE;
+
 		// Set up the game here
 		InitGame();
 		GameActive = true;

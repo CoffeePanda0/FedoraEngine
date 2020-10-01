@@ -21,5 +21,5 @@ void log_init(void);
 void log_close(void);
 void vlog (enum logtypes, const char *, ...);
 
-#define info(...) vlog(LT_INFO, __VA_ARGS__);
-#define warn(...) vlog(LT_WARN, __VA_ARGS__);
+#define info(...) vlog(LT_INFO, __VA_ARGS__)
+#define warn(...) vlog(LT_WARN, __VA_ARGS__)

@@ -51,21 +51,20 @@ void CollisionDetection()
 
 				int TopDifference = playerRect.y - o->obj->objRect.y + o->obj->objRect.h;
 				
-				if (TopDifference < 0) {
+				if (TopDifference < 0)
 					dir = DIR_ABOVE;
-				} else if (TopDifference > playerRect.h){
+				else if (TopDifference > playerRect.h)
 					dir = DIR_BELOW;
-				} else if (RightDifference > 0) {
+				else if (RightDifference > 0)
 					dir = DIR_RIGHT;
-				} else if (LeftDifference < 0 && RightDifference == 0) {
+				else if (LeftDifference < 0 && RightDifference == 0)
 					dir = DIR_LEFT;
-				}
+				
 			} else
 				dir = DIR_NONE;
 		}
 	} else 
 		dir = DIR_NONE;
-	
 }
 
 void DestroyObject (struct GameObject *obj) {

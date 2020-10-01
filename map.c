@@ -7,6 +7,7 @@ SDL_Texture* dirt;
 SDL_Rect tilerect;
 int type = 0;
 
+bool gAbove = false; bool gBelow= false; bool gLeft = false; bool gRight = false;
 enum CollDir gDir;
 
 SDL_Texture* LoadTile(const char* tiletext)
@@ -77,56 +78,48 @@ void InitMap(char* map)
 	tilerect.w = tile_size;
 }
 
-void TileCollision()
+
+void TileColl() // cursed code
 {
-	gDir = DIR_NONE;
-	SDL_Rect out;
-	SDL_IntersectRect(&playerRect, &tilerect, &out);
+	SDL_Rect tOut;
+	
+	if (SDL_IntersectRect(&playerRect, &tilerect, &tOut)) {
 
-	int offset = -4;
-	int TilePlayerHeight = tilerect.y - playerRect.y - playerRect.h - offset;
-
-	int RightDifference = out.x - playerRect.x;
-	int LeftDifference = out.x - playerRect.x - playerRect.w;
-
-	if (TilePlayerHeight < 0) {
-		if (RightDifference > 0) {
-			gDir = DIR_RIGHT;
-		} else if (LeftDifference < 0 && RightDifference == 0) {
-			gDir = DIR_LEFT;
-		}
-		if (tilerect.y - tilerect.h < playerRect.y) {
-			gDir = DIR_BELOW;
+		if (tOut.y > 0) {
+			gAbove = true;
 		}
 
-	} else {
-		onGround = true;
-		dir = DIR_ABOVE;
+		int TilePlayerHeight = tilerect.y - playerRect.y - playerRect.h + tilerect.h; // wtf is this help me
+		int LeftDifference = playerRect.x - tilerect.x + tilerect.w;
+
+		if (TilePlayerHeight < 0 && LeftDifference < 0) {
+			gRight = true;
+		} else if (TilePlayerHeight < 0 && LeftDifference > 0) {
+			gLeft = true;
+		}
+
 	}
 }
+
 
 void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 {
 	SDL_RenderCopy(renderer, t, NULL, &tilerect);
-
-	if (SDL_HasIntersection(&playerRect, &tilerect)) {
-		switch (type) {
-
-			case 1:
-				TileCollision(); // CALL THIS IF YOU WANT TO CHECK FOR COLLISION FOR SOME TILES
-				break;
-			case 3:
-				TileCollision();
-				break;
-			default:
-				onGround = false;
-				break;
-		}
+	switch (type) {
+		case 1:
+			TileColl(); // CALL THIS IF YOU WANT TO CHECK FOR COLLISION FOR SOME TILES
+			break;
+		default:
+			break;
 	}
 }
 
 void RenderMap()
 {
+	gAbove = false;
+	gRight = false;
+	gLeft = false;
+
 	for (int row = 0; row < rowcount; row++) {
 		tilerect.y = row * tile_size;
 
@@ -148,6 +141,7 @@ void RenderMap()
 					warn("Could not render tile. Map tile ID: %i", type);
 					break;
 			}
-		}
+		}	
+
 	}
 }

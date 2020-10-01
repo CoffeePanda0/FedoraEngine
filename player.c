@@ -1,15 +1,16 @@
 #include "game.h"
 
+SDL_Rect playerRect;
+Mix_Chunk* JumpSound;
+
 bool flipTex = false;
 bool moving;
-SDL_Rect playerRect;
-
 float acceleration = 1;
 float velocity = 0;
 float gravity = 3.0;
 
-float movAmount = 2.5;
-float maxAccel = 4.0;
+float movAmount = 3.0;
+float maxAccel = 2.0;
 
 void PlayerMove(int xAmount, int yAmount)
 {
@@ -19,11 +20,12 @@ void PlayerMove(int xAmount, int yAmount)
 
 void PlayerJump()
 {
+	Mix_PlayChannel(-1, JumpSound, 0);
 	jumping = true;
 	velocity = -6;
 }
 
-void InitPlayer(int xPos, int yPos, int width, int height)
+void SpawnPlayer(int xPos, int yPos, int width, int height)
 {
 	playerRect.x = xPos;
 	playerRect.y = yPos;

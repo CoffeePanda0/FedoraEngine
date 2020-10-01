@@ -2,7 +2,7 @@
 
 int selection = 0;
 SDL_Rect TmpRect;
-int txtw, txth, input;
+int txtw, txth;
 
 const char* labels[] = {"Resume", "Quit"};
 SDL_Texture* LabelText[sizeof(labels)/sizeof(labels[0])];
@@ -72,14 +72,18 @@ void DestroyMenu()
 		SDL_DestroyTexture(LabelText[i]);
 }
 
+bool add;
+bool sub;
+
+
 void ChangeSelection()
 {
-	if (direction == 1 && selection != LabelCount -1) {
+	if (add && selection != LabelCount -1) {
 		selection += 1;
 		DestroyMenu();
 		CreateMenu();
 	}
-	if (direction == 2 && selection != 0) {
+	if (sub && selection != 0) {
 		selection -= 1;
 		DestroyMenu();
 		CreateMenu();
@@ -112,7 +116,7 @@ void MenuEventHandle()
 
 			case SDL_KEYDOWN:
 				if (keyboard_state[SDL_SCANCODE_DOWN] && event.key.repeat == 0) {
-					direction == 1;
+					add = true;
 					ChangeSelection();
 				}
 				else if (keyboard_state[SDL_SCANCODE_P]) {
@@ -120,7 +124,7 @@ void MenuEventHandle()
 					paused = false;
 				}
 				else if (keyboard_state[SDL_SCANCODE_UP] && event.key.repeat == 0) {
-					direction == 2;
+					sub = true;
 					ChangeSelection();
 				}
 
@@ -131,14 +135,12 @@ void MenuEventHandle()
 			break;
 			
 			case SDL_KEYUP:
-				if (!keyboard_state[SDL_SCANCODE_DOWN] && direction == 1)
-					direction = 0;
+				if (!keyboard_state[SDL_SCANCODE_DOWN])
+					add = false;
 				
-				if (!keyboard_state[SDL_SCANCODE_UP] && direction = 2)
-					direction = 0;
+				if (!keyboard_state[SDL_SCANCODE_UP])
+					sub = false;
 			break;
 		}
 	}
 }
-
-

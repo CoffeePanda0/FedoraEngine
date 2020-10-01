@@ -6,7 +6,7 @@ smooth movement
 multiple inputs at once
 multithreading
 better audio
-gravity on gameobjects
+gravity on gameobjects?
 everything lol
 */
 
@@ -27,9 +27,9 @@ int main(int argc, char* argv[])
 	init("FedoraEngine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height);
 	
 	info("Application started");
-	
+
+
 	while (GameActive) {
-		
 		if (!paused) {
 			event_handler();
 			Render();
@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
 			MenuEventHandle();
 			RenderMenu();
 		}
-		
 	}
+
 	Clean();
 	return 0;
 
