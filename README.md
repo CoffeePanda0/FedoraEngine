@@ -31,5 +31,11 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 - Broken / faulty object collision
 - Overlay X and Y positions can sometimes be off by 100
 
+# Upcoming "features" (none of which are anywhere near completion)
+- A text interface similar to something like underale etc for characters and UI
+- Fixed object collision
+- Animation
+
+
 # Credits
 me (CoffeePanda0)
