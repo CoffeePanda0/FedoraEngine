@@ -11,6 +11,8 @@ FedoraEngine is still very much in development. Current groundbreaking features 
  - A very *accurate* and *mathematical* "gravity", "velocity", and "acceleration"
  - Load a sprite and move around with buttery smooth movement, then collide, jump, and parkour on objects
  - Load maps from a file and ground collision
+ - A UI Text system for dialogue
+ - Pause menu
  
 # Q&A's
 1. What is this code useful for? A: Probably nothing unless you just need to learn the basics of SDL2 in C
@@ -27,13 +29,8 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 # Known bugs
 - Loading an empty map crashes to desktop (map.c)
 - Larger resolution maps can result in a white border (map.c)
-- Very slow memory leak somewhere (0.2mb/min) (not sure where from)
-- Broken / faulty object collision
-- Overlay X and Y positions can sometimes be off by 100
 
 # Upcoming "features" (none of which are anywhere near completion)
-- A text interface similar to something like underale etc for characters and UI
-- Fixed object collision
 - Animation
 
 
