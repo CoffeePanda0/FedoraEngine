@@ -1,3 +1,4 @@
+// Player variables for physics and movement
 #include "game.h"
 
 SDL_Rect playerRect;

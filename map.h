@@ -9,4 +9,4 @@ extern bool gAbove;
 extern bool gLeft;
 extern bool gRight;
 
-void ListObjects();
+int MapLoaded();

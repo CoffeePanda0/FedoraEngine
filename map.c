@@ -1,14 +1,18 @@
+// RENDERS MAP AND HANDLES MAP COLLISION
 #include "game.h"
-int tile_size;
+static int tile_size;
+static int rowcount;
+static int columncount;
+static int** array;
 
 SDL_Texture* grass;
 SDL_Texture* sky;
 SDL_Texture* dirt;
 SDL_Rect tilerect;
-int type = 0;
 
 bool gAbove = false; bool gBelow= false; bool gLeft = false; bool gRight = false;
 enum CollDir gDir;
+
 
 SDL_Texture* LoadTile(const char* tiletext)
 {
@@ -17,10 +21,12 @@ SDL_Texture* LoadTile(const char* tiletext)
 		warn("Error loading tile texture. SDL Error: %s", IMG_GetError());
 	return tmptile;
 }
-int rowcount;
-int columncount;
 
-int** array;
+int MapLoaded() {
+	if (!rowcount)
+		error("No map was loaded");
+	return 0;
+}
 
 void InitMap(char* map)
 {
@@ -32,7 +38,7 @@ void InitMap(char* map)
 
 	// Work out amount of rows and columns for memory allocation
 	char ch;
-
+	
 	while ((ch = fgetc(f)) != EOF)
 	{
 		if (ch == ' ') {
@@ -40,18 +46,19 @@ void InitMap(char* map)
 		}
 		if (ch == '\n')
 			break;
-	}
+	} 
 	while ((ch = fgetc(f)) != EOF)
 	{
 		if (ch == '\n')
 			rowcount +=1;
 	}
-	columncount += 1;
-	rowcount += 2;
-
+	
 	if (!rowcount) error("Map %s has no rows.", map);
 	if (!columncount) error("Map %s has no columns", map);
 
+	columncount += 1;
+	rowcount += 2;
+	
  	array = malloc(rowcount * sizeof(*array));
 
     for (size_t i = 0; i < columncount; i++)
@@ -76,6 +83,7 @@ void InitMap(char* map)
 	tile_size = screen_height / rowcount;
 	tilerect.h = tile_size;
 	tilerect.w = tile_size;
+
 }
 
 
@@ -88,7 +96,9 @@ void TileColl() // cursed code
 		if (tOut.y > 0) {
 			gAbove = true;
 		}
-
+		if (playerRect.y + playerRect.h - tilerect.y > 20)
+			gBelow = true;
+	
 		int TilePlayerHeight = tilerect.y - playerRect.y - playerRect.h + tilerect.h; // wtf is this help me
 		int LeftDifference = playerRect.x - tilerect.x + tilerect.w;
 
@@ -101,8 +111,7 @@ void TileColl() // cursed code
 	}
 }
 
-
-void DrawTile(SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
+void DrawTile(int type, SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 {
 	SDL_RenderCopy(renderer, t, NULL, &tilerect);
 	switch (type) {
@@ -119,7 +128,8 @@ void RenderMap()
 	gAbove = false;
 	gRight = false;
 	gLeft = false;
-
+	gBelow = false;
+	int type;
 	for (int row = 0; row < rowcount; row++) {
 		tilerect.y = row * tile_size;
 
@@ -129,13 +139,13 @@ void RenderMap()
 			type = array[row][column];
 			switch (type) {
 				case 0:
-					DrawTile(sky);
+					DrawTile(type, sky);
 					break;
 				case 1:
-					DrawTile(grass);
+					DrawTile(type, grass);
 					break;
 				case 2:
-					DrawTile(dirt);
+					DrawTile(type, dirt);
 					break;
 				default:
 					warn("Could not render tile. Map tile ID: %i", type);

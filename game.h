@@ -9,9 +9,11 @@
 #include "gameobject.h"
 #include "lib.h"
 #include "player.h"
-#include "uitext.h"
+#include "ui/ui.h"
 #include "map.h"
 #include "menu.h"
+
+#define LEN(x) (sizeof(x)/sizeof(x[0]))
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height);
 
@@ -25,8 +27,7 @@ Mix_Chunk* LoadSFX(const char* path);
 
 extern bool onGround;
 extern bool paused;
-
-extern Uint32 fps_current;
+extern bool TextPaused;
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren);
 
@@ -37,6 +38,3 @@ extern bool GameActive;
 
 static int screen_height = 512;
 static int screen_width = 512;
-
-extern bool overlay;
-extern bool vsync;

@@ -40,31 +40,41 @@ void CollisionDetection()
 {
 	if (objlist != NULL) {
 		for (struct ObjList *o = objlist; o; o = o->next) {
-
+			
 			if (SDL_HasIntersection(&playerRect, &o->obj->objRect)) {
-				// If collided check which direction
-				SDL_Rect out;
-				SDL_IntersectRect(&playerRect, &o->obj->objRect, &out);
+				//The sides of the rectangles
+				int leftA, leftB;
+				int rightA, rightB;
+				int topA, topB;
+				int bottomA, bottomB;
 
-				int RightDifference = out.x - playerRect.x;
-				int LeftDifference = out.x - playerRect.x - playerRect.w;
+				//Calculate the sides of player rect
+				leftA = playerRect.x;
+				rightA = playerRect.x + playerRect.w;
+				topA = playerRect.y;
+				bottomA = playerRect.y + playerRect.h;
 
-				int TopDifference = playerRect.y - o->obj->objRect.y + o->obj->objRect.h;
-				
-				if (TopDifference < 0)
+				//Calculate the sides of obj rect
+				leftB = o->obj->objRect.x;
+				rightB = o->obj->objRect.x + o->obj->objRect.w;
+				topB = o->obj->objRect.y;
+				bottomB = o->obj->objRect.y + o->obj->objRect.h;
+
+				if (bottomA <= topB + 5)
 					dir = DIR_ABOVE;
-				else if (TopDifference > playerRect.h)
+
+				if (topA >= bottomB - 5)
 					dir = DIR_BELOW;
-				else if (RightDifference > 0)
+
+				if (rightA <= leftB + 5)
 					dir = DIR_RIGHT;
-				else if (LeftDifference < 0 && RightDifference == 0)
+
+				if (leftA >= rightB - 5)
 					dir = DIR_LEFT;
-				
-			} else
-				dir = DIR_NONE;
+
+			} else dir = DIR_NONE;
 		}
-	} else 
-		dir = DIR_NONE;
+	}
 }
 
 void DestroyObject (struct GameObject *obj) {
