@@ -1,6 +1,5 @@
 // RENDERS MAP AND HANDLES MAP COLLISION
 #include "game.h"
-static int tile_size;
 static int rowcount;
 static int columncount;
 static int** array;
@@ -13,6 +12,8 @@ SDL_Rect tilerect;
 bool gAbove = false; bool gBelow= false; bool gLeft = false; bool gRight = false;
 enum CollDir gDir;
 
+int renderingcolumn = 0;
+int renderingrow = 0;
 
 SDL_Texture* LoadTile(const char* tiletext)
 {
@@ -61,7 +62,7 @@ void InitMap(char* map)
 	
  	array = malloc(rowcount * sizeof(*array));
 
-    for (size_t i = 0; i < columncount; i++)
+    for (size_t i = 0; i < rowcount; i++)
         array[i] = malloc(columncount * sizeof(**array));
 
 	if (!array)
@@ -74,18 +75,30 @@ void InitMap(char* map)
 	}
 
 	info("Loaded map %s to memory succesfully", map);
+	
 	fclose(f);
 	// Load in textures
 	grass = LoadTile("game/map/grass.png");
 	sky = LoadTile("game/map/sky.png");
 	dirt = LoadTile("game/map/dirt.png");
 
-	tile_size = screen_height / rowcount;
 	tilerect.h = tile_size;
 	tilerect.w = tile_size;
 
+	int map_width = columncount * tile_size;
+	int map_height = rowcount * tile_size;
+
 }
 
+void InitCamera() {
+	renderingcolumn = 0;
+	renderingrow = 0;
+}
+
+void MoveCamera(int x, int y) {
+	if (x + renderingcolumn < rowcount && renderingcolumn + x > 0)
+		renderingcolumn = playerRect.x / tile_size;
+}
 
 void TileColl() // cursed code
 {
@@ -129,14 +142,18 @@ void RenderMap()
 	gRight = false;
 	gLeft = false;
 	gBelow = false;
+
+	int maxrows = screen_width / tile_size;
+	int maxcols = screen_height / tile_size;
+
 	int type;
-	for (int row = 0; row < rowcount; row++) {
+	for (int row = 0; row <= maxrows; row++) {
 		tilerect.y = row * tile_size;
 
-		for (int column = 0; column < columncount; column++) {
+		for (int column = 0; column <= maxcols; column++) {
 			tilerect.x = column * tile_size;
 
-			type = array[row][column];
+			type = array[renderingrow+row][renderingcolumn+column];
 			switch (type) {
 				case 0:
 					DrawTile(type, sky);

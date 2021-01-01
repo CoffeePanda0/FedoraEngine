@@ -2,7 +2,7 @@
 #include "game.h"
 
 SDL_Texture* playerText;
-SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
+static SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -24,8 +24,6 @@ void InitGame() // initializes the things like game objects and maps
 	Sans = TTF_OpenFont("game/baloo.ttf", 20);
 
 	InitPlayer();
-
-	CreateObject(300, 240, 40, 40, "game/doge.png", &doge); // EXAMPLE GAMEOBJECT
 	NewText(&testText, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 	
 	InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
@@ -68,7 +66,7 @@ void Physics() { // handles player movement
 		}
 
 		if (jumping) {
-			if (playerRect.y > screen_height) { // check bounds
+			if (playerRect.y < 0 ) { // check bounds
 				velocity = 0;
 				jumping = false;
 			}
@@ -80,6 +78,12 @@ void Physics() { // handles player movement
 				jumping = false;
 				velocity = 0;
 			} 
+		}
+
+		if (playerRect.y > screen_height) { // if player falls through hole in ground
+			printf("Player died");
+			playerRect.x = 200;
+			playerRect.y = 50;
 		}
 	}
 }
@@ -190,6 +194,7 @@ void event_handler() {
 		if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && !gLeft) {
 			if (playerRect.x >= movAmount) {
 				moving = true;
+				MoveCamera(-1, 0);
 				playerFlip = SDL_FLIP_NONE;
 				PlayerMove(-movAmount * acceleration, 0);
 			}
@@ -197,6 +202,7 @@ void event_handler() {
 		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && !gRight) {
 			if (playerRect.x <= (screen_width - playerRect.w - 1)) {
 				moving = true;
+				MoveCamera(1, 0);
 				playerFlip = SDL_FLIP_HORIZONTAL;
 				PlayerMove(movAmount * acceleration, 0);
 			}
@@ -253,8 +259,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		InitGame();
 		GameActive = true;
 		
-	}
-	else {
+	} else {
 		GameActive = false;
 		error("Could not start SDL. SDL_Error: %s", SDL_GetError());
 	}

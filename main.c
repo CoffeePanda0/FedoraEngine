@@ -4,7 +4,7 @@
 bool paused;
 
 int main(int argc, char* argv[])
-{	
+{
 	log_init();
 
 	init("FedoraEngine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height);

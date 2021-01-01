@@ -23,7 +23,7 @@ void PlayerJump()
 {
 	Mix_PlayChannel(-1, JumpSound, 0);
 	jumping = true;
-	velocity = -6;
+	velocity = -7;
 }
 
 void SpawnPlayer(int xPos, int yPos, int width, int height)
