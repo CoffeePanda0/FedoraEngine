@@ -11,6 +11,7 @@ extern float movAmount;
 extern float maxAccel;
 Mix_Chunk* JumpSound;
 
+
 extern float velocity;
 extern float gravity;
 
@@ -19,3 +20,7 @@ void PlayerMove(int xAmount, int yAmount);
 void PlayerJump();
 void InitPlayer();
 void SpawnPlayer(int xPos, int yPos, int width, int height);
+
+extern int scrollam;
+
+extern SDL_Rect CollRect; // sep rect for collision

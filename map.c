@@ -82,60 +82,84 @@ void InitMap(char* map)
 	tilerect.h = tile_size;
 	tilerect.w = tile_size;
 
-	int map_width = columncount * tile_size;
-	int map_height = rowcount * tile_size;
+	map_width = columncount * tile_size;
+	map_height = rowcount * tile_size;
 
 }
 
 bool gLeft() { // Ground collide from left of tile
 	int bottomA = playerRect.y + playerRect.h;
-	int tx = playerRect.x / tile_size;
-	int ty = (bottomA / tile_size) + 1;
+	int tx = (CollRect.x + playerRect.w) / tile_size;
+	int ty = (bottomA / tile_size);
 
-	if (array[ty][tx + 1] == 1) 
+	if (ty >= rowcount || tx >= columncount) // todo - this sucks and is a temp fix to prevent segfault
+		return true;
+
+	if (array[ty -1][tx] > 0) 
 		return true;
 	else
 		return false;
 }
 
-bool gRight() { // Ground collision from left of tile
+bool gRight() { // Ground collision from right of tile
 	int bottomA = playerRect.y + playerRect.h;
-	int tx = playerRect.x / tile_size;
-	int ty = (bottomA / tile_size) + 1;
+	int tx = CollRect.x / tile_size;
+	int ty = (bottomA / tile_size);
 
-	if (array[ty][tx - 1] == 1)
+	if (ty >= rowcount || tx >= columncount)
 		return true;
-	else
+
+	if (array[ty - 1][tx] > 0)
+		return true;
+	else 
 		return false;
 }
 
 bool gAbove() { // Ground collision from above tile
 	int bottomA = playerRect.y + playerRect.h;
 
-	int tx = playerRect.x / tile_size;
+	int tx = CollRect.x / tile_size;
 	int ty = bottomA / tile_size;
 
-	if (array[ty][tx] == 1)
+	if (ty >= rowcount || tx >= columncount)
+		return true;
+
+	bool col = false;
+
+	for (int i = CollRect.x; i < CollRect.x + playerRect.w; i++) { // loop through each tile in range of player
+		int tx = i / tile_size;
+		if (array[ty][tx] > 0)
+			col = true;
+	}
+	if (col)
 		return true;
 	else
 		return false;
 }
 
 bool gBelow() { // Ground collision from below tile
-	int bottomA = playerRect.y + playerRect.h;
-
-	int tx = playerRect.x / tile_size;
+	int bottomA = playerRect.y;
 	int ty = bottomA / tile_size;
-	if (array[ty-1][tx] == 1)
+	int tx = CollRect.x / tile_size;
+	
+	if (ty >= rowcount || tx >= columncount)
+		return true;
+
+	bool col = false;
+
+	for (int i = CollRect.x; i < CollRect.x + playerRect.w; i++) { // loop through each tile in range of player
+		int tx = i / tile_size;
+		if (array[ty][tx] > 0)
+			col = true;
+	}
+	if (col)
 		return true;
 	else
 		return false;
 }
 
- 
 void DrawTile(int type, SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
 {
-	
 	SDL_RenderCopy(renderer, t, NULL, &tilerect);
 }
 
@@ -151,7 +175,6 @@ void DestroyMap()
 void RenderMap()
 {
 	if (array != NULL) {
-
 		int maxrows = screen_width / tile_size;
 		int maxcols = screen_height / tile_size;
 
@@ -160,8 +183,7 @@ void RenderMap()
 			tilerect.y = (row * tile_size);
 
 			for (int column = 0; column < columncount; column++) {
-				tilerect.x = (column * tile_size) - playerRect.x;
-				
+				tilerect.x = (column * tile_size) - scrollam;
 				type = array[row][column];
 
 				switch (type) {

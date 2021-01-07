@@ -12,16 +12,12 @@ SDL_Texture* title;
 struct TextObject testText;
 Mix_Music* bgMusic;
 
-
 bool GameActive;
 bool jumping = false;
 bool TextPaused = false;
-
-int pVelocity;
-
-int renderingX;
-
 enum CollDir dir;
+
+int map_width, map_height;
 
 void InitGame() // initializes the things like game objects and maps
 {
@@ -52,7 +48,6 @@ void Physics() { // handles player movement
 	if (!paused && !TextPaused) {
 
 		if (moving && !jumping) {
-			printf("%i\n", realX);
 		
 			if (acceleration < maxAccel)
 				acceleration += 0.01f;
@@ -78,6 +73,11 @@ void Physics() { // handles player movement
 				jumping = false;
 			}
 
+			if (gRight() || gLeft()) { // make sure player wont clip through tiles
+					jumping = false;
+					velocity = 0;
+			}
+
 			if (velocity < 0.1) // decrease velocity so player will eventually fall
 				velocity += 0.1f;
 
@@ -88,7 +88,7 @@ void Physics() { // handles player movement
 		}
 
 		if (playerRect.y > screen_height) { // if player falls through hole in ground
-			printf("Player died\n");
+			info("Player died\n");
 			PlayerMove(200,0);
 		}
 	}
@@ -198,14 +198,14 @@ void event_handler() {
 	if (!TextPaused) {
 		// MORE IMPORTANT MULTI PRESS OUT THE FUNCTION
 		if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && !gRight()) {
-			if (playerRect.x >= movAmount) {
-				moving = true;			
+			if (playerRect.x >= 0) {
+				moving = true;
 				playerFlip = SDL_FLIP_NONE;
 				PlayerMove(-movAmount * acceleration, 0);
 			}
 		}
 		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && !gLeft()) {
-			if (playerRect.x <= (screen_width - playerRect.w - 1)) {
+			if (playerRect.x <= (map_width - playerRect.w - 1)) {
 				moving = true;
 				playerFlip = SDL_FLIP_HORIZONTAL;
 				PlayerMove(movAmount * acceleration, 0);
