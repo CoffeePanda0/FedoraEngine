@@ -9,13 +9,17 @@ SDL_Renderer* renderer;
 TTF_Font* Sans;
 SDL_Texture* title;
 
-struct GameObject doge; // using doge as an example gameobject because why not :P
 struct TextObject testText;
 Mix_Music* bgMusic;
+
 
 bool GameActive;
 bool jumping = false;
 bool TextPaused = false;
+
+int pVelocity;
+
+int renderingX;
 
 enum CollDir dir;
 
@@ -39,7 +43,7 @@ void InitGame() // initializes the things like game objects and maps
 
 void InitPlayer() // change this for your player
 {
-	SpawnPlayer(200, 50, 75, 90);
+	SpawnPlayer(0, 0, 75, 90);
 	playerText = TextureManager("game/duck.png", renderer); // EXAMPLE PLAYER
 	JumpSound = LoadSFX("game/audio/jump.wav");
 }
@@ -48,6 +52,8 @@ void Physics() { // handles player movement
 	if (!paused && !TextPaused) {
 
 		if (moving && !jumping) {
+			printf("%i\n", realX);
+		
 			if (acceleration < maxAccel)
 				acceleration += 0.01f;
 		} else if (jumping && acceleration > 1.0f)
@@ -55,16 +61,17 @@ void Physics() { // handles player movement
 		else
 			acceleration = 1.0;
 
-		if (!gAbove && dir != DIR_ABOVE)
+		if (!gAbove() && dir != DIR_ABOVE)
 			playerRect.y += gravity;
 
-		if (jumping && !gBelow && dir != DIR_BELOW)
-				playerRect.y += velocity;	
-		if (jumping && gBelow || dir == DIR_BELOW) {
-				velocity = 0;
+		if (jumping)
+				playerRect.y += velocity;
+
+		if (jumping && (gBelow() || dir == DIR_BELOW)) {
+				velocity = 1;
 				jumping = false;
 		}
-
+		
 		if (jumping) {
 			if (playerRect.y < 0 ) { // check bounds
 				velocity = 0;
@@ -81,9 +88,8 @@ void Physics() { // handles player movement
 		}
 
 		if (playerRect.y > screen_height) { // if player falls through hole in ground
-			printf("Player died");
-			playerRect.x = 200;
-			playerRect.y = 50;
+			printf("Player died\n");
+			PlayerMove(200,0);
 		}
 	}
 }
@@ -139,7 +145,7 @@ void Render()
 	RenderMap();
 	RenderObject();
 	RenderText();
-	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip);
+	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip); // renders the player
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
 	SDL_RenderPresent(renderer);
 	
@@ -168,7 +174,7 @@ void event_handler() {
 
 			case SDL_KEYDOWN: // SINGLE KEY PRESS NON IMPORTANT HERE
 			
-				if (keyboard_state[SDL_SCANCODE_X]) 
+				if (keyboard_state[SDL_SCANCODE_X] && TextPaused) 
 					UITextInteract(0);
 				if (keyboard_state[SDL_SCANCODE_M] && event.key.repeat == 0) {
 					if (Mix_PausedMusic()) {
@@ -191,25 +197,23 @@ void event_handler() {
 	}
 	if (!TextPaused) {
 		// MORE IMPORTANT MULTI PRESS OUT THE FUNCTION
-		if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && !gLeft) {
+		if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && !gRight()) {
 			if (playerRect.x >= movAmount) {
-				moving = true;
-				MoveCamera(-1, 0);
+				moving = true;			
 				playerFlip = SDL_FLIP_NONE;
 				PlayerMove(-movAmount * acceleration, 0);
 			}
 		}
-		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && !gRight) {
+		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && !gLeft()) {
 			if (playerRect.x <= (screen_width - playerRect.w - 1)) {
 				moving = true;
-				MoveCamera(1, 0);
 				playerFlip = SDL_FLIP_HORIZONTAL;
 				PlayerMove(movAmount * acceleration, 0);
 			}
 		}
 
 		if (keyboard_state[SDL_SCANCODE_SPACE]) {
-			if (!gBelow && dir != DIR_BELOW && !jumping && gAbove)
+			if (!gBelow() && dir != DIR_BELOW && !jumping && gAbove())
 				PlayerJump();
 		}
 	}
@@ -232,10 +236,9 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 			error("Window could not be created! SDL_Error: %s", SDL_GetError());
 
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
-		
-		if (renderer) {
+		if (renderer)
 			info("Renderer Created");
-		} else
+		else
 			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
 
 		if (TTF_Init() == -1)

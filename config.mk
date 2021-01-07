@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -MD -I "D:\mingw\mingw64\include\SDL2"
+CFLAGS = -MD -g -I "D:\mingw\mingw64\include\SDL2"
 
 LD = $(CC)
 
