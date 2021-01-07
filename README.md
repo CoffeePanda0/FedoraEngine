@@ -12,6 +12,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
  - Load a sprite and move around with buttery smooth movement, then collide, jump, and parkour on objects
  - Load maps from a file and ground collision
  - A UI Text system for dialogue
+ - Camera system to scroll tiles and follow player
  - Pause menu
  
 # Q&A's
@@ -28,7 +29,6 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 
 # Known bugs
 - Loading an empty map crashes to desktop (map.c)
-- Larger resolution maps can result in a white border (map.c)
 
 # Upcoming "features" (none of which are anywhere near completion)
 - Animation
