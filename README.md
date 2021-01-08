@@ -23,6 +23,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 - A C compiler (e.g gcc)
 - SDL2, SDL_TTF, SDL_Mixer and SDL_Image libraries
 - ~~a will to live~~
+- TinyJson by (https://github.com/rafagafe/tiny-json) - Included in ext folder
 
 # Todo
 - everything
