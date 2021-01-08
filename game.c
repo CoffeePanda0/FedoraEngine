@@ -26,7 +26,7 @@ void InitGame() // initializes the things like game objects and maps
 	InitPlayer();
 	NewText(&testText, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
 	
-	InitMap("game/map/testmap.txt"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
+	InitMap("game/map/testmap"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
 	MapLoaded(); // make sure user loaded in a map
 
 	bgMusic = LoadMusic("game/audio/CoffeeTime.mp3"); // load in background music

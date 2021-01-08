@@ -25,10 +25,8 @@ void event_handler();
 Mix_Music* LoadMusic(const char* path);
 Mix_Chunk* LoadSFX(const char* path);
 
-extern bool onGround;
 extern bool paused;
 extern bool TextPaused;
-
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren);
 
@@ -36,9 +34,6 @@ extern SDL_Surface *s;
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
 extern bool GameActive;
-
-extern int renderingX;
-extern int realX;
 
 static int screen_height = 512;
 static int screen_width = 512;

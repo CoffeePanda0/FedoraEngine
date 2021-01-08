@@ -1,5 +1,7 @@
 // RENDERS MAP AND HANDLES MAP COLLISION
 #include "game.h"
+#include "ext/json/tiny-json.h" // credit https://github.com/rafagafe/tiny-json
+
 static int rowcount;
 static int columncount;
 static int** array;
@@ -8,8 +10,8 @@ static SDL_Texture* grass;
 static SDL_Texture* sky;
 static SDL_Texture* dirt;
 static SDL_Rect tilerect;
-bool onGround = false;
 
+static SDL_Texture** arr;
 
 SDL_Texture* LoadTile(const char* tiletext)
 {
@@ -18,8 +20,14 @@ SDL_Texture* LoadTile(const char* tiletext)
 		warn("Error loading tile texture. SDL Error: %s", IMG_GetError());
 	return tmptile;
 }
+char str[] = "{\n"
+        "\t\"firstName\": \"Bidhan\",\n"
+        "\t\"lastName\": \"Chatterjee\",\n"
+        "\t\"age\": 40\n"
+        "}";
 
-int MapLoaded() {
+int MapLoaded()
+{
 	if (!rowcount) {
 		error("No map was loaded");
 		return -1;
@@ -27,14 +35,63 @@ int MapLoaded() {
 	return 0;
 }
 
+void LoadTiles(char* map) // Loads in location for each tile from map.txt.tiles
+{
+ 	char *fp = malloc(sizeof(map) + 6); // allocate memory for string and .json extension
+    strcpy(fp, map);
+    strcat(fp, ".json");
+	
+	// load in json file to string
+	FILE *f = fopen(fp, "r"); 
+	char s[1000]; // TODO: needs fixing - making into dynamic array
+
+	size_t i = 0;
+	char ch;
+	int lines;
+	while ((ch=fgetc(f)) != EOF) {
+		if (ch == '\n')
+			lines++;
+		
+		s[i] = ch;
+		i++;
+	}
+
+	printf("%i\n",lines);
+	// parse json
+    json_t mem[32];
+    const json_t* json = json_create(s, mem, sizeof mem / sizeof *mem );
+    if (!json)
+        error("Error parsing json for tiles: %s",fp);
+
+	arr = malloc(sizeof(SDL_Texture*) * (lines - 1));
+
+	for (int i = 0; i < lines-1; i++) {
+		char a[10];
+		sprintf(a, "%i", i);
+		const json_t* textitem = json_getProperty( json, a);
+		if (textitem || JSON_TEXT != json_getType(textitem)) {
+			const char* textval = json_getValue( textitem );
+			printf( "Loaded Texture: %s.\n", textval );
+			arr[i] = LoadTile(textval);
+		}
+	}
+	free(fp);
+
+}
+
 void InitMap(char* map)
 {
-
+	LoadTiles(map);
 	// Read 2d array in from a text file for a map
-	FILE *f = fopen(map, "r");
+
+	char *fp = malloc(sizeof(map) + 6); // allocate memory for string and .json extension
+    strcpy(fp, map);
+    strcat(fp, ".txt");
+
+	FILE *f = fopen(fp, "r");
 	if (!f)
 		error("Could not open map %s", map);
-
+	
 	// Work out amount of rows and columns for memory allocation
 	char ch;
 	
@@ -75,16 +132,12 @@ void InitMap(char* map)
 	
 	fclose(f);
 	// Load in textures
-	grass = LoadTile("game/map/grass.png");
-	sky = LoadTile("game/map/sky.png");
-	dirt = LoadTile("game/map/dirt.png");
-
 	tilerect.h = tile_size;
 	tilerect.w = tile_size;
 
 	map_width = columncount * tile_size;
 	map_height = rowcount * tile_size;
-
+	free(fp);
 }
 
 bool gLeft() { // Ground collide from left of tile
@@ -158,10 +211,6 @@ bool gBelow() { // Ground collision from below tile
 		return false;
 }
 
-void DrawTile(int type, SDL_Texture* t) // GROUND COLLISION AND RENDER TILE
-{
-	SDL_RenderCopy(renderer, t, NULL, &tilerect);
-}
 
 void DestroyMap()
 {
@@ -170,6 +219,8 @@ void DestroyMap()
 		rowcount = 0;
 		free(array);
 	}
+	if (arr != NULL)
+		free(arr);
 }
 
 void RenderMap()
@@ -181,25 +232,15 @@ void RenderMap()
 		int type;
 		for (int row = 0; row < rowcount; row++) {
 			tilerect.y = (row * tile_size);
-
+			
 			for (int column = 0; column < columncount; column++) {
 				tilerect.x = (column * tile_size) - scrollam;
 				type = array[row][column];
 
-				switch (type) {
-					case 0:
-						DrawTile(type, sky);
-						break;
-					case 1:
-						DrawTile(type, grass);
-						break;
-					case 2:
-						DrawTile(type, dirt);
-						break;
-					default:
-						warn("Could not render tile. Map tile ID: %i", type);
-						break;
-				}
+				if (arr[type])
+					SDL_RenderCopy(renderer, arr[type], NULL, &tilerect);
+				else
+					warn("Could not render tile. Map tile ID: %i", type);
 			}	
 
 		}
