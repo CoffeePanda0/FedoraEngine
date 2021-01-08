@@ -20,11 +20,6 @@ SDL_Texture* LoadTile(const char* tiletext)
 		warn("Error loading tile texture. SDL Error: %s", IMG_GetError());
 	return tmptile;
 }
-char str[] = "{\n"
-        "\t\"firstName\": \"Bidhan\",\n"
-        "\t\"lastName\": \"Chatterjee\",\n"
-        "\t\"age\": 40\n"
-        "}";
 
 int MapLoaded()
 {
