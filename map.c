@@ -6,12 +6,10 @@ static int rowcount;
 static int columncount;
 static int** array;
 
-static SDL_Texture* grass;
-static SDL_Texture* sky;
-static SDL_Texture* dirt;
 static SDL_Rect tilerect;
 
 static SDL_Texture** arr;
+int arr_elements = 0;
 
 SDL_Texture* LoadTile(const char* tiletext)
 {
@@ -30,28 +28,38 @@ int MapLoaded()
 	return 0;
 }
 
+void DestroyTiles()
+{
+	for (size_t i = 0; i < arr_elements; i++) {
+		SDL_DestroyTexture(arr[i]);
+		arr[i] = arr[i+1];
+	}
+	arr_elements = 0;
+}
+
 void LoadTiles(char* map) // Loads in location for each tile from map.txt.tiles
 {
- 	char *fp = malloc(sizeof(map) + 6); // allocate memory for string and .json extension
+ 	char *fp = malloc(strlen(map) + 6); // allocate memory for string and .json extension
     strcpy(fp, map);
     strcat(fp, ".json");
 	
 	// load in json file to string
 	FILE *f = fopen(fp, "r"); 
-	char s[1000]; // TODO: needs fixing - making into dynamic array
-
+	char s[1000];
 	size_t i = 0;
 	char ch;
-	int lines;
+ 	int lines = 0;
+	int chars = 0;
 	while ((ch=fgetc(f)) != EOF) {
 		if (ch == '\n')
 			lines++;
 		
+		chars++;
 		s[i] = ch;
+
 		i++;
 	}
 
-	printf("%i\n",lines);
 	// parse json
     json_t mem[32];
     const json_t* json = json_create(s, mem, sizeof mem / sizeof *mem );
@@ -60,14 +68,15 @@ void LoadTiles(char* map) // Loads in location for each tile from map.txt.tiles
 
 	arr = malloc(sizeof(SDL_Texture*) * (lines - 1));
 
-	for (int i = 0; i < lines-1; i++) {
+	for (int i = 0; i < lines-1; i++) { // loop through each line (not the best way but itll do)
 		char a[10];
 		sprintf(a, "%i", i);
 		const json_t* textitem = json_getProperty( json, a);
-		if (textitem || JSON_TEXT != json_getType(textitem)) {
+		if (textitem || JSON_TEXT != json_getType(textitem)) { // get value of each node 
 			const char* textval = json_getValue( textitem );
-			printf( "Loaded Texture: %s.\n", textval );
+			printf( "Loaded Texture: %s.\n", textval ); // load node into array
 			arr[i] = LoadTile(textval);
+			arr_elements++;
 		}
 	}
 	free(fp);
@@ -79,7 +88,7 @@ void InitMap(char* map)
 	LoadTiles(map);
 	// Read 2d array in from a text file for a map
 
-	char *fp = malloc(sizeof(map) + 6); // allocate memory for string and .json extension
+	char *fp = malloc(strlen(map) + 5); // allocate memory for string and .json extension
     strcpy(fp, map);
     strcat(fp, ".txt");
 
@@ -209,6 +218,10 @@ bool gBelow() { // Ground collision from below tile
 
 void DestroyMap()
 {
+	DestroyTiles();
+	for (size_t x = 0; x < rowcount; x++)
+		free(array[x]);
+
 	if (array != NULL) {
 		columncount = 0;
 		rowcount = 0;
@@ -217,13 +230,9 @@ void DestroyMap()
 	if (arr != NULL)
 		free(arr);
 }
-
 void RenderMap()
 {
 	if (array != NULL) {
-		int maxrows = screen_width / tile_size;
-		int maxcols = screen_height / tile_size;
-
 		int type;
 		for (int row = 0; row < rowcount; row++) {
 			tilerect.y = (row * tile_size);

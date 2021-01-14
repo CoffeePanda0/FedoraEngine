@@ -15,6 +15,9 @@
 
 #define LEN(x) (sizeof(x)/sizeof(x[0]))
 
+extern int screen_height;
+extern int screen_width;
+
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height);
 
 void Clean();
@@ -34,6 +37,3 @@ extern SDL_Surface *s;
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
 extern bool GameActive;
-
-static int screen_height = 512;
-static int screen_width = 512;

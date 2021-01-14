@@ -18,11 +18,11 @@ void push (struct GameObject *obj)
 	objlist = newobj;
 }
 
-void CreateObject(int xPos, int yPos, int height, int width, const char* textPath, struct GameObject *obj)
+void CreateObject(int xPos, int yPos, int height, int width, const char* textPath, struct GameObject *obj, char *name)
 {
 	SDL_Rect objRect;
 	SDL_Texture* texture;
-
+	obj->name = name;
 	obj->objRect.x = xPos;
 	obj->objRect.y = yPos;
 	obj->objRect.w = width;
@@ -74,6 +74,18 @@ void CollisionDetection()
 
 			} else dir = DIR_NONE;
 		}
+	}
+}
+
+void CleanObjects() // Destroys all game objects
+{
+	struct ObjList *t;
+	t = objlist;
+	if (t) {
+		while (t->next != NULL) // loop through list
+			t = t->next;
+
+		DestroyObject(t->obj); // get last object
 	}
 }
 

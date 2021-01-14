@@ -20,6 +20,7 @@ void log_close(void) {
 	fclose(f);
 }
 
+
 void die (enum dietypes type, const char *s, ...) {
 	va_list ap;
 	char *out;
@@ -58,14 +59,15 @@ void die (enum dietypes type, const char *s, ...) {
 }
 
 void vlog (enum logtypes type, const char *s, ...) {
-	va_list ap;
+	
+	va_list ap, ap2;
 	time_t t;
 	struct tm *tm;
 	char tstr[12];
 
 	if (!f)
 		return;
-
+	va_start(ap, s);
 	time(&t);
 	tm = gmtime(&t);
 	strftime(tstr, 12, "[%H:%M:%S] ", tm);
@@ -84,10 +86,12 @@ void vlog (enum logtypes type, const char *s, ...) {
 			break;
 	}
 
-	va_start(ap, s);
-	vfprintf(f, s, ap);
+
+	va_copy(ap2, ap);
+	vfprintf(f, s, ap2);
 	vprintf(s, ap);
 	printf("\n");
+	va_end(ap2);
 	va_end(ap);
 	fputc('\n', f);
 	fflush(f);

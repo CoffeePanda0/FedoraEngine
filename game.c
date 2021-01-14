@@ -7,7 +7,6 @@ static SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
 SDL_Window* window;
 SDL_Renderer* renderer;
 TTF_Font* Sans;
-SDL_Texture* title;
 
 struct TextObject testText;
 Mix_Music* bgMusic;
@@ -15,8 +14,6 @@ Mix_Music* bgMusic;
 bool GameActive;
 bool jumping = false;
 bool TextPaused = false;
-enum CollDir dir;
-
 int map_width, map_height;
 
 void InitGame() // initializes the things like game objects and maps
@@ -25,20 +22,32 @@ void InitGame() // initializes the things like game objects and maps
 
 	InitPlayer();
 	NewText(&testText, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
-	
 	InitMap("game/map/testmap"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
 	MapLoaded(); // make sure user loaded in a map
 
 	bgMusic = LoadMusic("game/audio/CoffeeTime.mp3"); // load in background music
 	if (Mix_PlayingMusic() == 0) {
-    	if (Mix_PlayMusic( bgMusic, -1 ) == -1)
+    	if (Mix_PlayMusic(bgMusic, -1) == -1)
 			warn("Could not play music %s", Mix_GetError());
     }
-	UIText("Welcome To FEDORA ENGINE", "fedora man");
+
+	PlayDialogue(1,2,"game/test.dialogue"); // DIALOGUE IS 1 INDEXED
+}
+
+void CleanMemory() // Frees all memory by destroying all objects
+{
+	GameActive = false;
+	Mix_FreeMusic(bgMusic);
+	Mix_FreeChunk(JumpSound);
+	DestroyMap();
+	if (TextPaused)
+		DestroyMenu();
+	CleanObjects();
 }
 
 void InitPlayer() // change this for your player
 {
+	InitPlayerUI();
 	SpawnPlayer(0, 0, 75, 90);
 	playerText = TextureManager("game/duck.png", renderer); // EXAMPLE PLAYER
 	JumpSound = LoadSFX("game/audio/jump.wav");
@@ -97,8 +106,9 @@ void Physics() { // handles player movement
 void Update()
 {
 	CollisionDetection(); // checks for collision with each game objects
-	Physics();
+	Physics(); // handles movement, jumping and gravity
 }
+
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
@@ -107,12 +117,14 @@ SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 		SDL_Surface* tmpSurface = IMG_Load(texture); 
 		SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
 		SDL_FreeSurface(tmpSurface);
+		SDL_FreeSurface(s);
 		return text;
 	} else {
 		warn("Texture %s not found", texture);
 		SDL_Surface* tmpSurface = SDL_CreateRGBSurface(0,50,50,32,0,0,0,0);
 		SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
 		SDL_FreeSurface(tmpSurface);
+        SDL_FreeSurface(s);
 		return text;
 	}
 }
@@ -175,7 +187,7 @@ void event_handler() {
 			case SDL_KEYDOWN: // SINGLE KEY PRESS NON IMPORTANT HERE
 			
 				if (keyboard_state[SDL_SCANCODE_X] && TextPaused) 
-					UITextInteract(0);
+					DialogueInteract(0);
 				if (keyboard_state[SDL_SCANCODE_M] && event.key.repeat == 0) {
 					if (Mix_PausedMusic()) {
 						Mix_PlayMusic(bgMusic, -1);
@@ -183,8 +195,9 @@ void event_handler() {
 						Mix_PauseMusic();
 				}
 				if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0) {
-						CreateMenu(); 
-						paused = true;
+						HealthChange(-10);
+						/*CreateMenu(); 
+						paused = true; */
 				}
 
 			case SDL_KEYUP:
@@ -195,16 +208,17 @@ void event_handler() {
 			break;
 		}
 	}
+
 	if (!TextPaused) {
 		// MORE IMPORTANT MULTI PRESS OUT THE FUNCTION
-		if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_LEFT && !gRight()) {
+		if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_RIGHT && !gRight()) {
 			if (playerRect.x >= 0) {
 				moving = true;
 				playerFlip = SDL_FLIP_NONE;
 				PlayerMove(-movAmount * acceleration, 0);
 			}
 		}
-		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_RIGHT && !gLeft()) {
+		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_LEFT && !gLeft()) {
 			if (playerRect.x <= (map_width - playerRect.w - 1)) {
 				moving = true;
 				playerFlip = SDL_FLIP_HORIZONTAL;
@@ -217,7 +231,7 @@ void event_handler() {
 				PlayerJump();
 		}
 	}
-		
+
 }
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
@@ -270,13 +284,14 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 
 void Clean()
 {
-	TTF_CloseFont(Sans);
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
+	TTF_CloseFont(Sans);
+	CleanMemory();
 	TTF_Quit();
 	IMG_Quit();
 	Mix_Quit();
-	info("SDL Exited\n");
+	info("SDL Exited \n");
 	log_close();
 	SDL_Quit();
 }

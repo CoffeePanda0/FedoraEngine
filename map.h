@@ -17,5 +17,6 @@ extern int map_width;
 void MoveCamera(int x, int y);
 void InitCamera();
 
+void DestroyMap();
 int MapLoaded();
 

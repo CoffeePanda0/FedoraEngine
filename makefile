@@ -1,4 +1,4 @@
-src = game.c lib.c main.c player.c gameobject.c ui/ui.c map.c ui/menu.c
+src = game.c lib.c main.c player.c gameobject.c ui/ui.c map.c ui/menu.c ext/json/tiny-json.c ui/dialogue.c
 obj = $(src:.c=.o)
 out = FedoraEngine
 

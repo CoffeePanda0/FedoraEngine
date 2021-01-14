@@ -1,11 +1,12 @@
-// Handles UI (Rendering text on the screen along with text creation and destruction)
+// Handles UI (Rendering text on the screen along with text creation and destruction and dialogue system)
 #include "../game.h"
+#include <string.h>
 
 static int txtw, txth;
 
-struct GameObject TextBox;
-struct TextObject TextName;
-struct TextObject TextText;
+static int HealthText; // store current text here so we can compare as updating constantly is not worth it
+
+struct TextObject hp;
 
 struct TextList {
 	struct TextObject *obj;
@@ -44,6 +45,25 @@ void FreeText (struct TextObject *obj) {
 	}
 }
 
+void UpdateUI()
+{
+	int curhealth = (int)HealthText;
+	if (curhealth != Health) {
+		char healthstr[100];
+		sprintf(healthstr, "HP: %i", Health); // only update label if text changed as it is intensive
+		UpdateText(&hp, healthstr, Black);
+		HealthText = Health;
+	}
+}
+
+void InitPlayerUI() // init ui for HUD etc health
+{
+	char healthstr[100];
+	sprintf(healthstr, "HP: %i", Health);
+	NewText(&hp, healthstr, Black, 0, 0);
+	HealthText = Health;
+}
+
 void NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int yPos) // Responsible for creating textures and the rect for them in the struct
 {
 	SDL_Surface* tmpSurface = TTF_RenderText_Blended(Sans, text, color);
@@ -53,7 +73,8 @@ void NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int 
 	
 	SDL_FreeSurface(tmpSurface);
 	tPush(obj);
-}      
+}
+
 void RenderText() {
 	for (struct TextList *o = txtlist; o; o = o->next)
 		SDL_RenderCopy(renderer, o->obj->texture, NULL, &o->obj->rect);
@@ -67,32 +88,4 @@ void UpdateText(struct TextObject *obj, char *text, SDL_Color color) // used to 
 	SDL_QueryTexture(obj->texture, NULL, NULL, &txtw, &txth); // query texture size so rect doesnt look odd 
 	obj->rect.h = txth; obj->rect.w = txtw;
 	SDL_FreeSurface(tmpSurface);
-}
-
-void UIText(char *text, char *speaker)
-{
-	CreateObject(0, screen_height - screen_height / 3, screen_height / 3, screen_width, "game/ui/dialogue.png", &TextBox);
-	NewText(&TextName, speaker, White, 20, TextBox.objRect.y + 20);
-	NewText(&TextText, text, White, 20, TextBox.objRect.y + 50);
-	TextPaused = true;
-}
-
-void UITextUpdate(int option, char* text) { // used to update UItext (the speech on screen)
-	if (option == 0)
-		UpdateText(&TextName, text, Black);
-	else if (option == 1)
-		UpdateText(&TextText, text, Black);
-	else
-		warn("Unkown Option for UI Text update. (Choose 0-1)");
-}
-
-void UITextInteract(int option) // add options for how to interact with text. By default 0 is any key and will close dialogue, but you can add more such
-{
-	switch(option) {
-		case 0: // i think there is a memory leak here somewhere - too bad
-			DestroyObject(&TextBox);
-			FreeText(&TextText);
-			FreeText(&TextName);
-			TextPaused = false;
-	}
 }

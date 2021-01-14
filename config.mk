@@ -1,6 +1,5 @@
 CC = gcc
-CFLAGS = -MD -g -I "D:\mingw\mingw64\include\SDL2"
-
+CFLAGS = -MD -Wall -g -fno-common $$(sdl2-config --cflags)
 LD = $(CC)
 
-LIBS = -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_Mixer
+LIBS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer

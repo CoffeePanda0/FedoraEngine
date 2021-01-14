@@ -9,20 +9,22 @@
 
 struct TextObject {
 	SDL_Rect rect;
-	SDL_Texture* texture;
+	SDL_Texture *texture;
 };
 
 extern TTF_Font* Sans;
 
-SDL_Texture* CreateText(char *text, SDL_Color color, TTF_Font *font);
-SDL_Texture * tmpTexttext;
+SDL_Texture *CreateText(char *text, SDL_Color color, TTF_Font *font);
 
-void UIText(char *text, char *speaker);
+void DialogueInteract(int option);
 void FreeText(struct TextObject *obj);
 
 void NewText(struct TextObject *obj, char *text, SDL_Color color, int xPos, int yPos);
+void PlayDialogue(int startindex, int max, char *fp);
+
+void UpdateUI();
+void InitPlayerUI();
 
 void RenderText();
 void UITextInteract(int option);
 void UpdateText(struct TextObject *obj, char *text, SDL_Color color);
-void UITextUpdate(int option, char* text);
