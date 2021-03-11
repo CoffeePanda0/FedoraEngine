@@ -1,5 +1,5 @@
 #pragma once
-#include "game.h"
+#include "../game.h"
 
 void CreateMenu();
 void RenderMenu();

@@ -1,15 +1,15 @@
 #pragma once
 #include "SDL.h"
 
-#define tile_size 26
+#define tile_size 64
 
 void RenderMap();
-void InitMap(char* map);
+void InitMap(const char* map);
 
-extern bool gBelow();
-extern bool gAbove();
-extern bool gLeft();
-extern bool gRight();
+extern bool gBelow(SDL_Rect r);
+extern bool gAbove(SDL_Rect r);
+extern bool gLeft(SDL_Rect r);
+extern bool gRight(SDL_Rect r);
 
 extern int map_height;
 extern int map_width;

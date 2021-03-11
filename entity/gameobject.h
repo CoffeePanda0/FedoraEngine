@@ -6,6 +6,7 @@ struct GameObject {
 	bool interactable;
 	char *name;
 	SDL_Rect objRect;
+	SDL_Rect render_rect;
 	SDL_Texture* texture;
 };
 

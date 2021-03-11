@@ -1,118 +1,151 @@
-//Main loops and functions for game operation
+//Core game loops and functions for game operation
 #include "game.h"
-
-SDL_Texture* playerText;
-static SDL_RendererFlip playerFlip = SDL_FLIP_NONE;
+#include "lua.h"
 
 SDL_Window* window;
 SDL_Renderer* renderer;
+
 TTF_Font* Sans;
+TTF_Font* ConsoleFont;
+
+SDL_Texture *playerText;
 
 struct TextObject testText;
-Mix_Music* bgMusic;
+Mix_Music *bgMusic;
+
+static SDL_Texture* BgText;
+SDL_Rect BgRect;
 
 bool GameActive;
+struct GameObject doge;
+
 bool jumping = false;
 bool TextPaused = false;
+bool intext = false;
+
 int map_width, map_height;
+
+static char *server;
+static int port;
+static char *bg;
 
 void InitGame() // initializes the things like game objects and maps
 {
+	InitLua();
+	RunLuaFile("scripts/test.lua");
+
 	Sans = TTF_OpenFont("game/baloo.ttf", 20);
+	ConsoleFont = TTF_OpenFont("game/Inconsolata.ttf", 20);
+
+	if (bg) {
+		BgText = TextureManager(bg,renderer);
+		SDL_QueryTexture(BgText, NULL, NULL, &BgRect.w ,&BgRect.h);
+	}
 
 	InitPlayer();
-	NewText(&testText, "FedoraEngine!", Black, 350 , 0); // EXAMPLE TEXT
-	InitMap("game/map/testmap"); // YOU HAVE TO CALL THIS FOR A MAP TO RENDER AND BE LOADED
+
+	NewText(&testText, Sans, "FedoraEngine", White, 350 , 0); // EXAMPLE TEXT
 	MapLoaded(); // make sure user loaded in a map
 
-	bgMusic = LoadMusic("game/audio/CoffeeTime.mp3"); // load in background music
 	if (Mix_PlayingMusic() == 0) {
     	if (Mix_PlayMusic(bgMusic, -1) == -1)
 			warn("Could not play music %s", Mix_GetError());
     }
+	
+	NewParticleSystem(PARTICLE_SNOW, 0, 0);
 
+	CreateEnemy(funny_mushroom_man, 100, 100);
+	CreateObject(150,300,90,90,"game/doge.png",&doge, "doge");
 	PlayDialogue(1,2,"game/test.dialogue"); // DIALOGUE IS 1 INDEXED
-}
-
-void CleanMemory() // Frees all memory by destroying all objects
-{
-	GameActive = false;
-	Mix_FreeMusic(bgMusic);
-	Mix_FreeChunk(JumpSound);
-	DestroyMap();
-	if (TextPaused)
-		DestroyMenu();
-	CleanObjects();
 }
 
 void InitPlayer() // change this for your player
 {
 	InitPlayerUI();
-	SpawnPlayer(0, 0, 75, 90);
-	playerText = TextureManager("game/duck.png", renderer); // EXAMPLE PLAYER
+	playerText = TextureManager("game/player.png", renderer);
 	JumpSound = LoadSFX("game/audio/jump.wav");
+	dir = DIR_NONE;
 }
 
 void Physics() { // handles player movement
-	if (!paused && !TextPaused) {
 
-		if (moving && !jumping) {
-		
-			if (acceleration < maxAccel)
-				acceleration += 0.01f;
-		} else if (jumping && acceleration > 1.0f)
-			acceleration -= 0.03f; // decel player left-right in the air so they are not too speedy
-		else
-			acceleration = 1.0;
-
-		if (!gAbove() && dir != DIR_ABOVE)
-			playerRect.y += gravity;
-
-		if (jumping)
-				playerRect.y += velocity;
-
-		if (jumping && (gBelow() || dir == DIR_BELOW)) {
-				velocity = 1;
-				jumping = false;
-		}
-		
-		if (jumping) {
-			if (playerRect.y < 0 ) { // check bounds
-				velocity = 0;
-				jumping = false;
-			}
-
-			if (gRight() || gLeft()) { // make sure player wont clip through tiles
-					jumping = false;
-					velocity = 0;
-			}
-
-			if (velocity < 0.1) // decrease velocity so player will eventually fall
-				velocity += 0.1f;
-
-			if (velocity >= 0) {
-				jumping = false;
-				velocity = 0;
-			} 
-		}
-
-		if (playerRect.y > screen_height) { // if player falls through hole in ground
-			info("Player died\n");
-			PlayerMove(200,0);
+	/* Acceleration and deceleration */
+	if (moving && !jumping) {
+		if (acceleration < maxAccel + 0.03f)
+			acceleration += 0.03f;
+	} else if (moving && jumping) {
+		if (acceleration > 1.0f)
+			acceleration -= 0.01f;
+	} else {
+		if (acceleration > 1.0f)
+			acceleration -= 0.1f;
+		if (acceleration > 1.0f) {
+			// Friction
+			if (playerFlip == SDL_FLIP_NONE)
+				PlayerMove(-acceleration * 3, 0);
+			else
+				PlayerMove(acceleration * 3, 0);
 		}
 	}
+
+	// Velocity and gravity
+	if (!gAbove(CollRect) && dir != DIR_ABOVE) {  // If player is not on ground
+
+		if (velocity + 0.15f < maxvelocity)
+			velocity += 0.15f;
+		PlayerMove(0, velocity+gravity);
+
+	} else if (!jumping)
+		velocity = 0;
+	
+	if (jumping) {
+		PlayerMove(0, velocity);
+
+		if (CollRect.y < 0) // check bounds
+			velocity = 0;
+
+		if (gBelow(CollRect) || dir == DIR_BELOW) // Check we don't collide from above
+			if (velocity < 0)
+				velocity = 1;
+
+		if (gAbove(CollRect) || dir == DIR_ABOVE) // Check when player is on ground again
+			jumping = false;
+
+	}
+}
+
+int *networking() {
+	while (GameActive) {
+		SDL_Delay(50);
+		char *packet = get_packet();
+
+		if (strlen(packet) > 0)
+			parse_data(packet);
+
+	}
+	return 0;
+}
+
+int alive_check() {
+	while (GameActive) {
+		SDL_Delay(7000);
+		send_packet("ALIVE");
+	}
+	return 0;
 }
 
 void Update()
 {
-	CollisionDetection(); // checks for collision with each game objects
-	Physics(); // handles movement, jumping and gravity
+	if (!TextPaused) {
+		CollisionDetection(); // checks for collision with each game objects
+		EnemyBehaviour();
+		Physics(); // handles movement, jumping and gravity
+	}
 }
-
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren)
 {
-	SDL_Surface* s = IMG_Load(texture);
+	SDL_Surface* s = IMG_Load(texture); // we have this to check the image is valid
 	if (s) {
 		SDL_Surface* tmpSurface = IMG_Load(texture); 
 		SDL_Texture* text = SDL_CreateTextureFromSurface(ren, tmpSurface);
@@ -154,85 +187,93 @@ Mix_Chunk* LoadSFX(const char* path)
 void Render()
 {
 	SDL_RenderClear(renderer);
+
+	SDL_Rect bgr = BgRect;
+	bgr.y -= hscrollam;
+	SDL_RenderCopy(renderer, BgText, NULL, &bgr);
+
 	RenderMap();
 	RenderObject();
-	RenderText();
+	RenderEnemy();
+
+	RenderParticles();
+	RenderUI();
+
+	if (multiplayer)
+		render_multiplayer();
+
 	SDL_RenderCopyEx(renderer, playerText, NULL, &playerRect, 0, NULL, playerFlip); // renders the player
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
-	SDL_RenderPresent(renderer);
 	
+	SDL_RenderPresent(renderer);
+
 }
 
-void event_handler() {
-	const Uint8*  keyboard_state = SDL_GetKeyboardState(NULL);
+int LoadConfig() // loads params from config.txt
+{
+	FILE *f = fopen("config.txt","r");
+	char line[128];
+	char *previous;
+	char *parsed;
+	int linenum = 0;
 
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
+	if (!f) {
+		error("Missing config file");
+		return -1;
+	} else
+		info("Parsing config file");
 
-		switch (event.type)
-		{
-			case SDL_QUIT:
-				GameActive = false;
-				break;
-			case SDL_WINDOWEVENT:
-				switch (event.window.event) {
-					case SDL_WINDOWEVENT_SIZE_CHANGED:
-						screen_width = event.window.data1;
-						screen_height = event.window.data2;
-						break;
-					}	
-				break;
-			break;
+	while (fgets(line, sizeof(line), f) != NULL) { // loop through each line and parse data
+		linenum++;
 
-			case SDL_KEYDOWN: // SINGLE KEY PRESS NON IMPORTANT HERE
+		char *str = strdup(line);
+
+		int cur = 0;
+
+		while ((parsed = strsep(&str,"=")) != NULL) {
+			if (cur == 1) { // here we set the variables
+
+				parsed[strlen(parsed) -1] = 0;
+
+			//	if (strcmp(previous, "map") == 0)
+			//		InitMap(parsed);
+				
+				if (strcmp(previous, "music") == 0)
+					bgMusic = LoadMusic("game/audio/CoffeeTime.mp3");
+				
+				else if (strcmp(previous, "multiplayer") == 0) {
+					if (strcmp(parsed, "true") == 0)
+						multiplayer = true;
+					else
+						multiplayer = false;
+				}
+
+				else if (strcmp(previous, "server") == 0)
+					server = strdup(parsed);
+				
+				else if (strcmp(previous, "port") == 0)
+					port = atoi(parsed);
+
+				else if (strcmp(previous, "background") == 0)
+					bg = strdup(parsed);
+				
+				else {
+					error("Invalid syntax in config.txt on line %i",linenum);
+					return -1;
+				}
+
+			}
 			
-				if (keyboard_state[SDL_SCANCODE_X] && TextPaused) 
-					DialogueInteract(0);
-				if (keyboard_state[SDL_SCANCODE_M] && event.key.repeat == 0) {
-					if (Mix_PausedMusic()) {
-						Mix_PlayMusic(bgMusic, -1);
-					} else 
-						Mix_PauseMusic();
-				}
-				if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0) {
-						HealthChange(-10);
-						/*CreateMenu(); 
-						paused = true; */
-				}
-
-			case SDL_KEYUP:
-				if (!keyboard_state[SDL_SCANCODE_LEFT])
-					moving = false;
-				if (!keyboard_state[SDL_SCANCODE_RIGHT])
-					moving = false;
-			break;
+			previous = strdup(parsed); // remember previous field for the key
+			cur++;
 		}
+		
+		free(str);
 	}
-
-	if (!TextPaused) {
-		// MORE IMPORTANT MULTI PRESS OUT THE FUNCTION
-		if (keyboard_state[SDL_SCANCODE_LEFT] && dir != DIR_RIGHT && !gRight()) {
-			if (playerRect.x >= 0) {
-				moving = true;
-				playerFlip = SDL_FLIP_NONE;
-				PlayerMove(-movAmount * acceleration, 0);
-			}
-		}
-		if (keyboard_state[SDL_SCANCODE_RIGHT] && dir != DIR_LEFT && !gLeft()) {
-			if (playerRect.x <= (map_width - playerRect.w - 1)) {
-				moving = true;
-				playerFlip = SDL_FLIP_HORIZONTAL;
-				PlayerMove(movAmount * acceleration, 0);
-			}
-		}
-
-		if (keyboard_state[SDL_SCANCODE_SPACE]) {
-			if (!gBelow() && dir != DIR_BELOW && !jumping && gAbove())
-				PlayerJump();
-		}
-	}
-
+	
+	fclose(f);
+	return 0;
 }
+
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
 {
@@ -250,6 +291,7 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 			error("Window could not be created! SDL_Error: %s", SDL_GetError());
 
 		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+
 		if (renderer)
 			info("Renderer Created");
 		else
@@ -270,11 +312,39 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 		else
 			info("Initialized Mixer");
 
+		
+		LoadConfig();
+
+		// Connect to multiplayer
+		if (multiplayer) {
+			init_client(server, port);
+
+			info("Trying to connect to server..");
+			send_packet("SPAWN");
+
+			char *packet = get_packet();
+			while (strcmp(packet, "SUCCESS") != 0) {
+				
+				packet = get_packet();
+				if (strlen(packet) > 0)
+					break;
+			}
+			info("Success! Connected to server");
+
+
+		}
+		free(server);
+
 		paused = false;
 
 		// Set up the game here
 		InitGame();
 		GameActive = true;
+
+		if (multiplayer) {
+			SDL_CreateThread(networking, "networking", (int *)NULL);
+			SDL_CreateThread(alive_check, "alive_check", (int *)NULL);
+		}
 		
 	} else {
 		GameActive = false;
@@ -282,16 +352,37 @@ void init(const char* window_title, int xpos, int ypos, int window_width, int wi
 	}
 }
 
+void CleanMemory() // Frees all memory by destroying all objects
+{
+	GameActive = false;
+	Mix_FreeMusic(bgMusic);
+	Mix_FreeChunk(JumpSound);
+	SDL_DestroyTexture(playerText);
+	SDL_DestroyTexture(BgText);
+	free(bg);
+
+	DestroyMap();
+	if (TextPaused)
+		DestroyMenu();
+	if (ConsoleVisible)
+		HideConsole();
+	
+	CleanUI();
+	CleanObjects();
+
+
+	//TODO: CLEAN MULTIPLAYER
+}
+
 void Clean()
 {
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	TTF_CloseFont(Sans);
+	info("SDL Exited \n");
 	CleanMemory();
-	TTF_Quit();
 	IMG_Quit();
 	Mix_Quit();
-	info("SDL Exited \n");
 	log_close();
 	SDL_Quit();
 }

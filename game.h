@@ -2,16 +2,22 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
 #include "SDL.h"
 #include "SDL_image.h"
 #include "SDL_mixer.h"
 #include "SDL_ttf.h"
-#include "gameobject.h"
+#include "entity/gameobject.h"
 #include "lib.h"
 #include "player.h"
 #include "ui/ui.h"
 #include "map.h"
-#include "menu.h"
+#include "ui/menu.h"
+#include "entity/enemy.h"
+#include "client.h"
+#include "entity/particle.h"
+#include "ui/console.h"
+#include "lua.h"
 
 #define LEN(x) (sizeof(x)/sizeof(x[0]))
 
@@ -24,16 +30,26 @@ void Clean();
 
 void Update();
 void Render();
+
 void event_handler();
+
+extern Mix_Music* bgMusic;
 Mix_Music* LoadMusic(const char* path);
 Mix_Chunk* LoadSFX(const char* path);
 
+extern SDL_Rect BgRect;
+
 extern bool paused;
 extern bool TextPaused;
+extern bool intext;
 
 SDL_Texture* TextureManager(const char* texture, SDL_Renderer* ren);
+Mix_Music* LoadMusic(const char* path);
+Mix_Chunk* LoadSFX(const char* path);
 
 extern SDL_Surface *s;
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
+
 extern bool GameActive;
+extern bool multiplayer;

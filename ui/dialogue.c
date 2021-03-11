@@ -7,11 +7,10 @@ static size_t currentnode;
 struct GameObject TextBox;
 struct TextObject TextName;
 struct TextObject TextText;
-size_t lines = 0;
-
+static size_t lines = 0;
 
 /*
-DIALOGUE SCRIPT FORMAT:SS
+DIALOGUE SCRIPT FORMAT:
 speaker:text,
 
 (comma on the end of each line, including the last line)
@@ -20,7 +19,8 @@ narrator:hello world,
 narrator:triple pointers make me cry at night,
 */
 
-void DialogueUpdate(int option, char* text) { // used to update existing text
+void DialogueUpdate(int option, char* text)
+{ // used to update existing text
 	if (option == 0)
 		UpdateText(&TextName, text, White);
 	else if (option == 1)
@@ -32,8 +32,8 @@ void DialogueUpdate(int option, char* text) { // used to update existing text
 void CreateDialogue(char *speaker, char *text)
 {
 	CreateObject(0, screen_height - screen_height / 3, screen_height / 3, screen_width, "game/ui/dialogue.png", &TextBox, "DialogueBox");
-	NewText(&TextName, speaker, White, 20, TextBox.objRect.y + 20);
-	NewText(&TextText, text, White, 20, TextBox.objRect.y + 50);
+	NewText(&TextName, Sans, speaker, White, 20, TextBox.objRect.y + 20);
+	NewText(&TextText, Sans, text, White, 20, TextBox.objRect.y + 50);
 	TextPaused = true;
 }
 
@@ -68,20 +68,15 @@ void DialogueInteract(int option) // add options for how to interact with text.
 	}
 }
 
-char *__strsep (char **stringp, const char *delim) // TAKEN FROM GNU C POSIX LIBRARY (for windows)
+char *strseps(char **sp, char *sep)
 {
-	char *begin, *end;
-	begin = *stringp;
-	if (begin == NULL)
-    	return NULL;
-
-  	end = begin + strcspn (begin, delim);
- 	if (*end) {
-      *end++ = '\0';
-      *stringp = end;
-    } else
-		*stringp = NULL;
-  return begin;
+	char *p, *s;
+	if (sp == NULL || *sp == NULL || **sp == '\0') return(NULL);
+	s = *sp;
+	p = s + strcspn(s, sep);
+	if (*p != '\0') *p++ = '\0';
+	*sp = p;
+	return(s);
 }
 
 int LoadDialogueScript(char *fp) // Loads dialogue to 2d array. Returns 0 on success, anything lower on failure.
@@ -134,7 +129,7 @@ int LoadDialogueScript(char *fp) // Loads dialogue to 2d array. Returns 0 on suc
     while (pt != NULL) { // first separate file into strings
 
 		char *tok;
-		while ((tok = __strsep(&pt,":")) != NULL) {
+		while ((tok = strseps(&pt,":")) != NULL) {
 
 			dialoguearray[t_line][t_index] = strdup(tok); // load split screen to memory
         	if (t_index == 0)
@@ -167,6 +162,7 @@ void PlayDialogue(int startindex, int max, char *fp) // defines which dialogue n
 {
 	if (!dialoguearray) {
 		maxindex = max;
+
 		currentnode = startindex -1; // make it 1 indexed as it makes more sense
 		if (LoadDialogueScript(fp) == 0)
 			CreateDialogue(dialoguearray[currentnode][0], dialoguearray[currentnode][1]); // load startindex in to begin text

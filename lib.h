@@ -1,4 +1,5 @@
 #pragma once
+
 enum dietypes {
 	DT_NONE,
 	DT_ERRNO,
@@ -10,6 +11,7 @@ void die (enum dietypes, const char *, ...);
 #define error(...) die(DT_NONE, __VA_ARGS__)
 #define error_eno(...) die(DT_ERRNO,  __VA_ARGS__)
 #define error_sdl(...) die(DT_SDL, __VA_ARGS__)
+
 
 enum logtypes {
 	LT_INFO,

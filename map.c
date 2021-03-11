@@ -9,7 +9,9 @@ static int** array;
 static SDL_Rect tilerect;
 
 static SDL_Texture** arr;
-int arr_elements = 0;
+size_t arr_elements = 0;
+
+static bool mapopen; // use this to prevent segfault during map load
 
 SDL_Texture* LoadTile(const char* tiletext)
 {
@@ -37,7 +39,7 @@ void DestroyTiles()
 	arr_elements = 0;
 }
 
-void LoadTiles(char* map) // Loads in location for each tile from map.txt.tiles
+void LoadTiles(const char* map) // Loads in location for each tile from map.txt.tiles
 {
  	char *fp = malloc(strlen(map) + 6); // allocate memory for string and .json extension
     strcpy(fp, map);
@@ -45,6 +47,9 @@ void LoadTiles(char* map) // Loads in location for each tile from map.txt.tiles
 	
 	// load in json file to string
 	FILE *f = fopen(fp, "r"); 
+	if (!f)
+		error("Error opening map file %s", fp);
+
 	char s[1000];
 	size_t i = 0;
 	char ch;
@@ -60,9 +65,11 @@ void LoadTiles(char* map) // Loads in location for each tile from map.txt.tiles
 		i++;
 	}
 
+	lines--;
+
 	// parse json
     json_t mem[32];
-    const json_t* json = json_create(s, mem, sizeof mem / sizeof *mem );
+    const json_t* json = json_create(s, mem, sizeof mem / sizeof *mem);
     if (!json)
         error("Error parsing json for tiles: %s",fp);
 
@@ -71,20 +78,24 @@ void LoadTiles(char* map) // Loads in location for each tile from map.txt.tiles
 	for (int i = 0; i < lines-1; i++) { // loop through each line (not the best way but itll do)
 		char a[10];
 		sprintf(a, "%i", i);
-		const json_t* textitem = json_getProperty( json, a);
+		const json_t* textitem = json_getProperty(json, a);
 		if (textitem || JSON_TEXT != json_getType(textitem)) { // get value of each node 
 			const char* textval = json_getValue( textitem );
-			printf( "Loaded Texture: %s.\n", textval ); // load node into array
+			printf("Loaded Texture: %s.\n", textval); // load node into array
 			arr[i] = LoadTile(textval);
 			arr_elements++;
 		}
 	}
 	free(fp);
-
+	fclose(f);
 }
 
-void InitMap(char* map)
+void InitMap(const char* map)
 {
+	mapopen = false;
+	if (rowcount > 0)
+		DestroyMap();
+	
 	LoadTiles(map);
 	// Read 2d array in from a text file for a map
 
@@ -105,7 +116,7 @@ void InitMap(char* map)
 			columncount += 1;
 		if (ch == '\n')
 			break;
-	} 
+	}
 	while ((ch = fgetc(f)) != EOF)
 	{
 		if (ch == '\n')
@@ -116,13 +127,14 @@ void InitMap(char* map)
 	if (!columncount) error("Map %s has no columns", map);
 
 	columncount += 1;
-	rowcount += 2;
+	rowcount += 1;
 	
  	array = malloc(rowcount * sizeof(*array));
 
-    for (size_t i = 0; i < rowcount; i++)
+    for (int i = 0; i < rowcount; i++) {
         array[i] = malloc(columncount * sizeof(**array));
-
+	}
+	
 	if (!array)
 		error("Could not allocate memory for 2D map array %s", map);
 
@@ -142,69 +154,99 @@ void InitMap(char* map)
 	map_width = columncount * tile_size;
 	map_height = rowcount * tile_size;
 	free(fp);
+	mapopen = true;
+	SpawnPlayer(80, 50, 75, 90);
 }
 
-bool gLeft() { // Ground collide from left of tile
-	int bottomA = playerRect.y + playerRect.h;
-	int tx = (CollRect.x + playerRect.w) / tile_size;
-	int ty = (bottomA / tile_size);
-
-	if (ty >= rowcount || tx >= columncount) // todo - this sucks and is a temp fix to prevent segfault
-		return true;
-
-	if (array[ty -1][tx] > 0) 
-		return true;
-	else
+bool gLeft(SDL_Rect r) { // Ground collide from left of tile
+	if (!mapopen)
 		return false;
+	
+	int tx = (r.x + r.w) / tile_size;
+
+	if (r.y < 3)
+		return true;
+
+	for (int i = r.y; i < (r.h + r.y -4); i++) {
+		int g = (i / tile_size);
+
+		if (array[g][tx] > 0)
+			return true;
+		
+	}
+
+	return false;
 }
 
-bool gRight() { // Ground collision from right of tile
-	int bottomA = playerRect.y + playerRect.h;
-	int tx = CollRect.x / tile_size;
-	int ty = (bottomA / tile_size);
-
-	if (ty >= rowcount || tx >= columncount)
-		return true;
-
-	if (array[ty - 1][tx] > 0)
-		return true;
-	else 
+bool gRight(SDL_Rect r) { // Ground collision from right of tile
+	if (!mapopen)
 		return false;
-}
-
-bool gAbove() { // Ground collision from above tile
-	int bottomA = playerRect.y + playerRect.h;
 
 	int tx = CollRect.x / tile_size;
+
+	if (r.y < 3)
+		return true;
+
+	for (int i = r.y; i < (r.h + r.y -4); i++) {
+		int g = (i / tile_size);
+
+		if (array[g][tx] > 0)
+			return true;
+
+	}
+	return false;
+}
+
+bool gAbove(SDL_Rect r) { // Ground collision from above tile
+	if (!mapopen)
+		return false;
+
+	int bottomA = r.y + r.h;
+	int tx = r.x / tile_size;
 	int ty = bottomA / tile_size;
 
-	if (ty >= rowcount || tx >= columncount)
+	if (r.y < 3) // i cant remember what this does but it does something
 		return true;
 
+	if (ty >= rowcount || tx >= columncount || ty < 0) { // if player at bottom of screen with no tile
+		if (&r == &playerRect)
+			PlayerDie();
+		return false; // kill player 
+	}
+	
 	bool col = false;
 
-	for (int i = CollRect.x; i < CollRect.x + playerRect.w; i++) { // loop through each tile in range of player
+	for (int i = r.x; i < r.x + r.w; i++) { // loop through each tile in range of player
 		int tx = i / tile_size;
+
 		if (array[ty][tx] > 0)
 			col = true;
+
 	}
+
 	if (col)
 		return true;
 	else
 		return false;
 }
 
-bool gBelow() { // Ground collision from below tile
-	int bottomA = playerRect.y;
+bool gBelow(SDL_Rect r) { // Ground collision from below tile
+	if (!mapopen)
+		return false;
+
+	int bottomA = r.y;
 	int ty = bottomA / tile_size;
-	int tx = CollRect.x / tile_size;
+	int tx = r.x / tile_size;
 	
-	if (ty >= rowcount || tx >= columncount)
+	if (bottomA + r.h < 3)
+		return true;
+
+	if (ty >= rowcount || tx >= columncount || ty < 0)
 		return true;
 
 	bool col = false;
 
-	for (int i = CollRect.x; i < CollRect.x + playerRect.w; i++) { // loop through each tile in range of player
+	for (int i = r.x; i < r.x + r.w; i++) { // loop through each tile in range of player
 		int tx = i / tile_size;
 		if (array[ty][tx] > 0)
 			col = true;
@@ -218,18 +260,24 @@ bool gBelow() { // Ground collision from below tile
 
 void DestroyMap()
 {
-	DestroyTiles();
-	for (size_t x = 0; x < rowcount; x++)
-		free(array[x]);
+	mapopen = false;
+	if (rowcount > 0) {
+		DestroyTiles();
+		for (int x = 0; x < rowcount; x++)
+			free(array[x]);
 
-	if (array != NULL) {
-		columncount = 0;
-		rowcount = 0;
-		free(array);
+		if (array != NULL) {
+			columncount = 0;
+			rowcount = 0;
+			free(array);
+		}
+
+
+		map_width = 0;
+		map_height = 0;
 	}
-	if (arr != NULL)
-		free(arr);
 }
+
 void RenderMap()
 {
 	if (array != NULL) {
@@ -239,12 +287,12 @@ void RenderMap()
 			
 			for (int column = 0; column < columncount; column++) {
 				tilerect.x = (column * tile_size) - scrollam;
+				tilerect.y = (row *  tile_size) - hscrollam;
+				BgRect.x = 0 - scrollam;
 				type = array[row][column];
 
-				if (arr[type])
+				if (type > 0)
 					SDL_RenderCopy(renderer, arr[type], NULL, &tilerect);
-				else
-					warn("Could not render tile. Map tile ID: %i", type);
 			}	
 
 		}

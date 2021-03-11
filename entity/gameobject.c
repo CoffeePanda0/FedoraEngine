@@ -1,5 +1,5 @@
 // basic gameobject functions
-#include "game.h"
+#include "../game.h"
 
 struct ObjList {
 	struct GameObject *obj;
@@ -20,20 +20,30 @@ void push (struct GameObject *obj)
 
 void CreateObject(int xPos, int yPos, int height, int width, const char* textPath, struct GameObject *obj, char *name)
 {
+	if (obj == NULL)
+		error("Trying to create GameObject from NULL pointer");
+	
 	SDL_Rect objRect;
-	SDL_Texture* texture;
 	obj->name = name;
-	obj->objRect.x = xPos;
-	obj->objRect.y = yPos;
-	obj->objRect.w = width;
-	obj->objRect.h = height;
+	objRect.x = xPos;
+	objRect.y = yPos;
+	objRect.w = width;
+	objRect.h = height;
+	obj->name = name;
+	obj->objRect = objRect;
+	obj->render_rect = objRect;
 	obj->texture = TextureManager(textPath, renderer);
 	push(obj);
 }
 
 void RenderObject() {
-	for (struct ObjList *o = objlist; o; o = o->next)
-		SDL_RenderCopy(renderer, o->obj->texture, NULL, &o->obj->objRect);
+	for (struct ObjList *o = objlist; o; o = o->next) {
+		o->obj->objRect.x = o->obj->render_rect.x -scrollam;
+		o->obj->objRect.y = o->obj->render_rect.y -hscrollam;
+		if (o->obj->render_rect.x - (scrollam - o->obj->render_rect.w)  >= 0 && o->obj->render_rect.x -scrollam <= screen_width) // only bother rendering stuff in bounds
+			SDL_RenderCopy(renderer, o->obj->texture, NULL, &o->obj->objRect);
+
+	}
 }
 
 void CollisionDetection()
@@ -82,10 +92,11 @@ void CleanObjects() // Destroys all game objects
 	struct ObjList *t;
 	t = objlist;
 	if (t) {
-		while (t->next != NULL) // loop through list
+		while (t->next != NULL) { // loop through list
 			t = t->next;
-
-		DestroyObject(t->obj); // get last object
+			DestroyObject(t->obj); // get last object
+		}
+		DestroyObject(t->obj);
 	}
 }
 

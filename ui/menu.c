@@ -1,8 +1,9 @@
 // Pause menu and event handling for pause menu
-#include "../menu.h"
+#include "menu.h"
 
 static int selection = 0;
-static const char* labels[] = {"Resume", "Quit"};
+static const char* labels[] = {"Resume", "Quit"}; // Add new options here
+
 static const int LabelCount = LEN(labels);
 static SDL_Texture* LabelText[LEN(labels)];
 
@@ -67,7 +68,7 @@ void DestroyMenu()
 		SDL_DestroyTexture(LabelText[i]);
 }
 
-void MenuEventHandle()
+void MenuEventHandle() // we use a different event handler so it doesnt move the player
 {
 	
 	const Uint8* keyboard_state = SDL_GetKeyboardState(NULL);
