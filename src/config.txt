@@ -1,0 +1,8 @@
+[MAP CONFIG]
+music=../game/audio/CoffeeTime.mp3
+background=../game/bg.jpg
+
+[MULTIPLAYER CONFIG]
+multiplayer=false
+server=coffeepanda.co.uk
+port=4311
