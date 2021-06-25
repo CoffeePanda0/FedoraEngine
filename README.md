@@ -9,6 +9,8 @@ written in pure c
 # Current features
 FedoraEngine is still very much in development. Current groundbreaking features are:
  - Ability to create, render and manage multiple GameObjects and text on screen easily for game developers
+ - Spritesheet animation system
+ - Multiple segfaults!
  - A somewhat working physics and collision system
  - Particle system
  - Multiplayer UDP server and client system
