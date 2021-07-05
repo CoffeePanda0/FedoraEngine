@@ -225,7 +225,7 @@ void RenderUI()
 	
 }
 
-void UpdateText(struct TextObject *obj, char *text, SDL_Color color) // used to update text every frame 
+void UpdateText(struct TextObject *obj, const char *text, SDL_Color color) // used to update text every frame 
 {
 	
 	if (obj == NULL)
