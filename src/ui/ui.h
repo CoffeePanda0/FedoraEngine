@@ -52,4 +52,4 @@ void CleanUI();
 
 void RenderUI();
 void UITextInteract(int option);
-void UpdateText(struct TextObject *obj, char *text, SDL_Color color);
+void UpdateText(struct TextObject *obj, const char *text, SDL_Color color);

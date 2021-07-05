@@ -28,8 +28,9 @@ extern int screen_height;
 extern int screen_width;
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height);
-
+void SaveGame(const char *name);
 void Clean();
+void LoadSave(const char *name);
 
 void Update();
 void Render();
@@ -55,6 +56,6 @@ char *strseps(char **sp, char *sep);
 extern SDL_Surface *s;
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
-
+extern char *save_path;
 extern bool GameActive;
 extern bool multiplayer;
