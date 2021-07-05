@@ -92,7 +92,7 @@ void CleanObjects() // Destroys all game objects
 	struct ObjList *t;
 	t = objlist;
 	if (t) {
-		while (t->next) { // loop through list
+		while (t->next != NULL) { // loop through list
 			t = t->next;
 			DestroyObject(t->obj); // get last object
 		}

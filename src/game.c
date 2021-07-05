@@ -8,8 +8,6 @@ SDL_Renderer* renderer;
 TTF_Font* Sans;
 TTF_Font* ConsoleFont;
 
-char *lua_script;
-
 SDL_Texture *playerText;
 
 struct Animation PlayerAnimation;
@@ -29,17 +27,15 @@ bool intext = false;
 
 int map_width, map_height;
 
-// network stuff
 static char *server;
 static int port;
 static char *bg;
-
 
 void InitGame() // initializes the things like game objects and maps
 {
 	InitLua();
 	RunLuaFile("../scripts/test.lua");
-	lua_script = strdup("../scripts/test.lua");
+
 	Sans = TTF_OpenFont("../game/baloo.ttf", 20);
 	ConsoleFont = TTF_OpenFont("../game/Inconsolata.ttf", 20);
 
@@ -53,6 +49,10 @@ void InitGame() // initializes the things like game objects and maps
 	NewText(&testText, Sans, "FedoraEngine", White, 350 , 0); // EXAMPLE TEXT
 	MapLoaded(); // make sure user loaded in a map
 
+	if (Mix_PlayingMusic() == 0) {
+    	if (Mix_PlayMusic(bgMusic, -1) == -1)
+			warn("Could not play music %s", Mix_GetError());
+    }
 	
 	NewParticleSystem(PARTICLE_SNOW, 0, 0);
 
@@ -250,7 +250,13 @@ int LoadConfig() // loads params from config.txt
 
 				parsed[strlen(parsed) -1] = 0;
 
-				if (strcmp(previous, "multiplayer") == 0) {
+			//	if (strcmp(previous, "map") == 0)
+			//		InitMap(parsed);
+				
+				if (strcmp(previous, "music") == 0)
+					bgMusic = LoadMusic("../game/audio/CoffeeTime.mp3");
+				
+				else if (strcmp(previous, "multiplayer") == 0) {
 					if (strcmp(parsed, "true") == 0)
 						multiplayer = true;
 					else
@@ -386,11 +392,11 @@ void CleanMemory() // Frees all memory by destroying all objects
 
 void Clean()
 {
-	CleanMemory();
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	TTF_CloseFont(Sans);
 	info("SDL Exited \n");
+	CleanMemory();
 	IMG_Quit();
 	Mix_Quit();
 	log_close();

@@ -1,4 +1,5 @@
 [MAP CONFIG]
+music=../game/audio/CoffeeTime.mp3
 background=../game/bg.jpg
 
 [MULTIPLAYER CONFIG]

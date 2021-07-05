@@ -34,8 +34,7 @@ void DestroyTiles()
 {
 	for (size_t i = 0; i < arr_elements; i++) {
 		SDL_DestroyTexture(arr[i]);
-		if (i != arr_elements -1)
-			arr[i] = arr[i+1];
+		arr[i] = arr[i+1];
 	}
 	arr_elements = 0;
 }
@@ -69,10 +68,10 @@ void LoadTiles(const char* map) // Loads in location for each tile from map.txt.
 	lines--;
 
 	// parse json
-	json_t mem[32];
-	const json_t* json = json_create(s, mem, sizeof mem / sizeof *mem);
-	if (!json)
-    	error("Error parsing json for tiles: %s",fp);
+    json_t mem[32];
+    const json_t* json = json_create(s, mem, sizeof mem / sizeof *mem);
+    if (!json)
+        error("Error parsing json for tiles: %s",fp);
 
 	arr = malloc(sizeof(SDL_Texture*) * (lines - 1));
 
@@ -231,13 +230,7 @@ bool gAbove(SDL_Rect r) { // Ground collision from above tile
 		return false;
 }
 
-void calculate_scroll()
-{
-	
-}
-
-bool gBelow(SDL_Rect r)
-{ // Ground collision from below tile
+bool gBelow(SDL_Rect r) { // Ground collision from below tile
 	if (!mapopen)
 		return false;
 
@@ -281,8 +274,6 @@ void DestroyMap()
 
 
 		map_width = 0;
-		scrollam = 0;
-		hscrollam = 0;
 		map_height = 0;
 	}
 }

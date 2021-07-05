@@ -108,7 +108,7 @@ int LoadDialogueScript(char *fp) // Loads dialogue to 2d array. Returns 0 on suc
 		}
 	}
 
-	char *pt = 0;
+	char *pt;
 
 	size_t t_line = 0;
 	size_t t_index = 0;
@@ -117,7 +117,7 @@ int LoadDialogueScript(char *fp) // Loads dialogue to 2d array. Returns 0 on suc
 
     while (pt != NULL) { // first separate file into strings
 
-		char *tok = 0;
+		char *tok;
 		while ((tok = strseps(&pt,":")) != NULL) {
 
 		dialoguearray[t_line][t_index] = strdup(tok); // load split screen to memory
