@@ -18,7 +18,7 @@ void push (struct GameObject *obj)
 	objlist = newobj;
 }
 
-void CreateObject(int xPos, int yPos, int height, int width, const char* textPath, struct GameObject *obj, char *name)
+void CreateObject(int xPos, int yPos, int height, int width, const char* textPath, struct GameObject *obj, char *name, int obj_type)
 {
 	if (obj == NULL)
 		error("Trying to create GameObject from NULL pointer");
@@ -29,6 +29,7 @@ void CreateObject(int xPos, int yPos, int height, int width, const char* textPat
 	objRect.y = yPos;
 	objRect.w = width;
 	objRect.h = height;
+	obj->obj_type = obj_type;
 	obj->name = name;
 	obj->objRect = objRect;
 	obj->render_rect = objRect;
@@ -70,17 +71,32 @@ void CollisionDetection()
 				topB = o->obj->objRect.y;
 				bottomB = o->obj->objRect.y + o->obj->objRect.h;
 
-				if (bottomA <= topB + 5)
+				bool collided = false;
+
+				if (bottomA <= topB + 5) {
 					dir = DIR_ABOVE;
-
-				if (topA >= bottomB - 5)
+					collided = true;
+				}
+				if (topA >= bottomB - 5) {
 					dir = DIR_BELOW;
+					collided = true;
 
-				if (rightA <= leftB + 5)
+				}
+				if (rightA <= leftB + 5) {
 					dir = DIR_RIGHT;
-
-				if (leftA >= rightB - 5)
+					collided = true;
+				}
+				if (leftA >= rightB - 5) {
 					dir = DIR_LEFT;
+					collided = true;
+				}
+
+				if (collided) {
+					if (o->obj->obj_type == 2) {// type for permadeath
+						info("Player collided with deadly object and sadly perished");
+						PlayerDie();
+					}
+				}
 
 			} else dir = DIR_NONE;
 		}

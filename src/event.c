@@ -37,6 +37,7 @@ void event_handler() {
 
 					if (keyboard_state[SDL_SCANCODE_X] && TextPaused) 
 						DialogueInteract(0);
+					
 					if (keyboard_state[SDL_SCANCODE_F] && event.key.repeat == 0) {
 						if (!fullscreen) {
 							SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
@@ -145,6 +146,12 @@ void event_handler() {
 				playerFlip = SDL_FLIP_HORIZONTAL;
 				PlayerMove(movAmount * acceleration, 0);
 			}
+		}
+		if (keyboard_state[SDL_SCANCODE_E]) {
+				TriggerDash();
+			
+		} else {
+			movAmount = 3.2;
 		}
 
 		if (keyboard_state[SDL_SCANCODE_SPACE] && !gBelow(CollRect) && !jumping && (gAbove(CollRect) || dir == DIR_ABOVE))

@@ -18,6 +18,9 @@ extern float velocity;
 extern float gravity;
 extern float maxvelocity;
 
+void Dash();
+void TriggerDash();
+
 extern int hscrollam;
 
 extern bool jumping;

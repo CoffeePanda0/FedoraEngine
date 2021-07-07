@@ -31,7 +31,7 @@ void DialogueUpdate(int option, char* text)
 
 void CreateDialogue(char *speaker, char *text)
 {
-	CreateObject(0, screen_height - screen_height / 3, screen_height / 3, screen_width, "../game/ui/dialogue.png", &TextBox, "DialogueBox");
+	CreateObject(0, screen_height - screen_height / 3, screen_height / 3, screen_width, "../game/ui/dialogue.png", &TextBox, "DialogueBox", 0);
 	NewText(&TextName, Sans, speaker, White, 20, TextBox.objRect.y + 20);
 	NewText(&TextText, Sans, text, White, 20, TextBox.objRect.y + 50);
 	TextPaused = true;

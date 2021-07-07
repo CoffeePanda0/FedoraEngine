@@ -57,7 +57,7 @@ void InitGame() // initializes the things like game objects and maps
 	NewParticleSystem(PARTICLE_SNOW, 0, 0);
 
 	CreateEnemy(funny_mushroom_man, 100, 100);
-	CreateObject(150,300,90,90,"../game/doge.png",&doge, "doge");
+	CreateObject(150,300,90,90,"../game/doge.png",&doge, "doge",1);
 	PlayDialogue(1,2,"../game/test.dialogue"); // DIALOGUE IS 1 INDEXED
 }
 
@@ -143,6 +143,7 @@ void Update()
 		CollisionDetection(); // checks for collision with each game objects
 		EnemyBehaviour();
 		Physics(); // handles movement, jumping and gravity
+		Dash();
 	}
 }
 

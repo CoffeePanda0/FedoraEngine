@@ -11,8 +11,8 @@ float velocity = 0;
 float maxvelocity = 7.0f;
 float gravity = 4;
 
-float movAmount = 3.2;
-float maxAccel = 2.0;
+float movAmount = 3.2f;
+float maxAccel = 2.5f;
 
 int MaxHealth = 100;
 int Health = 100;
@@ -21,6 +21,56 @@ SDL_Rect CollRect;
 
 int scrollam = 0;
 int hscrollam = 0;
+
+// Dash stuff
+static float DashAmount = 10; 
+static Uint64 LastDashTime = 0; // Stores the time of the last dash
+static Uint64 DashTime = 75;
+static int DashTimeOut = 2500; // Time between dashes (ms)
+static Uint64 start_time;
+static Uint64 time_elapsed;
+
+static bool Dashing = false;
+static bool DashTriggered = false;
+
+void TriggerDash()
+{
+	if (!Dashing) {
+		if (LastDashTime + DashTimeOut < now || LastDashTime == 0) {
+			DashTriggered = true;
+		}
+	}
+}
+
+void Dash()
+{
+	if (DashTriggered) {
+		if (LastDashTime + DashTimeOut < now || LastDashTime == 0) {
+			// Make dash only last specified length
+			if (!Dashing) {
+				start_time = SDL_GetPerformanceCounter();
+				time_elapsed = 0;
+			}
+			Dashing = true;
+			if (time_elapsed < DashTime) {
+				
+				time_elapsed = (SDL_GetPerformanceCounter() - start_time) / 1000000;
+				acceleration = maxAccel;
+				if (playerFlip == SDL_FLIP_NONE) {
+					NewParticleSystem(PARTICLE_DASH_RIGHT, 0, 0);
+					PlayerMove(-(DashAmount * maxAccel), 0);
+				} else {
+					NewParticleSystem(PARTICLE_DASH_LEFT, 0, 0);
+					PlayerMove(DashAmount * maxAccel, 0);
+				}
+			} else {
+				Dashing = false;
+				DashTriggered = false;
+				LastDashTime = now;
+			}
+		}
+	}
+}
 
 void PlayerMove(int xAmount, int yAmount)
 { 

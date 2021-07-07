@@ -8,6 +8,7 @@ struct GameObject {
 	SDL_Rect objRect;
 	SDL_Rect render_rect;
 	SDL_Texture* texture;
+	int obj_type;
 };
 
 enum CollDir {
@@ -24,4 +25,4 @@ void CleanObjects();
 void RenderObject();
 void CollisionDetection();
 void DestroyObject(struct GameObject *obj);
-void CreateObject(int xPos, int yPos, int height, int width, const char* textPath, struct GameObject *obj, char *name);
+void CreateObject(int xPos, int yPos, int height, int width, const char* textPath, struct GameObject *obj, char *name, int obj_type);

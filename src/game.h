@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "SDL.h"
-#include "SDL_image.h"
-#include "SDL_mixer.h"
-#include "SDL_ttf.h"
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
 #include "entity/gameobject.h"
 #include "lib.h"
 #include "player.h"
@@ -26,6 +26,8 @@
 
 extern int screen_height;
 extern int screen_width;
+
+extern Uint64 now;
 
 void init(const char* window_title, int xpos, int ypos, int window_width, int window_height);
 void SaveGame(const char *name);
