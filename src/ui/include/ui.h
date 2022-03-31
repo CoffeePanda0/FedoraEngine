@@ -21,6 +21,6 @@ extern bool FE_DialogueActive;
 void FE_RenderMenu();
 void FE_FreeUI();
 void FE_MenuEventHandle();
-void FE_RenderUI( );
+void FE_RenderUI();
 
 #endif

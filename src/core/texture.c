@@ -33,3 +33,12 @@ SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a fi
         return(FE_TextureFromRGBA(COLOR_PINK));
     }
 }
+
+int FE_RenderCopy(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst) // Renders a texture to the screen if in camera bounds
+{
+    // Check if rect is in screen bounds
+    if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0,screen_width,screen_height}))
+        return SDL_RenderCopy(renderer, texture, src, dst);
+    else
+        return 0;
+}

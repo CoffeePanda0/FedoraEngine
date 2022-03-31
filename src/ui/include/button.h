@@ -35,9 +35,28 @@ enum FE_BUTTON_TYPE {
 */
 FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t, void (*onclick), void *onclick_data);
 
+
+/** Destroys a button, freeing resources used and removed from render
+ * \param b The button to destroy
+ * \return -1 on error, 1 on success
+*/
 int FE_DestroyButton(FE_Button *b);
+
+
 void FE_RenderButtons();
+
+
+/** Destroys all buttons
+ * \return -1 on error, 1 on success
+ */
 int FE_CleanButtons();
+
+
+/* Handles callback when a button is clicked
+    * \param x The x position of the mouse click
+    * \param y The y position of the mouse click
+    * \return true if button was clicked, false otherwise
+    */
 bool FE_ButtonClick(int x, int y);
 
 #endif

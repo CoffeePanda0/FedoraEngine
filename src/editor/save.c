@@ -55,7 +55,6 @@ void Editor_Save(FE_Map *mapsave)
         warn("Editor: Failed to create map file %s", mapsave->name);
         return;
     }
-    
 
     // Write map name
     if (fwrite(mapsave->name, sizeof(char), MAP_NAME_LENGTH, f) != MAP_NAME_LENGTH) goto err;
@@ -76,7 +75,8 @@ void Editor_Save(FE_Map *mapsave)
 
     // Write tiles
     for (int i = 0; i < mapsave->tilecount; i++) {
-        if (fwrite(&mapsave->tiles[i], sizeof(Map_Tile), 1, f) != 1) goto err;
+        if (fwrite(&mapsave->tiles[i].texture_index, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fwrite(&mapsave->tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
     }
 
     // Write player spawnq

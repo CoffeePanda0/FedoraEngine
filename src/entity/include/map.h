@@ -4,7 +4,7 @@
 #include <SDL.h>
 
 typedef struct Map_Tile {
-    Uint32 texture_index;
+    Uint16 texture_index;
     Vector2D position;
 } Map_Tile;
 

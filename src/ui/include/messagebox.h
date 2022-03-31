@@ -8,6 +8,7 @@ enum FE_MBTYPE {
     MESSAGEBOX_TEXTBOX
 };
 
+/* Whether or not a messagebox is currently open */
 extern bool FE_MBShown;
 
 typedef struct FE_MessageBox {
@@ -29,11 +30,32 @@ typedef struct FE_MessageBox {
     
 } FE_MessageBox;
 
+
+/** Shows a messagebox with an input text prompt
+*\param title The title of the messagebox
+*\param dialogue The dialogue to be displayed
+*\param onclick The function to be called when the button is clicked
+*\param onclick_data The data to be passed to the onclick function
+*/
 int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick), void *onclick_data);
+
+
+/** Shows a simple messagebox
+ * \param title The title of the messagebox
+ * \param body The dialogue to be displayed
+*/
 int FE_ShowMessageBox(char *title, char *body);
 
+
+/** Renders the current messagebox being displayed, if any */
 void FE_RenderMessageBox();
+
+
+/* Destroys the current messagebox being shown */
 void FE_DestroyMessageBox();
+
+
+/* Returns the text that the user has entered into the messagebox input prompt */
 char *FE_GetMessageBoxInput();
 
 #endif

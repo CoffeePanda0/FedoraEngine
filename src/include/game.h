@@ -13,9 +13,9 @@
 #include "../editor/editor.h"
 
 #include "../core/include/utils.h"
+#include "../core/include/texture.h"
 
 #include "../ui/include/ui.h"
-#include "texture.h"
 #include "audio.h"
 #include "linkedlist.h"
 

@@ -90,6 +90,8 @@ void FE_StartGame()
 {
 	FE_GameState = GAME_STATE_PLAY;
 	MenuPage = NULL;
+
+	
 }
 
 void FE_Clean() // Exits the game cleanly, freeing all resources

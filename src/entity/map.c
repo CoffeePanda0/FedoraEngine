@@ -3,18 +3,24 @@
 #define MAP_NAME_LENGTH 64
 #define MAP_TEXURE_PATH_LENGTH 64
 #define MAP_BG_TEXTURE_LENGTH 64
-#define TILE_SIZE 32
+#define TILE_SIZE 64
 
 #define TEXTURE_PATH "game/map/textures/"
-#define BG_PATH "game/map/backgrounds/"
 
 #define MAP_DIRECTORY "game/map/maps/"
 
 static FE_LoadedMap map;
 bool FE_MapLoaded = false;
 
+static FE_Camera camera;
+static SDL_Texture *flagtexture;
+
 int FE_LoadMap(const char *fp)
 {
+    camera = (FE_Camera){0, 0, 4096, 1024, false};
+    if (!flagtexture)
+        flagtexture = FE_TextureFromFile("game/map/end.png");
+    
     // Combine map directory and map file path
     char *map_path = AddStr(MAP_DIRECTORY, fp);
     // Read map file from binary format
@@ -60,14 +66,9 @@ int FE_LoadMap(const char *fp)
     // load background image
     char *bg_path = xmalloc(MAP_BG_TEXTURE_LENGTH);
     if (fread(bg_path, sizeof(char), MAP_BG_TEXTURE_LENGTH, f) != MAP_BG_TEXTURE_LENGTH) goto err;
-    
-    char *buf = xmalloc(strlen(BG_PATH) + MAP_BG_TEXTURE_LENGTH + 1);
-    strcpy(buf, BG_PATH);
-    strcat(buf, bg_path);
 
-    map.bg = FE_TextureFromFile(buf);
+    map.bg = FE_TextureFromFile(bg_path);
     free(bg_path);
-    free(buf);
 
     // Read Map tiles
     if (fread(&map.tilecount, sizeof(Uint16), 1, f) != 1) goto err;
@@ -76,7 +77,7 @@ int FE_LoadMap(const char *fp)
         if (fread(&map.tiles[i].texture_index, sizeof(Uint16), 1, f) != 1) goto err;
         if (fread(&map.tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
     }
-    
+ 
     // read player spawn
     if (fread(&map.PlayerSpawn, sizeof(Vector2D), 1, f) != 1) goto err;
     // read end flag
@@ -85,7 +86,8 @@ int FE_LoadMap(const char *fp)
     fclose(f);
 
     info("Loaded map '%s'", map.name);
-
+    FE_FreeUI();
+    FE_GameState = GAME_STATE_PLAY;
     return 1;
 
 err:
@@ -93,15 +95,30 @@ err:
     fclose(f);
     
     FE_CloseMap();
+    
     return -1;
 }
 
 void FE_RenderMap()
 {
-    SDL_RenderCopy(renderer, map.bg, NULL, &(SDL_Rect){0,0,screen_width,screen_height});
-    for (size_t i = 0; i < map.tilecount; i++)
-        SDL_RenderCopy(renderer, map.textures[map.tiles[i].texture_index], NULL, &(SDL_Rect){map.tiles[i].position.x,map.tiles[i].position.y,TILE_SIZE,TILE_SIZE});
-}
+	// render background
+	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
+	SDL_QueryTexture(map.bg, NULL, NULL, &bgrect.w ,&bgrect.h);
+	bgrect.x -= camera.x;
+	bgrect.y -= camera.y;
+	SDL_RenderCopy(renderer, map.bg, NULL, &bgrect);
+
+	// render all tiles
+	for (size_t i = 0; i < map.tilecount; i++) {
+		SDL_Rect r = (SDL_Rect){map.tiles[i].position.x - camera.x, map.tiles[i].position.y - camera.y, TILE_SIZE, TILE_SIZE};
+		FE_RenderCopy(map.textures[map.tiles[i].texture_index], NULL, &r);
+	} 
+
+    // render finish flag
+    SDL_Rect r = (SDL_Rect){map.EndFlag.x - camera.x, map.EndFlag.y - camera.y, TILE_SIZE, TILE_SIZE};
+    FE_RenderCopy(flagtexture, NULL, &r);
+
+} // TODO here last: event camera moving
 
 int FE_CloseMap()
 {
@@ -127,4 +144,4 @@ int FE_CloseMap()
     return 1;
 }
 
-// TODO MAP EDITOR and test map loading and free map, finish flag 
+// TODO MAP EDITOR and test map loading and free map

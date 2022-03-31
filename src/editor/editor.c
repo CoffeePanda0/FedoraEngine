@@ -44,21 +44,19 @@ void FE_RenderEditor()
 	// render all tiles
 	for (size_t i = 0; i < newmap.tilecount; i++) {
 		SDL_Rect r = (SDL_Rect){newmap.tiles[i].position.x - camera.x, newmap.tiles[i].position.y - camera.y, TILE_SIZE, TILE_SIZE};
-		// only bother rendering if in bounds
-		if (FE_Camera_Inbounds(&r, &(SDL_Rect){0,0,screen_width,screen_height}))
-			SDL_RenderCopy(renderer, newmap.textures[newmap.tiles[i].texture_index], NULL, &r);
+		FE_RenderCopy(newmap.textures[newmap.tiles[i].texture_index], NULL, &r);
 	}
 
 	// render spawn
 	if (!(newmap.PlayerSpawn.x == -1 && newmap.PlayerSpawn.y == -1)) {
 		SDL_Rect spawnrect = (SDL_Rect){newmap.PlayerSpawn.x - camera.x, newmap.PlayerSpawn.y - camera.y, TILE_SIZE, TILE_SIZE};
-		SDL_RenderCopy(renderer, spawntexture, NULL, &spawnrect);
+		FE_RenderCopy(spawntexture, NULL, &spawnrect);
 	}
 
 	// render end flag
 	if (!(newmap.EndFlag.x == -1 && newmap.EndFlag.y == -1)) {
 		SDL_Rect endflagrect = (SDL_Rect){newmap.EndFlag.x - camera.x, newmap.EndFlag.y - camera.y, TILE_SIZE, TILE_SIZE};
-		SDL_RenderCopy(renderer, endtexture, NULL, &endflagrect);
+		FE_RenderCopy(endtexture, NULL, &endflagrect);
 	}
 
 	// render grid on map with camera
@@ -517,7 +515,7 @@ void FE_StartEditor() // cleans up from other game modes
 	CreateUI();
 
 	newmap.bg = editor_backgrounds[0];
-	mapsave.bg_texturepath = strdup(editor_texturepaths[0]);
+	mapsave.bg_texturepath = strdup(editor_backgroundpaths[0]);
 
 	mode = true;
 
