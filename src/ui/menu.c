@@ -7,7 +7,7 @@ static void loadmap_buf(FE_TextBox *t)
 	if (!t->content || strlen(t->content) == 0)
 		FE_ShowMessageBox("Warning", "Map name cannot be empty");
 	else
-		FE_LoadMap(t->content);
+		FE_StartGame(t->content);
 }
 
 void FE_Menu_ShowMaps()

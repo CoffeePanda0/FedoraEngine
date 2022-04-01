@@ -85,6 +85,8 @@ FE_TextBox *FE_CreateTextBox(int x, int y, int w, int h, char *value) // Makes a
     temp->content = strdup(value);
     FE_List_Add(&FE_Textboxes, temp);
 
+    temp->active = false;
+
     return temp;
 }
 

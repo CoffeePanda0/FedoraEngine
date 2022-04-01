@@ -37,14 +37,35 @@ static FE_Camera GameCamera;
     */
 
 
-void FE_Render()
+void FE_StartGame(const char *mapname)
+{
+	if (FE_LoadMap(mapname) == -1) {
+		warn("Failed to start game");
+		FE_Menu_MainMenu();
+		return;
+	}
+
+	FE_GameState = GAME_STATE_PLAY;
+	GameCamera = (FE_Camera){0, 0, FE_Map_Width, FE_Map_Height, false};
+}
+
+void FE_RenderGame()
 {
 	SDL_RenderClear(renderer);
-	FE_RenderMap();
-	FE_RunPhysics();
+	FE_RenderMap(&GameCamera);
 	FE_RenderGameObjects(&GameCamera);
 	FE_RenderUI();
 	SDL_RenderPresent(renderer);
+}
+
+void FE_GameLoop()
+{
+	FE_UpdateTimers();
+	FE_GameEventHandler(&GameCamera);
+	FE_RunPhysics();
+	FE_RenderGame();
+	// event handling
+	// todo cleaning map
 }
 
 void FE_init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
@@ -76,7 +97,6 @@ void FE_init(const char* window_title, int xpos, int ypos, int window_width, int
 		 	warn("Failed to load font baloo.ttf");
 
 		FE_Menu_MainMenu();
-		FE_LoadBGM("CoffeeTime.mp3");
 
 		FE_GameActive = true;
 
@@ -86,12 +106,16 @@ void FE_init(const char* window_title, int xpos, int ypos, int window_width, int
 	}
 }
 
-void FE_StartGame()
+void FE_CleanAll() // Cleans all resources possible without exiting
 {
-	FE_GameState = GAME_STATE_PLAY;
-	MenuPage = NULL;
-
-	
+	FE_FreeUI();
+	FE_FreeDialogue();
+	FE_CleanEditor();
+	FE_CleanGameObjects();
+	FE_DestroyMessageBox();
+	FE_CleanAudio();
+	FE_CleanTimers();
+	FE_CloseMap();
 }
 
 void FE_Clean() // Exits the game cleanly, freeing all resources
@@ -100,12 +124,7 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		FE_GameActive = false;
 		info("Exiting FedoraEngine \n");
 		IMG_Quit();
-		FE_FreeUI();
-		FE_CleanEditor();
-		FE_CleanGameObjects();
-		FE_DestroyMessageBox();
-		FE_CleanAudio();
-		FE_CleanTimers();
+		FE_CleanAll();
 		log_close();
 		SDL_DestroyWindow(window);
 		TTF_CloseFont(Sans);

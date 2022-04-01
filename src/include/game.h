@@ -39,9 +39,6 @@ extern float dT;
 
 void FE_init(const char* window_title, int xpos, int ypos, int window_width, int window_height);
 void FE_Clean();
-void FE_Render();
-
-void FE_event_handler();
 
 extern bool FE_GameActive;
 
@@ -50,6 +47,16 @@ extern TTF_Font* Sans;
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
 
-void FE_StartGame();
+
+/* Loads a map and initalises a game */
+void FE_StartGame(const char *mapname);
+
+/* The main game loop. Calls rendering, game event handling and update */
+void FE_GameLoop();
+
+/* Cleans all resources possible without exiting */
+void FE_CleanAll();
+
+void FE_GameEventHandler(FE_Camera *camera);
 
 #endif

@@ -489,13 +489,7 @@ static void CreateUI()
 
 void FE_StartEditor() // cleans up from other game modes
 {
-    // destroy all non-editor objects
-    FE_FreeUI();
-    FE_FreeDialogue();
-    FE_CleanGameObjects();
-    FE_CleanAudio();
-    FE_CleanTimers();
-    // FREE MAP
+   FE_CleanAll();
 
     FE_GameState = GAME_STATE_EDITOR;
 

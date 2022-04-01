@@ -3,10 +3,10 @@ obj := $(src:.c=.o)
 out = FedoraEngine
 
 CC = gcc
-CFLAGS = -MD -Wall -Wextra -g -fno-common $$(sdl2-config --cflags) $$(pkg-config --cflags lua) -lm
+CFLAGS = -MD -Wall -Wextra -g -fno-common $$(sdl2-config --cflags) -lm
 LD = $(CC) 
 
-LIBS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm -ldl
+LIBS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm
  
 
 all: $(out)

@@ -27,7 +27,7 @@ int main (int argc, char* argv[])
 				FE_MenuEventHandle();
 			break;
 			case GAME_STATE_PLAY:
-				FE_Render();
+				FE_GameLoop();
 			break;
 			case GAME_STATE_EDITOR:
 				FE_RenderEditor();

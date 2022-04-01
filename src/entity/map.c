@@ -12,22 +12,26 @@
 static FE_LoadedMap map;
 bool FE_MapLoaded = false;
 
-static FE_Camera camera;
 static SDL_Texture *flagtexture;
 
-int FE_LoadMap(const char *fp)
+size_t FE_Map_Width = 0;
+size_t FE_Map_Height = 0;
+
+int FE_LoadMap(const char *name)
 {
-    camera = (FE_Camera){0, 0, 4096, 1024, false};
     if (!flagtexture)
         flagtexture = FE_TextureFromFile("game/map/end.png");
-    
+
+    FE_Map_Width = 0;
+    FE_Map_Height = 0;
+
     // Combine map directory and map file path
-    char *map_path = AddStr(MAP_DIRECTORY, fp);
+    char *map_path = AddStr(MAP_DIRECTORY, name);
     // Read map file from binary format
     FILE *f = fopen(map_path, "rb");
     if (f == NULL) {
-        warn("Failed to open map file: %s", fp);
-        FE_Menu_MainMenu(); // return to main menu when we ccan't open map
+        warn("Failed to open map file: %s", name);
+        FE_Menu_MainMenu(); // return to main menu when we can't open map
         xfree(map_path);
         return -1;
     }
@@ -76,6 +80,10 @@ int FE_LoadMap(const char *fp)
     for (int i = 0; i < map.tilecount; i++) {
         if (fread(&map.tiles[i].texture_index, sizeof(Uint16), 1, f) != 1) goto err;
         if (fread(&map.tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
+
+        // calculate map height and width
+        if ((size_t)map.tiles[i].position.x > FE_Map_Width) FE_Map_Width = map.tiles[i].position.x + TILE_SIZE;
+        if ((size_t)map.tiles[i].position.y > FE_Map_Height) FE_Map_Height = map.tiles[i].position.y + TILE_SIZE;
     }
  
     // read player spawn
@@ -91,7 +99,7 @@ int FE_LoadMap(const char *fp)
     return 1;
 
 err:
-    warn(feof(f) ? "Unexpected end of file in %s" : "Error loading map %s", fp);
+    warn(feof(f) ? "Unexpected end of file in %s" : "Error loading map %s", name);
     fclose(f);
     
     FE_CloseMap();
@@ -99,49 +107,30 @@ err:
     return -1;
 }
 
-void FE_RenderMap()
+void FE_RenderMap(FE_Camera *camera)
 {
 	// render background
 	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
 	SDL_QueryTexture(map.bg, NULL, NULL, &bgrect.w ,&bgrect.h);
-	bgrect.x -= camera.x;
-	bgrect.y -= camera.y;
+	bgrect.x -= camera->x;
+	bgrect.y -= camera->y;
 	SDL_RenderCopy(renderer, map.bg, NULL, &bgrect);
 
 	// render all tiles
 	for (size_t i = 0; i < map.tilecount; i++) {
-		SDL_Rect r = (SDL_Rect){map.tiles[i].position.x - camera.x, map.tiles[i].position.y - camera.y, TILE_SIZE, TILE_SIZE};
+		SDL_Rect r = (SDL_Rect){map.tiles[i].position.x - camera->x, map.tiles[i].position.y - camera->y, TILE_SIZE, TILE_SIZE};
 		FE_RenderCopy(map.textures[map.tiles[i].texture_index], NULL, &r);
 	} 
 
     // render finish flag
-    SDL_Rect r = (SDL_Rect){map.EndFlag.x - camera.x, map.EndFlag.y - camera.y, TILE_SIZE, TILE_SIZE};
+    SDL_Rect r = (SDL_Rect){map.EndFlag.x - camera->x, map.EndFlag.y - camera->y, TILE_SIZE, TILE_SIZE};
     FE_RenderCopy(flagtexture, NULL, &r);
 
 } // TODO here last: event camera moving
 
-int FE_CloseMap()
+void FE_CloseMap()
 {
-    if (FE_MapLoaded) {
-        if (map.name)
-            free(map.name);
-
-        // free and destroy texture array
-        if (map.textures) {
-            for (size_t i = 0; i < map.texturecount; i++)
-                SDL_DestroyTexture(map.textures[i]);
-            free(map.textures);
-        }
-
-        if (map.bg)
-            SDL_DestroyTexture(map.bg);
-        if (map.tiles)
-            free(map.tiles);
-        
-        map.texturecount = 0;
-        FE_MapLoaded = false;
-    }
-    return 1;
+    return;
 }
 
 // TODO MAP EDITOR and test map loading and free map

@@ -43,9 +43,26 @@ typedef struct FE_EndFlag {
     SDL_Rect r;
 } FE_EndFlag;
 
-/* Map loading */
-int FE_CloseMap();
-int FE_LoadMap(const char *fp);
-void FE_RenderMap();
+
+/** Loads map from file into memory
+ * 
+ * @param name Name of map to load.
+ * @return 1 on success, -1 on failure.
+ */
+int FE_LoadMap(const char *name);
+
+
+/** Renders the map tiles, background and end flag
+*\param camera The camera to render the map from
+*/
+void FE_RenderMap(FE_Camera *camera);
+
+
+/* Closes and frees resources from currently used map */
+void FE_CloseMap();
+
+
+extern size_t FE_Map_Width;
+extern size_t FE_Map_Height;
 
 #endif
