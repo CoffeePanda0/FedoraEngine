@@ -82,6 +82,37 @@ int FE_RemoveTimer(FE_Timer *t)
 
 }
 
+void FE_StartTimer(FE_Timer *timer)
+{
+    if (timer == NULL) {
+        warn("Attempted to start a null timer");
+        return;
+    }
+
+    timer->paused = false;
+}
+
+void FE_PauseTimer(FE_Timer *timer)
+{
+    if (timer == NULL) {
+        warn("Attempted to stop a null timer");
+        return;
+    }
+
+    timer->paused = true;
+}
+
+void FE_RestartTimer(FE_Timer *timer)
+{
+    if (timer == NULL) {
+        warn("Attempted to restart a null timer");
+        return;
+    }
+
+    timer->paused = false;
+    timer->elapsed = 0;
+}
+
 FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, void (*callback), void *params)
 {
     if (!callback) {
