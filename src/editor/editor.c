@@ -27,7 +27,7 @@ static SDL_Texture *endtexture;
 
 static bool saving = false;
 
-// TODO: free textures if they are deleted and not used in map, loading previous maps, tile bg, non fixed lengths for strings
+// TODO: free textures if they are deleted and not used in map, loading previous maps, tile bg, drag and click?
 
 void FE_RenderEditor()
 {

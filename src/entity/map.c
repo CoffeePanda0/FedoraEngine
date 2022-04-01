@@ -1,8 +1,5 @@
 #include "../include/game.h"
 
-#define MAP_NAME_LENGTH 64
-#define MAP_TEXURE_PATH_LENGTH 64
-#define MAP_BG_TEXTURE_LENGTH 64
 #define TILE_SIZE 64
 
 #define TEXTURE_PATH "game/map/textures/"
@@ -19,6 +16,7 @@ size_t FE_Map_Height = 0;
 
 int FE_LoadMap(const char *name)
 {
+    FE_MapLoaded = true;
     if (!flagtexture)
         flagtexture = FE_TextureFromFile("game/map/end.png");
 
@@ -36,29 +34,21 @@ int FE_LoadMap(const char *name)
         return -1;
     }
     xfree(map_path);
-    FE_MapLoaded = true;
 
     // Read map name
-    map.name = xmalloc(MAP_NAME_LENGTH);
-    if (fread(map.name, sizeof(char), MAP_NAME_LENGTH, f) != MAP_NAME_LENGTH) goto err;
+    if (!(map.name = ReadStr(f))) goto err;
     
     // Read map texture paths
     if (fread(&map.texturecount, sizeof(Uint16), 1, f) != 1) goto err;
 
     char **texturepaths = xmalloc(sizeof(char*) * map.texturecount);
     for (int i = 0; i < map.texturecount; i++) {
-        texturepaths[i] = xmalloc(MAP_TEXURE_PATH_LENGTH);
-        if (fread(texturepaths[i], sizeof(char), MAP_TEXURE_PATH_LENGTH, f) != MAP_TEXURE_PATH_LENGTH) goto err;
+        if (!(texturepaths[i] = ReadStr(f))) goto err;
     }
     
     // load texture from path to textures array
     map.textures = xmalloc(sizeof(SDL_Texture*) * map.texturecount);
     for (int i = 0; i < map.texturecount; i++) {
-        // buffer for texture path
-        char *texturepath = xmalloc(MAP_TEXURE_PATH_LENGTH);
-        strcpy(texturepath, TEXTURE_PATH);
-        strcat(texturepath, texturepaths[i]);
-
         map.textures[i] = FE_TextureFromFile(texturepaths[i]);
     }
 
@@ -68,8 +58,8 @@ int FE_LoadMap(const char *name)
     free(texturepaths);
 
     // load background image
-    char *bg_path = xmalloc(MAP_BG_TEXTURE_LENGTH);
-    if (fread(bg_path, sizeof(char), MAP_BG_TEXTURE_LENGTH, f) != MAP_BG_TEXTURE_LENGTH) goto err;
+    char *bg_path = 0;
+    if (!(bg_path = ReadStr(f))) goto err;
 
     map.bg = FE_TextureFromFile(bg_path);
     free(bg_path);
@@ -83,7 +73,7 @@ int FE_LoadMap(const char *name)
 
         // calculate map height and width
         if ((size_t)map.tiles[i].position.x > FE_Map_Width) FE_Map_Width = map.tiles[i].position.x + TILE_SIZE;
-        if ((size_t)map.tiles[i].position.y > FE_Map_Height) FE_Map_Height = map.tiles[i].position.y + TILE_SIZE;
+        if ((size_t)map.tiles[i].position.y > FE_Map_Height) FE_Map_Height = screen_height - map.tiles[i].position.y;
     }
  
     // read player spawn
@@ -130,7 +120,37 @@ void FE_RenderMap(FE_Camera *camera)
 
 void FE_CloseMap()
 {
+    if (!FE_MapLoaded)
+        return;
+
+    if (flagtexture)
+        SDL_DestroyTexture(flagtexture);
+    flagtexture = 0;
+
+    if (map.name)
+        map.name = 0;
+    free(map.name);
+
+    if (map.textures) {
+        for (size_t i = 0; i < map.texturecount; i++) {
+            if (map.textures[i])
+                SDL_DestroyTexture(map.textures[i]);
+        }
+        free(map.textures);
+        map.textures = 0;
+    }
+    map.texturecount = 0;
+    
+    if (map.bg)
+        SDL_DestroyTexture(map.bg);
+    map.bg = 0;
+
+    if (map.tiles) {
+        free(map.tiles);
+        map.tiles = 0;
+    }
+    map.tilecount = 0;
+
+    FE_MapLoaded = false;
     return;
 }
-
-// TODO MAP EDITOR and test map loading and free map

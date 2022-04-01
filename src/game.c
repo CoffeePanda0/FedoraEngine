@@ -47,6 +47,7 @@ void FE_StartGame(const char *mapname)
 
 	FE_GameState = GAME_STATE_PLAY;
 	GameCamera = (FE_Camera){0, 0, FE_Map_Width, FE_Map_Height, false};
+	// todo: pause menu, tiles loading incorrect texture
 }
 
 void FE_RenderGame()
@@ -64,8 +65,6 @@ void FE_GameLoop()
 	FE_GameEventHandler(&GameCamera);
 	FE_RunPhysics();
 	FE_RenderGame();
-	// event handling
-	// todo cleaning map
 }
 
 void FE_init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
@@ -108,6 +107,7 @@ void FE_init(const char* window_title, int xpos, int ypos, int window_width, int
 
 void FE_CleanAll() // Cleans all resources possible without exiting
 {
+	FE_CloseMap();
 	FE_FreeUI();
 	FE_FreeDialogue();
 	FE_CleanEditor();
@@ -115,7 +115,6 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_DestroyMessageBox();
 	FE_CleanAudio();
 	FE_CleanTimers();
-	FE_CloseMap();
 }
 
 void FE_Clean() // Exits the game cleanly, freeing all resources

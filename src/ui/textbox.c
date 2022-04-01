@@ -81,7 +81,6 @@ FE_TextBox *FE_CreateTextBox(int x, int y, int w, int h, char *value) // Makes a
     temp->label->r.x = x;
     temp->label->r.y = y;
 
-
     temp->content = strdup(value);
     FE_List_Add(&FE_Textboxes, temp);
 
@@ -119,7 +118,6 @@ int FE_SetContent(FE_TextBox *t, char *value) // Sets the content of a textbox
 
 int FE_UpdateTextBox(char c) // Adds or subtracts a character from the text of active box
 {
-    // get active textbox TODO
     FE_TextBox *t = FE_GetActiveTextBox();
     if (!t) {
         warn("No active textbox to update");
@@ -149,7 +147,7 @@ int FE_UpdateTextBox(char c) // Adds or subtracts a character from the text of a
             t->content[len] = c;
             t->content[len+1] = '\0';
         } else { // else calloc and add new char
-            t->content = calloc(2,1);
+            t->content = xcalloc(2,1);
             t->content[0] = c;
         }
     }

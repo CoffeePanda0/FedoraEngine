@@ -125,3 +125,22 @@ char *AddStr(const char *str, const char *add)
 	strcat(newstr, add);
 	return newstr;
 }
+
+char *ReadStr(FILE *f)
+{
+	Uint16 len;
+	char *str;
+	fread(&len, sizeof(Uint16), 1, f);
+	str = xmalloc(len + 1);
+	fread(str, sizeof(char), len, f);
+	str[len] = '\0';
+	return str;
+}
+
+bool WriteStr(FILE *f, const char *str)
+{
+	Uint16 len = strlen(str);
+	fwrite(&len, sizeof(Uint16), 1, f);
+	fwrite(str, sizeof(char), len, f);
+	return true;
+}

@@ -2,10 +2,6 @@
 
 #define MAP_DIRECTORY "game/map/maps/"
 
-#define MAP_NAME_LENGTH 64
-#define MAP_TEXURE_PATH_LENGTH 64
-#define MAP_BG_TEXTURE_LENGTH 64
-
 bool Editor_CallSave(FE_Map *save) // used to call the save function as a callback and display dialogues 
 {
 	if (save->name)
@@ -57,18 +53,18 @@ void Editor_Save(FE_Map *mapsave)
     }
 
     // Write map name
-    if (fwrite(mapsave->name, sizeof(char), MAP_NAME_LENGTH, f) != MAP_NAME_LENGTH) goto err;
+    if (!(WriteStr(f, mapsave->name))) goto err;
 
     // Write texture count
     if (fwrite(&mapsave->texturecount, sizeof(Uint16), 1, f) != 1) goto err;
     
     // Write texture paths
     for (int i = 0; i < mapsave->texturecount; i++) {
-        if (fwrite(mapsave->texturepaths[i], sizeof(char), MAP_TEXURE_PATH_LENGTH, f) != MAP_TEXURE_PATH_LENGTH) goto err;
+        if (!(WriteStr(f, mapsave->texturepaths[i]))) goto err;
     }
 
     // Write background texture path
-    if (fwrite(mapsave->bg_texturepath, sizeof(char), MAP_BG_TEXTURE_LENGTH, f) != MAP_BG_TEXTURE_LENGTH) goto err;
+    if (!(WriteStr(f, mapsave->bg_texturepath))) goto err;
 
     // Write tilecount
     if (fwrite(&mapsave->tilecount, sizeof(Uint16), 1, f) != 1) goto err;
