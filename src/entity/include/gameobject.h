@@ -1,9 +1,9 @@
 #ifndef H_GAMEOBJECT
 #define H_GAMEOBJECT
 
-#include "SDL.h"
-#include "physics.h"
-#include "camera.h"
+#include <SDL.h>
+#include "../../world/include/physics.h"
+#include "../../world/include/camera.h"
 
 enum FE_ObjectType {
 	ENEMY,
