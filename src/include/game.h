@@ -15,6 +15,7 @@
 
 #include "../core/include/utils.h"
 #include "../core/include/texture.h"
+#include "../core/include/circle.h"
 
 #include "../ui/include/ui.h"
 #include "audio.h"
