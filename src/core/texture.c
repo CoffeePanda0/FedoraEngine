@@ -42,3 +42,12 @@ int FE_RenderCopy(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst) // Renders
     else
         return 0;
 }
+
+int FE_RenderCopyEx(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip)
+{
+    if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0,screen_width,screen_height})) {
+        const SDL_Point center = (SDL_Point){dst->w/2, dst->h/2};
+        return SDL_RenderCopyEx(renderer, texture, src, dst, angle, &center, flip);
+    } else
+        return 0;
+}

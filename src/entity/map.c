@@ -66,14 +66,15 @@ int FE_LoadMap(const char *name)
 
     // Read Map tiles
     if (fread(&map.tilecount, sizeof(Uint16), 1, f) != 1) goto err;
-    map.tiles = xmalloc(sizeof(Map_Tile) * map.tilecount);
+    map.tiles = xmalloc(sizeof(FE_Map_Tile) * map.tilecount);
     for (int i = 0; i < map.tilecount; i++) {
         if (fread(&map.tiles[i].texture_index, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fread(&map.tiles[i].rotation, sizeof(Uint16), 1, f) != 1) goto err;
         if (fread(&map.tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
 
         // calculate map height and width
         if ((size_t)map.tiles[i].position.x > FE_Map_Width) FE_Map_Width = map.tiles[i].position.x + TILE_SIZE;
-        if ((size_t)map.tiles[i].position.y > FE_Map_Height) FE_Map_Height = screen_height - map.tiles[i].position.y;
+        if ((size_t)map.tiles[i].position.y > FE_Map_Height) FE_Map_Height = map.tiles[i].position.y;
     }
  
     // read player spawn
@@ -109,7 +110,7 @@ void FE_RenderMap(FE_Camera *camera)
 	// render all tiles
 	for (size_t i = 0; i < map.tilecount; i++) {
 		SDL_Rect r = (SDL_Rect){map.tiles[i].position.x - camera->x, map.tiles[i].position.y - camera->y, TILE_SIZE, TILE_SIZE};
-		FE_RenderCopy(map.textures[map.tiles[i].texture_index], NULL, &r);
+		FE_RenderCopyEx(map.textures[map.tiles[i].texture_index], NULL, &r, map.tiles[i].rotation, SDL_FLIP_NONE);
 	} 
 
     // render finish flag

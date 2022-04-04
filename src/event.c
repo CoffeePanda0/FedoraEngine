@@ -39,7 +39,7 @@ void FE_GameEventHandler(FE_Camera *camera)
                         FE_UpdateTextBox(event.key.keysym.sym);
                         break;
                     }
-
+                    
                     if (keyboard_state[SDL_SCANCODE_W])
 						FE_MoveCamera(0, -10, camera);
 					else if (keyboard_state[SDL_SCANCODE_A])

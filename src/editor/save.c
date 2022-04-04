@@ -72,6 +72,7 @@ void Editor_Save(FE_Map *mapsave)
     // Write tiles
     for (int i = 0; i < mapsave->tilecount; i++) {
         if (fwrite(&mapsave->tiles[i].texture_index, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fwrite(&mapsave->tiles[i].rotation, sizeof(Uint16), 1, f) != 1) goto err;
         if (fwrite(&mapsave->tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
     }
 

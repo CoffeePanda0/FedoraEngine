@@ -30,8 +30,21 @@ SDL_Texture *FE_TextureFromFile(const char *path);
  * \param texture The texture to render
  * \param src The source rectangle of the texture
  * \param dst The destination rectangle of the texture
- * \return 0 on success, -1 on failure
+ * \return SDL_RenderCopy code
  */
 int FE_RenderCopy(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst);
+
+
+/** A wrapper for SDL_RenderCopy - Renders a texture to the screen if in screen bounds only
+ * 
+ *\param texture The texture to render
+ *\param src The source rectangle of the texture
+ *\param dst The destination rectangle of the texture
+ *\param angle The angle to rotate the texture by
+ *\param flip The flip to apply to the texture
+ *\return SDL_RenderCopy code
+ */
+int FE_RenderCopyEx(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip);
+
 
 #endif

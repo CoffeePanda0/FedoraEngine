@@ -3,10 +3,11 @@
 
 #include <SDL.h>
 
-typedef struct Map_Tile {
+typedef struct FE_Map_Tile {
     Uint16 texture_index;
+    Uint16 rotation;
     Vector2D position;
-} Map_Tile;
+} FE_Map_Tile;
 
 typedef struct FE_Map {
     char *name;
@@ -17,7 +18,7 @@ typedef struct FE_Map {
     char *bg_texturepath;
 
     Uint16 tilecount;
-    Map_Tile *tiles;
+    FE_Map_Tile *tiles;
 
     Vector2D PlayerSpawn;
     Vector2D EndFlag;
@@ -32,7 +33,7 @@ typedef struct FE_LoadedMap {
     SDL_Texture *bg;
 
     Uint16 tilecount;
-    Map_Tile *tiles;
+    FE_Map_Tile *tiles;
 
     Vector2D PlayerSpawn;
     Vector2D EndFlag;
