@@ -14,7 +14,7 @@ typedef struct FE_Circle {
 
 
 /** Renders a circle to the screen.
- * @param circle The circle to render.
+ * \param circle The circle to render.
  */
 void FE_RenderCircle(FE_Circle *circle);
 

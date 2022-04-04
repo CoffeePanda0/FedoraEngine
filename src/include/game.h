@@ -6,7 +6,7 @@
 #include "../entity/include/gameobject.h"
 #include "../entity/include/map.h"
 #include "../entity/include/timer.h"
-#include "../entity/include/map.h"
+#include "../entity/include/light.h"
 
 #include "../world/include/camera.h"
 #include "../world/include/physics.h"

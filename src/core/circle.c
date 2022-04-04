@@ -34,7 +34,6 @@ static void FE_RenderFillCircle(FE_Circle *circle)
 {
     /* Use the midpoint circle algorithm */
 
-    SDL_SetRenderDrawColor(renderer, circle->color.r, circle->color.g, circle->color.r, circle->color.r);
     int32_t x = circle->radius;
     int32_t y = 0;
     int32_t err = 0;
@@ -63,6 +62,7 @@ void FE_RenderCircle(FE_Circle *circle)
     SDL_GetRenderDrawColor(renderer, &color.r, &color.g, &color.b, &color.a);
 
     // set new color to draw
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(renderer, circle->color.r, circle->color.g, circle->color.b, circle->color.a);
 
     // draw circle

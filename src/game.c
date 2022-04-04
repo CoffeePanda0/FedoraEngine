@@ -47,7 +47,7 @@ void FE_StartGame(const char *mapname)
 
 	FE_GameState = GAME_STATE_PLAY;
 	GameCamera = (FE_Camera){0, 0, FE_Map_Width, FE_Map_Height, false};
-	// todo: pause menu, tiles loading incorrect texture
+	// todo: pause menu
 }
 
 void FE_RenderGame()
@@ -55,6 +55,7 @@ void FE_RenderGame()
 	SDL_RenderClear(renderer);
 	FE_RenderMap(&GameCamera);
 	FE_RenderGameObjects(&GameCamera);
+	FE_RenderLightObjects(&GameCamera);
 	FE_RenderUI();
 	SDL_RenderPresent(renderer);
 }
@@ -115,6 +116,7 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_DestroyMessageBox();
 	FE_CleanAudio();
 	FE_CleanTimers();
+	FE_CleanLightObjects();
 }
 
 void FE_Clean() // Exits the game cleanly, freeing all resources
