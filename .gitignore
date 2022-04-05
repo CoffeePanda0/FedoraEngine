@@ -5,6 +5,7 @@
 log.txt
 FedoraEngine
 .vscode/
+vgcore.*
 
 # Object files
 *.o

@@ -42,7 +42,6 @@ void xfree(void *pt)
 	if (!pt)
 		error("Trying to free NULL");
 	free(pt);
-	pt = 0;
 }
 
 void FE_DestroyTexture(SDL_Texture *texture)
@@ -51,5 +50,4 @@ void FE_DestroyTexture(SDL_Texture *texture)
         error("Trying to destroy NULL texture");
 
     SDL_DestroyTexture(texture);
-    texture = 0;
 }

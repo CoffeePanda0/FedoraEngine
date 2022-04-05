@@ -68,6 +68,7 @@ void FE_GameLoop()
 	FE_UpdateTimers();
 	FE_GameEventHandler(&GameCamera);
 	FE_RunPhysics();
+	FE_UpdateAnimations();
 	FE_RenderGame();
 }
 
@@ -120,6 +121,7 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_CleanAudio();
 	FE_CleanTimers();
 	FE_CleanLightObjects();
+	FE_CleanAnimations();
 }
 
 void FE_Clean() // Exits the game cleanly, freeing all resources
@@ -128,11 +130,11 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		FE_GameActive = false;
 		info("Exiting FedoraEngine \n");
 		IMG_Quit();
+		FE_DestroyConsole();
 		FE_CleanAll();
 		log_close();
 		SDL_DestroyWindow(window);
 		TTF_CloseFont(Sans);
-		FE_DestroyConsole();
 		SDL_Quit();
 	}
 }

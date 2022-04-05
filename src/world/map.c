@@ -108,6 +108,7 @@ int FE_LoadMap(const char *name)
     fclose(f);
 
     info("Loaded map '%s'", map.name);
+
     FE_FreeUI();
     FE_GameState = GAME_STATE_PLAY;
     return 1;
@@ -152,8 +153,9 @@ void FE_CloseMap()
     flagtexture = 0;
 
     if (map.name)
-        map.name = 0;
-    free(map.name);
+        xfree(map.name);
+    map.name = 0;
+    
 
     if (map.textures) {
         for (size_t i = 0; i < map.texturecount; i++) {

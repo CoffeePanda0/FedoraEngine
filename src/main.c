@@ -7,7 +7,6 @@ float dT = 0;
 
 int main (int argc, char* argv[])
 {
-	(void)argc; (void)argv;
 	log_init();
 	
 	FE_init("FedoraEngine", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screen_width, screen_height);
@@ -15,6 +14,19 @@ int main (int argc, char* argv[])
 
 	Uint32 lastupdate = SDL_GetTicks();
 	FE_GameState = GAME_STATE_MENU;
+
+	// allow loading maps or starting editor from arguments
+	if (argc > 1) {
+		if (strcmp(argv[1], "/editor") == 0) {
+			FE_GameState = GAME_STATE_EDITOR;
+			FE_StartEditor();
+		} else if (strcmp(argv[1], "/map") == 0) {
+			if (argc > 2)
+				FE_StartGame(argv[2]);
+			else
+				error("No map specified");
+		}
+	}
 
 	while (FE_GameActive) {
 		Uint32 current = SDL_GetTicks();

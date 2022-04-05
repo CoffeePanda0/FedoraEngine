@@ -4,12 +4,13 @@
 #include "include.h"
 
 #include "../entity/include/gameobject.h"
-#include "../entity/include/map.h"
 #include "../entity/include/timer.h"
 #include "../entity/include/light.h"
+#include "../entity/include/animation.h"
 
 #include "../world/include/camera.h"
 #include "../world/include/physics.h"
+#include "../world/include/map.h"
 
 #include "../editor/editor.h"
 

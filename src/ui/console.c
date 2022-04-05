@@ -143,18 +143,25 @@ void FE_DestroyConsole()
 {
     if (Console.output_label_text)
         SDL_DestroyTexture(Console.output_label_text);
+    Console.output_label_text = 0;
+    
     if (Console.input_label_text)
         SDL_DestroyTexture(Console.input_label_text);
+    Console.input_label_text = 0;
+
     if (Console.console_texture)
         SDL_DestroyTexture(Console.console_texture);
+    Console.console_texture = 0;
 
     if (Font)
         TTF_CloseFont(Font);
 
     if (console_output)
-        free(console_output);
+        xfree(console_output);
+    console_output = 0;
     if (console_input)
-        free(console_input);
+        xfree(console_input);
+    console_input = 0;
 }
 
 void FE_RenderConsole( )

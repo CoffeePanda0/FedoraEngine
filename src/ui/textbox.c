@@ -62,6 +62,7 @@ static void FreeTextbox(FE_TextBox *t) // frees memory held by textbox
     SDL_DestroyTexture(t->label->text);
     free(t->label);
     free(t->content);
+
 }
 
 FE_TextBox *FE_CreateTextBox(int x, int y, int w, int h, char *value) // Makes a new textbox and returns pointer to the node
