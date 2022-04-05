@@ -2,6 +2,7 @@
 #define H_PHYSICS
 
 #include <SDL.h>
+#include "../../core/include/vector2d.h"
 
 #define GRAVITY 100
 #define DRAG 1.2f
@@ -11,11 +12,6 @@
         int: clampi, \
         float: clampf \
     )((num), (min), (max))
-
-typedef struct Vector2D {
-    int x;
-    int y;
-} Vector2D;
 
 typedef struct FE_PhysObj {
     Uint16 mass;

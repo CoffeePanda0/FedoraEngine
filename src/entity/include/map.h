@@ -2,7 +2,7 @@
 #define H_MAP
 
 #include <SDL.h>
-#include "../../world/include/physics.h"
+#include "../../core/include/vector2d.h"
 
 typedef struct FE_Map_Tile {
     Uint16 texture_index;
