@@ -11,8 +11,15 @@ bool FE_MapLoaded = false;
 
 static SDL_Texture *flagtexture;
 
-size_t FE_Map_Width = 0;
-size_t FE_Map_Height = 0;
+Uint16 FE_Map_Width = 0;
+Uint16 FE_Map_Height = 0;
+Uint16 FE_Map_MinimumX = 0;
+Uint16 FE_Map_MinimumY = 0;
+
+Vector2D FE_GetSpawn()
+{
+    return map.PlayerSpawn;
+}
 
 int FE_LoadMap(const char *name)
 {
@@ -22,6 +29,8 @@ int FE_LoadMap(const char *name)
 
     FE_Map_Width = 0;
     FE_Map_Height = 0;
+    FE_Map_MinimumX = 0;
+    FE_Map_MinimumY = screen_height;
 
     // Combine map directory and map file path
     char *map_path = AddStr(MAP_DIRECTORY, name);
@@ -66,6 +75,9 @@ int FE_LoadMap(const char *name)
 
     // Read Map tiles
     if (fread(&map.tilecount, sizeof(Uint16), 1, f) != 1) goto err;
+
+    bool setminX = false; // check if we have set the map minimum values yet
+
     map.tiles = xmalloc(sizeof(FE_Map_Tile) * map.tilecount);
     for (int i = 0; i < map.tilecount; i++) {
         if (fread(&map.tiles[i].texture_index, sizeof(Uint16), 1, f) != 1) goto err;
@@ -73,10 +85,21 @@ int FE_LoadMap(const char *name)
         if (fread(&map.tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
 
         // calculate map height and width
-        if ((size_t)map.tiles[i].position.x > FE_Map_Width) FE_Map_Width = map.tiles[i].position.x + TILE_SIZE;
-        if ((size_t)map.tiles[i].position.y > FE_Map_Height) FE_Map_Height = map.tiles[i].position.y;
+        if ((Uint16)map.tiles[i].position.x + TILE_SIZE > FE_Map_Width) FE_Map_Width = map.tiles[i].position.x + TILE_SIZE;
+        if ((Uint16)map.tiles[i].position.y - screen_height + TILE_SIZE > FE_Map_Height) FE_Map_Height = map.tiles[i].position.y + TILE_SIZE - screen_height;
+    
+        // calculate minimum x point and minimum y point for camera bounds
+        if ((Uint16)map.tiles[i].position.x < FE_Map_MinimumX || !setminX) {
+            FE_Map_MinimumX = map.tiles[i].position.x;
+            setminX = true;
+        }
+        if ((Uint16)map.tiles[i].position.y < FE_Map_MinimumY) {
+            FE_Map_MinimumY = map.tiles[i].position.y;
+        }
     }
- 
+    FE_Map_Width -= screen_width;
+    FE_Map_MinimumY = screen_height - FE_Map_MinimumY  + (TILE_SIZE * 2);
+
     // read player spawn
     if (fread(&map.PlayerSpawn, sizeof(Vector2D), 1, f) != 1) goto err;
     // read end flag
@@ -117,7 +140,7 @@ void FE_RenderMap(FE_Camera *camera)
     SDL_Rect r = (SDL_Rect){map.EndFlag.x - camera->x, map.EndFlag.y - camera->y, TILE_SIZE, TILE_SIZE};
     FE_RenderCopy(flagtexture, NULL, &r);
 
-} // TODO here last: event camera moving
+}
 
 void FE_CloseMap()
 {

@@ -5,6 +5,7 @@
 
 typedef struct FE_Camera {
     int x, y;
+    int x_min, y_min;
     int x_bound, y_bound;
     bool locked;
 } FE_Camera;

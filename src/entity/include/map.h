@@ -2,6 +2,7 @@
 #define H_MAP
 
 #include <SDL.h>
+#include "../../world/include/physics.h"
 
 typedef struct FE_Map_Tile {
     Uint16 texture_index;
@@ -63,7 +64,13 @@ void FE_RenderMap(FE_Camera *camera);
 void FE_CloseMap();
 
 
-extern size_t FE_Map_Width;
-extern size_t FE_Map_Height;
+/* Returns a Vector2D of the current map's spawn point */
+Vector2D FE_GetSpawn();
+
+
+extern Uint16 FE_Map_Width;
+extern Uint16 FE_Map_Height;
+extern Uint16 FE_Map_MinimumX;
+extern Uint16 FE_Map_MinimumY;
 
 #endif

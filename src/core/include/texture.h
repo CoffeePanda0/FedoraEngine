@@ -35,7 +35,7 @@ SDL_Texture *FE_TextureFromFile(const char *path);
 int FE_RenderCopy(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst);
 
 
-/** A wrapper for SDL_RenderCopy - Renders a texture to the screen if in screen bounds only
+/** A wrapper for SDL_RenderCopyEx - Renders a texture to the screen with rotation if in screen bounds only
  * 
  *\param texture The texture to render
  *\param src The source rectangle of the texture

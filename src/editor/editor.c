@@ -128,7 +128,7 @@ static void DeleteTile(int x, int y)
 	/* check if we need to delete the texture (if it is not used in any other tiles, we can safely remove it) */ 
 	bool delete = true;
 	for (size_t i = 0; i < newmap.tilecount; i++) {
-		if (newmap.tiles[i].texture_index == used_texture && i != index) {
+		if (newmap.tiles[i].texture_index == used_texture && i != (size_t)index) {
 			delete = false; // todo - being set to false when two tiles remain
 			break;
 		}
@@ -573,7 +573,7 @@ void FE_StartEditor() // cleans up from other game modes
 
 	mode = true;
 
-	camera = (FE_Camera){0, 0, 4096, 1024, false};
+	camera = (FE_Camera){0, 0, 0, 0, 4096, 1024, false};
 
 	info("Editor: Started editor");
 

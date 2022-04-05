@@ -21,17 +21,23 @@ void FE_MoveCamera(int x, int y, FE_Camera *c)
     if (c->locked)
         return;
 
-    if (c->x + x > c->x_bound)
-        c->x = c->x_bound;
-    else if (c->x + x < 0)
-        c->x = 0;
-    else
-        c->x += x;
+    // check if in x bounds
+    if (x != 0) {
+        if (c->x + x > c->x_bound)
+            c->x = c->x_bound;
+        else if (c->x + x < c->x_min)
+            c->x = c->x_min;
+        else
+            c->x += x;
+    }
 
-    if (c->y + y > c->y_bound)
-        c->y = c->y_bound;
-    else if (c->y + y < 0)
-        c->y = 0;
-    else
-        c->y += y;
+    // check if in y bounds
+    if (y != 0) {
+        if (c->y + y > c->y_bound)
+            c->y = c->y_bound;
+        else if (c->y + y < c->y_min)
+            c->y = c->y_min;
+        else
+            c->y += y;
+    }
 }

@@ -46,8 +46,11 @@ void FE_StartGame(const char *mapname)
 	}
 
 	FE_GameState = GAME_STATE_PLAY;
-	GameCamera = (FE_Camera){0, 0, FE_Map_Width, FE_Map_Height, false};
-	// todo: pause menu
+
+	int spawnx = clamp(FE_GetSpawn().x, FE_Map_MinimumX, FE_Map_Width);
+	int spawny = clamp(FE_GetSpawn().y, FE_Map_MinimumY, FE_Map_Height);
+
+	GameCamera = (FE_Camera){spawnx, spawny, FE_Map_MinimumX, FE_Map_MinimumY, FE_Map_Width, FE_Map_Height, false};
 }
 
 void FE_RenderGame()
