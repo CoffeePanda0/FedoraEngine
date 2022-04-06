@@ -21,8 +21,10 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 - Audio controls  
 - Custom Dialogue system  
 - Viewing logs in game console  
-- Custom Map Editor
- 
+- Custom Map Editor  
+- Circles(tm)  
+- Animation system  
+
 # Q&A's
 1. What is this code useful for? A: good question
 2. Will your code make me cry? A: Most likely

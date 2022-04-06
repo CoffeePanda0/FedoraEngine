@@ -46,9 +46,6 @@ void FE_Gravity() // Applies gravity to all objects
 
             if (obj->body.h + obj->body.y > screen_height) {
                 new_velocity = 0;
-                if (obj->velocity.y != 0)
-                    FE_ApplyForce(obj, 0, -1000); // todo jumping doesnt fucking work
-
                 obj->velocity.y = new_velocity;
                 continue;
             }
@@ -93,15 +90,27 @@ void FE_Friction()
     */
 }
 
-void FE_ApplyForce(FE_PhysObj *o, int x, int y)
+void FE_ApplyForce(FE_PhysObj *o, Vector2D force)
 {
     if (!o) {
         warn("Passing nullptr (ApplyForce)");
         return;
     }
     
-    o->velocity.x += x;
-    o->velocity.y += y;
+    // todo : check for collision
+
+    // check that object is inside map boundries
+    if (o->body.x + o->body.w + force.x > screen_width) {
+        force.x = 0;
+        o->velocity.x = 0;
+    }
+    if (o->body.x + force.x <= 0) {
+        force.x = 0;
+        o->velocity.x = 0;
+    }
+
+    o->velocity.x += force.x;
+    o->velocity.y += force.y;
 }
 
 int FE_AddPhysInteractable(FE_PhysObj *o) // Create new node with pointer to object, adds to linked list

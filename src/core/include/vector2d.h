@@ -30,4 +30,6 @@ Vector2D FE_VecSub(Vector2D v1, Vector2D v2);
 Vector2D FE_VecMultiply(Vector2D v, float scalar);
 
 
+#define VEC_EMPTY (Vector2D){0, 0}
+
 #endif

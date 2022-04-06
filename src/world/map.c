@@ -112,7 +112,7 @@ int FE_LoadMap(const char *name)
     FE_FreeUI();
     FE_GameState = GAME_STATE_PLAY;
     return 1;
-
+    
 err:
     warn(feof(f) ? "Unexpected end of file in %s" : "Error loading map %s", name);
     fclose(f);

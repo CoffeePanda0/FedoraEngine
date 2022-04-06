@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <SDL.h>
 #include "include/utils.h"
+#include "../include/game.h"
 
 static FILE* f;
 
@@ -66,6 +67,8 @@ void die (enum dietypes type, const char *s, ...) {
 }
 
 void vlog (enum logtypes type, const char *s, ...) {
+
+	if (!FE_GameActive) return;
 
 	va_list ap, ap2, ap3;
 	time_t t;

@@ -16,11 +16,12 @@
 typedef struct FE_PhysObj {
     Uint16 mass;
     Vector2D velocity;
+    Vector2D maxvelocity;
     SDL_Rect body;
 } FE_PhysObj;
 
 void FE_RunPhysics();
-void FE_ApplyForce(FE_PhysObj *o, int x, int y);
+void FE_ApplyForce(FE_PhysObj *o, Vector2D force);
 int FE_AddPhysInteractable(FE_PhysObj *o);
 int FE_RemovePhysInteractable(FE_PhysObj *o);
 

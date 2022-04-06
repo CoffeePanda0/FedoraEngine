@@ -55,10 +55,12 @@ int FE_ConsoleInit()
 
 // separate label functions so we don't end up using Label objects for console output
 static void GenerateConsoleLabel()
-{
+{   
     if (Console.output_label_text)
         SDL_DestroyTexture(Console.output_label_text);
     
+    if (!FE_GameActive) return;
+
     SDL_Surface *text_surface = TTF_RenderText_Solid(Font, console_output, COLOR_WHITE); 
     Console.output_label_text = SDL_CreateTextureFromSurface(renderer, text_surface);
     SDL_FreeSurface(text_surface);

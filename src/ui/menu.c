@@ -2,6 +2,8 @@
 
 // Contains preset menus
 
+void (*MenuPage)();
+
 static void loadmap_buf(FE_TextBox *t)
 {
 	if (!t->content || strlen(t->content) == 0)

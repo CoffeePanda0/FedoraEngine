@@ -17,10 +17,10 @@ int main (int argc, char* argv[])
 
 	// allow loading maps or starting editor from arguments
 	if (argc > 1) {
-		if (strcmp(argv[1], "/editor") == 0) {
+		if (strcmp(argv[1], "--editor") == 0 || strcmp(argv[1], "-e") == 0) {
 			FE_GameState = GAME_STATE_EDITOR;
 			FE_StartEditor();
-		} else if (strcmp(argv[1], "/map") == 0) {
+		} else if (strcmp(argv[1], "--map") == 0 || strcmp(argv[1], "-m") == 0) {
 			if (argc > 2)
 				FE_StartGame(argv[2]);
 			else

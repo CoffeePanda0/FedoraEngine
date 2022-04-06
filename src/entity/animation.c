@@ -10,9 +10,10 @@ void FE_UpdateAnimations()
     for (FE_List *l = animation_list; l; l = l->next) {
         FE_Animation *anim = (FE_Animation *)l->data;
         if (anim->active) {
-            if (anim->frames_passed == anim->frame_duration)
+            if (anim->frames_passed == anim->frame_duration) {
                 anim->current_frame = (anim->current_frame + 1) % anim->frame_count;
-            anim->frames_passed++;
+                anim->frames_passed = 0;
+            } else anim->frames_passed++;
         }
     }
 }
@@ -87,3 +88,5 @@ int FE_CleanAnimations()
 
     return 1;
 }
+
+// TODO: tie frame duration to time rather than frames passed
