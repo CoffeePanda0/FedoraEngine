@@ -10,9 +10,9 @@ typedef struct FE_Animation {
     Uint16 frame_width; // The width of each frame
     Uint16 frame_height; // The height of each frame
     
-    Uint16 frame_duration; // The duration of each frame
-    Uint16 frames_passed; // The number of frames passed
-
+    unsigned long frame_duration; // The duration of each frame
+    unsigned long time_passed; // The time passed since the last frame was changed
+    
     Uint8 current_frame; // The current frame
 
     bool active; // Whether the animation is active
@@ -24,7 +24,7 @@ typedef struct FE_Animation {
  *\param frame_count The number of frames in the spritesheet
  *\param frame_width The width of each frame
  *\param frame_height The height of each frame
- *\param frame_duration The duration of each frame
+ *\param frame_duration The duration of each frame in milliseconds
  *\param active Whether the animation is active
  *\return The animation
 */

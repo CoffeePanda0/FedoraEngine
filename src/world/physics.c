@@ -109,6 +109,11 @@ void FE_ApplyForce(FE_PhysObj *o, Vector2D force)
         o->velocity.x = 0;
     }
 
+    // clamp to max velocity
+    if (force.x + o->velocity.x > o->maxvelocity.x) {
+        force.x = o->maxvelocity.x - o->velocity.x;
+    }
+
     o->velocity.x += force.x;
     o->velocity.y += force.y;
 }

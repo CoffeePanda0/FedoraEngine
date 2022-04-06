@@ -3,6 +3,7 @@
 #define ANIMATION_PATH "game/sprites/animations/"
 
 static FE_List *animation_list = NULL;
+static long last_update;
 
 void FE_UpdateAnimations()
 {
@@ -10,12 +11,14 @@ void FE_UpdateAnimations()
     for (FE_List *l = animation_list; l; l = l->next) {
         FE_Animation *anim = (FE_Animation *)l->data;
         if (anim->active) {
-            if (anim->frames_passed == anim->frame_duration) {
-                anim->current_frame = (anim->current_frame + 1) % anim->frame_count;
-                anim->frames_passed = 0;
-            } else anim->frames_passed++;
+            anim->time_passed += SDL_GetTicks() - last_update;
+            if (anim->time_passed >= anim->frame_duration) {
+                anim->current_frame = (anim->current_frame + 1) < anim->frame_count ? anim->current_frame + 1 : 0;
+                anim->time_passed = 0;
+            }
         }
     }
+    last_update = SDL_GetTicks();
 }
 
 FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint16 frame_width, Uint16 frame_height, Uint16 frame_duration, bool active)
@@ -33,8 +36,8 @@ FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint
     anim->active = active;
 
     anim->current_frame = 0;
-    anim->frames_passed = 0;
-    
+    anim->time_passed = 0;
+
     FE_List_Add(&animation_list, anim);
     return anim;
 }
@@ -88,5 +91,3 @@ int FE_CleanAnimations()
 
     return 1;
 }
-
-// TODO: tie frame duration to time rather than frames passed
