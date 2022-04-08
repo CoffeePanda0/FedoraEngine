@@ -1,7 +1,5 @@
 #include "../include/game.h"
 
-#define TILE_SIZE 64
-
 SDL_Texture **editor_textures; // The texture atlas (stores 10)
 char **editor_texturepaths;
 static size_t texturecount;
@@ -27,7 +25,7 @@ static SDL_Texture *endtexture;
 
 static bool saving = false;
 
-// TODO: free textures if they are deleted and not used in map, loading previous maps, tile bg, drag and click?
+// TODO: free textures if they are deleted and not used in map, loading previous maps, tile bg, drag and click? change tilesize/gravity
 
 void FE_RenderEditor()
 {
@@ -43,20 +41,20 @@ void FE_RenderEditor()
 
 	// render all tiles
 	for (size_t i = 0; i < newmap.tilecount; i++) {
-		SDL_Rect r = (SDL_Rect){newmap.tiles[i].position.x - camera.x, newmap.tiles[i].position.y - camera.y, TILE_SIZE, TILE_SIZE};
+		SDL_Rect r = (SDL_Rect){newmap.tiles[i].position.x - camera.x, newmap.tiles[i].position.y - camera.y, mapsave.tilesize, mapsave.tilesize};
 		FE_RenderCopyEx(newmap.textures[newmap.tiles[i].texture_index], NULL, &r, newmap.tiles[i].rotation, SDL_FLIP_NONE);
 
 	}
 
 	// render spawn
 	if (!(newmap.PlayerSpawn.x == -1 && newmap.PlayerSpawn.y == -1)) {
-		SDL_Rect spawnrect = (SDL_Rect){newmap.PlayerSpawn.x - camera.x, newmap.PlayerSpawn.y - camera.y, TILE_SIZE, TILE_SIZE};
+		SDL_Rect spawnrect = (SDL_Rect){newmap.PlayerSpawn.x - camera.x, newmap.PlayerSpawn.y - camera.y, mapsave.tilesize, mapsave.tilesize};
 		FE_RenderCopy(spawntexture, NULL, &spawnrect);
 	}
 
 	// render end flag
 	if (!(newmap.EndFlag.x == -1 && newmap.EndFlag.y == -1)) {
-		SDL_Rect endflagrect = (SDL_Rect){newmap.EndFlag.x - camera.x, newmap.EndFlag.y - camera.y, TILE_SIZE, TILE_SIZE};
+		SDL_Rect endflagrect = (SDL_Rect){newmap.EndFlag.x - camera.x, newmap.EndFlag.y - camera.y, mapsave.tilesize, mapsave.tilesize};
 		FE_RenderCopy(endtexture, NULL, &endflagrect);
 	}
 
@@ -65,10 +63,10 @@ void FE_RenderEditor()
 	// render grid on map with camera
 	if (grid) {
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-		for (int i = 0; i < 4096 + screen_width; i += TILE_SIZE) {
+		for (int i = 0; i < 4096 + screen_width; i += mapsave.tilesize) {
 			SDL_RenderDrawLine(renderer, i - camera.x, 0, i - camera.x, screen_height);
 		}
-		for (int i = 0; i < 1024 + screen_height; i += TILE_SIZE) {
+		for (int i = 0; i < 1024 + screen_height; i += mapsave.tilesize) {
 			SDL_RenderDrawLine(renderer, 0, i - camera.y, screen_width, i - camera.y);
 		}
 	}
@@ -92,8 +90,8 @@ static void DeleteTile(int x, int y)
 		return;
 	
 	if (grid) {
-		x = (x / TILE_SIZE) * TILE_SIZE;
-		y = (y / TILE_SIZE) * TILE_SIZE;
+		x = (x / mapsave.tilesize) * mapsave.tilesize;
+		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
 	int index = -1;
@@ -165,8 +163,8 @@ static void DeleteTile(int x, int y)
 static void SetBG(int x, int y)
 {
 	if (grid) {
-		x = (x / TILE_SIZE) * TILE_SIZE;
-		y = (y / TILE_SIZE) * TILE_SIZE;
+		x = (x / mapsave.tilesize) * mapsave.tilesize;
+		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
 	if (mapsave.bg_texturepath)
@@ -181,8 +179,8 @@ static void AddTile(int x, int y)
 {
 	// snap x and y to a grid using tile size
 	if (grid) {
-		x = (x / TILE_SIZE) * TILE_SIZE;
-		y = (y / TILE_SIZE) * TILE_SIZE;
+		x = (x / mapsave.tilesize) * mapsave.tilesize;
+		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
 	// check if tile already exists
@@ -265,8 +263,8 @@ static void SetSpawn(int x, int y)
 {
 	// snap x and y to a grid using tile size
 	if (grid) {
-		x = (x / TILE_SIZE) * TILE_SIZE;
-		y = (y / TILE_SIZE) * TILE_SIZE;
+		x = (x / mapsave.tilesize) * mapsave.tilesize;
+		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
 	newmap.PlayerSpawn = (Vector2D){x, y};
@@ -277,8 +275,8 @@ static void SetSpawn(int x, int y)
 static void SetEnd(int x, int y)
 {
 	if (grid) {
-		x = (x / TILE_SIZE) * TILE_SIZE;
-		y = (y / TILE_SIZE) * TILE_SIZE;
+		x = (x / mapsave.tilesize) * mapsave.tilesize;
+		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
 	newmap.EndFlag = (Vector2D){x, y};
@@ -290,8 +288,8 @@ static void RotateTile(int x, int y)
 {
 	// snap x and y to a grid using tile size
 	if (grid) {
-		x = (x / TILE_SIZE) * TILE_SIZE;
-		y = (y / TILE_SIZE) * TILE_SIZE;
+		x = (x / mapsave.tilesize) * mapsave.tilesize;
+		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
 	// check if tile already exists
@@ -581,6 +579,7 @@ void FE_StartEditor() // cleans up from other game modes
 	newmap.PlayerSpawn = (Vector2D){-1,-1};
 	mapsave.EndFlag = (Vector2D){-1,-1};
 	newmap.EndFlag = (Vector2D){-1,-1};
- 
+	mapsave.tilesize = 64;
+	mapsave.gravity = 100;
 
 }

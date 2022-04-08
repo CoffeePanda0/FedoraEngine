@@ -2,8 +2,14 @@
 
 static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 
-// todo - write gravity and drag to map file
-// KNOWN ISSUE - Friction seems to work for longer to the right?
+/* TODO:
+- friction works less to the left?
+- camera not following Y pos
+- player clipping into ground
+- jumping
+- the bouncy bounce
+- cycle player animations properly
+- */
 
 float clampf(float num, float min, float max) // Clamps a float value
 {
@@ -82,8 +88,7 @@ void FE_PhysLoop()
         for (FE_List *t = FE_PhysObjects; t; t = t->next) {
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
 
-            
-            obj->body.y += obj->velocity.y;
+            float new_y = obj->body.y + obj->velocity.y;
             
             if (obj->velocity.x != 0) {
                 float new_x = obj->body.x + obj->velocity.x;
@@ -115,6 +120,17 @@ void FE_PhysLoop()
 
                 obj->body.x = new_x;
             }
+
+            if (obj->velocity.y != 0) {
+                SDL_Rect check_rect = {obj->body.x, new_y, obj->body.w, obj->body.h};
+                Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
+                if (!FE_VecNULL(GroundCollision)) {
+                    obj->velocity.y = 0;
+                }
+
+                obj->body.y += obj->velocity.y;
+            }
+
         }
     }
 }

@@ -83,6 +83,9 @@ void Editor_Save(FE_Map *mapsave)
     // Write map name
     if (!(WriteStr(f, mapsave->name))) goto err;
 
+    // write gravity
+    if (fwrite(&mapsave->gravity, sizeof(float), 1, f) != 1) goto err;
+
     // Write texture count
     if (fwrite(&mapsave->texturecount, sizeof(Uint16), 1, f) != 1) goto err;
     
@@ -97,6 +100,9 @@ void Editor_Save(FE_Map *mapsave)
     // Write tilecount
     if (fwrite(&mapsave->tilecount, sizeof(Uint16), 1, f) != 1) goto err;
 
+    // Write tilesize
+    if (fwrite(&mapsave->tilesize, sizeof(Uint16), 1, f) != 1) goto err;
+    
     // Write tiles
     for (int i = 0; i < mapsave->tilecount; i++) {
         if (fwrite(&mapsave->tiles[i].texture_index, sizeof(Uint16), 1, f) != 1) goto err;

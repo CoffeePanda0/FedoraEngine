@@ -13,12 +13,15 @@ typedef struct FE_Map_Tile {
 typedef struct FE_Map {
     char *name;
 
+    float gravity;
+
     Uint16 texturecount;
     char **texturepaths;
 
     char *bg_texturepath;
 
     Uint16 tilecount;
+    Uint16 tilesize;
     FE_Map_Tile *tiles;
 
     Vector2D PlayerSpawn;
@@ -28,12 +31,15 @@ typedef struct FE_Map {
 typedef struct FE_LoadedMap {
     char *name;
 
+    float gravity;
+
     Uint16 texturecount;
     SDL_Texture **textures;
 
     SDL_Texture *bg;
 
     Uint16 tilecount;
+    Uint16 tilesize;
     FE_Map_Tile *tiles;
 
     Vector2D PlayerSpawn;

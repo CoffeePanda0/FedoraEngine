@@ -4,10 +4,11 @@
 #include <SDL.h>
 #include "../../core/include/vector2d.h"
 
-#define GRAVITY 100
 #define DRAG 1.2f
 #define FRICTION 0.8f;
 #define BOUNCE 0.2f;
+
+extern float GRAVITY;
 
 #define clamp(num, min, max) _Generic((num), \
         int: clampi, \
