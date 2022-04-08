@@ -181,9 +181,43 @@ void FE_CloseMap()
     return;
 }
 
+static size_t LeftTileRange(SDL_Rect *r) // calculates the left-most tile near the player to check for collision
+{
+    int r_left = r->x;
+
+    // find the tile closest to the player's left side using a binary search
+    int left = 0;
+    int right = map.tilecount - 1;
+    int mid = 0;
+    while (left <= right) {
+        mid = (left + right) / 2;
+        if (map.tiles[mid].position.x == r_left)
+            break;
+        else if (map.tiles[mid].position.x < r_left)
+            left = mid + 1;
+        else
+            right = mid - 1;
+    }
+    return mid - 2;
+}
+
+static size_t RightTileRange(size_t left, SDL_Rect *r) // calculates the right-most tile near the player to check for collision
+{
+    int r_right = r->x + r->w;
+
+    size_t right_tile = left;
+    while (map.tiles[right_tile].position.x <= r_right) {
+        right_tile++;
+    }
+    return right_tile;
+}
+
 Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
 {
-    for (size_t i = 0; i < map.tilecount; i++) {
+    size_t left = LeftTileRange(r);
+    size_t right = RightTileRange(left, r);
+
+    for (size_t i = left; i < right; i++) {
 
         // continue if tile is above or below player
         if (map.tiles[i].position.y > r->h + r->y || map.tiles[i].position.y + TILE_SIZE < r->y)
@@ -204,8 +238,10 @@ Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
 
 Vector2D FE_CheckMapCollisionRight(SDL_Rect *r)
 {
-    for (size_t i = 0; i < map.tilecount; i++) {
-        
+    size_t left = LeftTileRange(r);
+    size_t right = RightTileRange(left, r);
+
+    for (size_t i = left; i < right; i++) {
         // continue if tile is above or below player
         if (map.tiles[i].position.y > r->h + r->y || map.tiles[i].position.y + TILE_SIZE < r->y)
             continue;
@@ -225,36 +261,13 @@ Vector2D FE_CheckMapCollisionRight(SDL_Rect *r)
 
 Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
 {
-    // Only checks the tiles closest to the player's X coordinate to save performance
-    
     // Check if the object is in map bounds
     if (r->x < FE_Map_MinimumX || r->x + r->w > FE_Map_Width)
         return VEC_NULL;
-
-    int r_left = r->x;
-    int r_right = r->x + r->w;
-
-    // find the tile closest to the player's left side using a binary search
-    int left = 0;
-    int right = map.tilecount - 1;
-    int mid = 0;
-    while (left <= right) {
-        mid = (left + right) / 2;
-        if (map.tiles[mid].position.x == r_left)
-            break;
-        else if (map.tiles[mid].position.x < r_left)
-            left = mid + 1;
-        else
-            right = mid - 1;
-    }
-    size_t left_tile = mid - 2;
-
-
-    // find the furthest tile in the array to the right incase of tiles on top of each other
-    size_t right_tile = 0;
-    while (map.tiles[right_tile].position.x <= r_right) {
-        right_tile++;
-    }
+    
+    // Only checks the tiles closest to the player's X coordinate to save performance
+    size_t left_tile = LeftTileRange(r);
+    size_t right_tile = RightTileRange(left_tile, r);
 
     // check if each tile is colliding from above with the rect
     for (size_t i = left_tile; i < right_tile; i++) {
