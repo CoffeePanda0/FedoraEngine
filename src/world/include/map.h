@@ -67,6 +67,25 @@ void FE_CloseMap();
 /* Returns a Vector2D of the current map's spawn point */
 Vector2D FE_GetSpawn();
 
+/** Checks if a rect is colliding above the map tiles
+ *\param r  - The rectangle to check for collision
+ *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
+*/
+Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r);
+
+
+/** Checks if a rect is colliding with the right-hand side of a map tile
+ *\param r  - The rectangle to check for collision
+ *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
+*/
+Vector2D FE_CheckMapCollisionRight(SDL_Rect *r);
+
+
+/** Checks if a rect is colliding with the left-hand side of a map tile
+ *\param r  - The rectangle to check for collision
+ *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
+*/
+Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r);
 
 extern Uint16 FE_Map_Width;
 extern Uint16 FE_Map_Height;

@@ -2,6 +2,9 @@
 
 static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 
+// todo - write gravity and drag to map file
+// KNOWN ISSUE - Friction seems to work for longer to the right?
+
 float clampf(float num, float min, float max) // Clamps a float value
 {
     if (num < min)
@@ -25,13 +28,9 @@ void FE_Gravity() // Applies gravity to all objects
     if (FE_PhysObjects != 0) {
         for (FE_List *t = FE_PhysObjects; t; t = t->next) {
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
-
-            if (obj->velocity.y < 0)
-                warn("bees");
                 
             float new_velocity = obj->velocity.y;
             float new_y = obj->body.y;
-
             
             /* calc accel and max accel */
             float terminal_velocity = sqrtf((2 * obj->mass * GRAVITY) / DRAG);
@@ -62,32 +61,86 @@ void FE_Gravity() // Applies gravity to all objects
                 }
             }
             
-            /* apply force to object */
-            obj->body.y = new_y;
-            obj->velocity.y = new_velocity;
+            /* Check collision on ground below */
+            // create rect for checking collision where the player will be
+            SDL_Rect check_rect = {obj->body.x, new_y, obj->body.w, obj->body.h};
+            
+            Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
+            if (FE_VecNULL(GroundCollision)) {
+                obj->velocity.y = new_velocity;
+            } else {
+                obj->velocity.y = 0;
+            }
         }
     } 
 }
 
-void FE_Friction()
+/* Applies velocity forces to each object */
+void FE_PhysLoop()
 {
-    /*
-    if (head != 0) {
-        for (struct Node *t = head; t; t = t->next) {
-            if (t->o->velocity.x == 0)
-                continue;
+    if (FE_PhysObjects != 0) {
+        for (FE_List *t = FE_PhysObjects; t; t = t->next) {
+            FE_PhysObj *obj = (FE_PhysObj *)t->data;
 
-
-            float new_velocity = t->o->velocity.x - FRICTION;
-            if (new_velocity < 0)
-                new_velocity = 0;
             
+            obj->body.y += obj->velocity.y;
+            
+            if (obj->velocity.x != 0) {
+                float new_x = obj->body.x + obj->velocity.x;
 
-            t->o->velocity.x = new_velocity;
-            t->o->body.x += new_velocity;
+                // check for map boundies
+                if (new_x <= 0 || new_x + obj->body.w > FE_Map_Width) {
+                    obj->velocity.x = 0;
+                    continue;
+                }
+                
+                // check for collision from right
+                if (obj->velocity.x > 0) { 
+                    SDL_Rect tmp_r = obj->body;
+                    tmp_r.x = new_x;
+                    if (!FE_VecNULL(FE_CheckMapCollisionRight(&tmp_r))) {
+                        obj->velocity.x = 0;
+                        continue;
+                    }
+                }
+                // check for collision from left
+                if (obj->velocity.x < 0) {
+                    SDL_Rect tmp_r = obj->body;
+                    tmp_r.x = new_x;
+                    if (!FE_VecNULL(FE_CheckMapCollisionLeft(&tmp_r))) {
+                        obj->velocity.x = 0;
+                        continue;
+                    }
+                }
+
+                obj->body.x = new_x;
+            }
         }
     }
-    */
+}
+
+void FE_Friction()
+{
+    if (FE_PhysObjects != 0) {
+        for (FE_List *t = FE_PhysObjects; t; t = t->next) {
+            FE_PhysObj *obj = (FE_PhysObj *)t->data;
+
+            if (obj->velocity.x == 0)
+                continue;
+
+            // don't bother with negligble amounts
+            if (obj->velocity.x > 0 && obj->velocity.x < 0.02) {
+                obj->velocity.x = 0;
+                return;
+            }
+            if (obj->velocity.x < 0 && obj->velocity.x > -0.02) {
+                obj->velocity.x = 0;
+                return;
+            }
+
+            obj->velocity.x = obj->velocity.x * FRICTION;
+        }
+    }
 }
 
 void FE_ApplyForce(FE_PhysObj *o, Vector2D force)
@@ -97,22 +150,11 @@ void FE_ApplyForce(FE_PhysObj *o, Vector2D force)
         return;
     }
     
-    // todo : check for collision
-
-    // check that object is inside map boundries
-    if (o->body.x + o->body.w + force.x > screen_width) {
-        force.x = 0;
-        o->velocity.x = 0;
-    }
-    if (o->body.x + force.x <= 0) {
-        force.x = 0;
-        o->velocity.x = 0;
-    }
-
     // clamp to max velocity
-    if (force.x + o->velocity.x > o->maxvelocity.x) {
-        force.x = o->maxvelocity.x - o->velocity.x;
-    }
+    if (o->velocity.x + force.x > 0)
+        o->velocity.x = clamp(o->velocity.x + force.x, 0, o->maxvelocity.x);
+    else if (o->velocity.x + force.x < 0)
+        o->velocity.x = clamp(o->velocity.x + force.x, -o->maxvelocity.x, 0);
 
     o->velocity.x += force.x;
     o->velocity.y += force.y;
@@ -180,4 +222,18 @@ void FE_RunPhysics()
     FE_FPSCounter();
     FE_Gravity();
     FE_Friction();
+    FE_PhysLoop();
+}
+
+bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b)
+{
+    if (a->x + a->w < b->x) // to the left of b
+        return false;
+    if (a->x > b->x + b->w) // to the right of b
+        return false;
+    if (a->y + a->h < b->y) // above b
+        return false;
+    if (a->y > b->y + b->h) // below b
+        return false;
+    return true;
 }

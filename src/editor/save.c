@@ -2,6 +2,34 @@
 
 #define MAP_DIRECTORY "game/map/maps/"
 
+static int TileCompare(const void *a, const void *b)
+{
+    const FE_Map_Tile *tilea = a;
+    const FE_Map_Tile *tileb = b;
+    if (tilea->position.x < tileb->position.x)
+        return -1;
+    if (tilea->position.x > tileb->position.x)
+        return 1;
+    if (tilea->position.x < tileb->position.x)
+        return -1;
+    if (tilea->position.x > tileb->position.x)
+        return 1;
+    return 0;
+}
+
+static void SortTiles(FE_Map *save)
+{
+    FE_Map_Tile *tiles = save->tiles;
+    size_t tilecount = save->tilecount;
+
+    /* use a quick sort algorithm to sort the tiles by x position.
+    This means that when checking for collision, we can just check the
+    tiles closest to the player/object's X coordinate*/
+
+    // sort the tiles by x position
+    qsort(tiles, tilecount, sizeof(FE_Map_Tile), TileCompare);
+}
+
 bool Editor_CallSave(FE_Map *save) // used to call the save function as a callback and display dialogues 
 {
 	if (save->name)
@@ -29,7 +57,7 @@ bool Editor_CallSave(FE_Map *save) // used to call the save function as a callba
         FE_ShowMessageBox("Warning", "Map must have an end flag! (press E)");
         goto fail;
     }
-
+    SortTiles(save);
 	Editor_Save(save);
 	return false;
 
