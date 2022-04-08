@@ -7,6 +7,7 @@
 #include "../entity/include/timer.h"
 #include "../entity/include/light.h"
 #include "../entity/include/animation.h"
+#include "../entity/include/player.h"
 
 #include "../world/include/camera.h"
 #include "../world/include/physics.h"
@@ -61,6 +62,6 @@ void FE_GameLoop();
 /* Cleans all resources possible without exiting */
 void FE_CleanAll();
 
-void FE_GameEventHandler(FE_Camera *camera);
+void FE_GameEventHandler(FE_Camera *camera, FE_Player *player);
 
 #endif

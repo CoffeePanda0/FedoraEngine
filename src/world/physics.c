@@ -4,10 +4,8 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 
 /* TODO:
     - friction works less to the left?
-    - camera not following Y pos
-    - jumping
-    - cycle player animations properly
-    - player facing right + other bools
+    - nicer y movement on camera
+    - going to sides causes increase in Y velocity?
     - longer player holds down space for, higher they jump
 - */
 
@@ -49,8 +47,7 @@ void FE_Gravity() // Applies gravity to all objects
     } 
 }
 
-/* Applies velocity forces to each object */
-void FE_PhysLoop()
+void FE_PhysLoop() // Applies velocity forces in both directions to each object
 {
     if (FE_PhysObjects != 0) {
         for (FE_List *t = FE_PhysObjects; t; t = t->next) {
@@ -118,11 +115,11 @@ void FE_Friction()
             // don't bother with negligble amounts
             if (obj->velocity.x > 0 && obj->velocity.x < 0.02) {
                 obj->velocity.x = 0;
-                return;
+                continue;
             }
             if (obj->velocity.x < 0 && obj->velocity.x > -0.02) {
                 obj->velocity.x = 0;
-                return;
+                continue;
             }
 
             obj->velocity.x = obj->velocity.x * FRICTION;

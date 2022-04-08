@@ -7,7 +7,7 @@
     4- User input
 */
 
-void FE_GameEventHandler(FE_Camera *camera)
+void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 {
     const Uint8* keyboard_state = SDL_GetKeyboardState(NULL);
 	SDL_PumpEvents();
@@ -39,19 +39,21 @@ void FE_GameEventHandler(FE_Camera *camera)
                         FE_UpdateTextBox(event.key.keysym.sym);
                         break;
                     }
+                     if (keyboard_state[SDL_SCANCODE_SPACE] && event.key.repeat == 0)
+                        FE_PlayerJump(player, camera);
                     
-                    if (keyboard_state[SDL_SCANCODE_W])
-						FE_MoveCamera(0, -10, camera);
-					else if (keyboard_state[SDL_SCANCODE_A])
-						FE_MoveCamera(-10, 0, camera);
-					else if (keyboard_state[SDL_SCANCODE_S])
-						FE_MoveCamera(0, 10, camera);
-					else if (keyboard_state[SDL_SCANCODE_D])
-						FE_MoveCamera(10, 0, camera);
-
                 break;
 
             }
         }
+    }
+
+    // Handle essential inputs here to prevent first click issue
+    if (!FE_ConsoleVisible) {
+        if (keyboard_state[SDL_SCANCODE_A])
+            FE_MovePlayer(player, camera, (Vector2D){-player->movespeed, 0});
+        if (keyboard_state[SDL_SCANCODE_D])
+            FE_MovePlayer(player, camera, (Vector2D){player->movespeed, 0});
+       
     }
 }
