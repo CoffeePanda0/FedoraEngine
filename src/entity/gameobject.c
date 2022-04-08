@@ -57,15 +57,16 @@ void FE_CleanGameObjects() // Destroys all game objects
 	FE_List_Destroy(&FE_GameObjects);
 }
 
-int FE_DestroyGameObject(struct FE_GameObject *obj)
+int FE_DestroyGameObject(FE_GameObject *obj)
 {
 	// free gameobject data
 	FE_RemovePhysInteractable(obj->phys);
 	free(obj->phys);
 	SDL_DestroyTexture(obj->texture);
 	
-	FE_List_Remove(&FE_GameObjects, obj); // remove from list
-
+	if (FE_List_Remove(&FE_GameObjects, obj) == -1) // remove from list
+		return -1;
+	
 	free(obj); // free gameobject
 	return 1;
 }

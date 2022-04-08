@@ -187,6 +187,20 @@ void FE_CloseMap()
     return;
 }
 
+static bool InBounds(SDL_Rect *r)// checks if rect is in map bounds
+{
+    if (r->y < 0)
+        return false;
+    
+    if (r->x < 0)
+        return false;
+
+    if (r->x + r->w > FE_Map_Width)
+        return false;
+
+    return true;
+}
+
 static size_t LeftTileRange(SDL_Rect *r) // calculates the left-most tile near the player to check for collision
 {
     int r_left = r->x;
@@ -204,7 +218,7 @@ static size_t LeftTileRange(SDL_Rect *r) // calculates the left-most tile near t
         else
             right = mid - 1;
     }
-    return mid - 2;
+    return clamp(mid - 2, 0, map.tilecount);
 }
 
 static size_t RightTileRange(size_t left, SDL_Rect *r) // calculates the right-most tile near the player to check for collision
@@ -212,7 +226,7 @@ static size_t RightTileRange(size_t left, SDL_Rect *r) // calculates the right-m
     int r_right = r->x + r->w;
 
     size_t right_tile = left;
-    while (map.tiles[right_tile].position.x <= r_right) {
+    while (right_tile < map.tilecount && map.tiles[right_tile].position.x <= r_right) {
         right_tile++;
     }
     return right_tile;
@@ -220,11 +234,12 @@ static size_t RightTileRange(size_t left, SDL_Rect *r) // calculates the right-m
 
 Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
 {
+    if (!r || !InBounds(r)) return VEC_NULL;
+
     size_t left = LeftTileRange(r);
     size_t right = RightTileRange(left, r);
 
     for (size_t i = left; i < right; i++) {
-
         // continue if tile is above or below player
         if (map.tiles[i].position.y > r->h + r->y || map.tiles[i].position.y + map.tilesize < r->y)
             continue;
@@ -244,6 +259,8 @@ Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
 
 Vector2D FE_CheckMapCollisionRight(SDL_Rect *r)
 {
+    if (!r || !InBounds(r)) return VEC_NULL;
+
     size_t left = LeftTileRange(r);
     size_t right = RightTileRange(left, r);
 
@@ -267,6 +284,8 @@ Vector2D FE_CheckMapCollisionRight(SDL_Rect *r)
 
 Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
 {
+    if (!r || !InBounds(r)) return VEC_NULL;
+
     // Check if the object is in map bounds
     if (r->x < FE_Map_MinimumX || r->x + r->w > FE_Map_Width)
         return VEC_NULL;

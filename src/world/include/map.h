@@ -54,8 +54,8 @@ typedef struct FE_EndFlag {
 
 /** Loads map from file into memory
  * 
- * @param name Name of map to load.
- * @return 1 on success, -1 on failure.
+ *\param name Name of map to load.
+ *\returns 1 on success, -1 on failure.
  */
 int FE_LoadMap(const char *name);
 
@@ -74,21 +74,21 @@ void FE_CloseMap();
 Vector2D FE_GetSpawn();
 
 /** Checks if a rect is colliding above the map tiles
- *\param r  - The rectangle to check for collision
+ *\param r The rectangle to check for collision
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
 */
 Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r);
 
 
 /** Checks if a rect is colliding with the right-hand side of a map tile
- *\param r  - The rectangle to check for collision
+ *\param r The rectangle to check for collision
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
 */
 Vector2D FE_CheckMapCollisionRight(SDL_Rect *r);
 
 
 /** Checks if a rect is colliding with the left-hand side of a map tile
- *\param r  - The rectangle to check for collision
+ *\param r The rectangle to check for collision
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
 */
 Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r);

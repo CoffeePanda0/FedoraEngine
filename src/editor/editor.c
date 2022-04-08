@@ -132,7 +132,7 @@ static void DeleteTile(int x, int y)
 		}
 	}
 
-	if (delete) {
+	if (delete) { // todo invalid read here - line 146 and 139
 		// remove from textures array
 		FE_DestroyTexture(newmap.textures[used_texture]);
 		for (size_t i = used_texture; i < newmap.texturecount; i++) {

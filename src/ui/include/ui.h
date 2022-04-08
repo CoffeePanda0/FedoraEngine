@@ -18,9 +18,17 @@ extern bool FE_intext;
 extern bool FE_DialogueActive;
 
 // Functions
+
+/* The render function used for the menus */
 void FE_RenderMenu();
+
+/* Cleans all UI element types */
 void FE_FreeUI();
+
+/* The event handler used for the menus */
 void FE_MenuEventHandle();
+
+/* Renders all UI elements */
 void FE_RenderUI();
 
 #endif

@@ -43,6 +43,7 @@ FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t
 int FE_DestroyButton(FE_Button *b);
 
 
+/* Renders all buttons on screen */
 void FE_RenderButtons();
 
 

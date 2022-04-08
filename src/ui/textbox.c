@@ -148,6 +148,8 @@ int FE_UpdateTextBox(char c) // Adds or subtracts a character from the text of a
             t->content[len] = c;
             t->content[len+1] = '\0';
         } else { // else calloc and add new char
+            if (t->content)
+                xfree(t->content);
             t->content = xcalloc(2,1);
             t->content[0] = c;
         }

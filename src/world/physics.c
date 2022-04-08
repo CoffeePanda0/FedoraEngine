@@ -3,12 +3,12 @@
 static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 
 /* TODO:
-- friction works less to the left?
-- camera not following Y pos
-- player clipping into ground
-- jumping
-- the bouncy bounce
-- cycle player animations properly
+    - friction works less to the left?
+    - camera not following Y pos
+    - jumping
+    - cycle player animations properly
+    - player facing right + other bools
+    - longer player holds down space for, higher they jump
 - */
 
 float clampf(float num, float min, float max) // Clamps a float value
@@ -36,47 +36,15 @@ void FE_Gravity() // Applies gravity to all objects
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
                 
             float new_velocity = obj->velocity.y;
-            float new_y = obj->body.y;
             
             /* calc accel and max accel */
             float terminal_velocity = sqrtf((2 * obj->mass * GRAVITY) / DRAG);
             new_velocity = obj->velocity.y + (obj->velocity.y + GRAVITY) * dT;
 
-
             /* clamp to terminal velocity */
             new_velocity = clamp(new_velocity, -terminal_velocity, terminal_velocity);    
-
-            /* Check that location is inside map boundries */
-            new_y += (new_velocity / 4);
-
-            if (obj->body.h + obj->body.y > screen_height) {
-                new_velocity = 0;
-                obj->velocity.y = new_velocity;
-                continue;
-            }
             
-            /* check that new location is not inside another object */
-            for (FE_List *t2 = FE_PhysObjects; t2; t2 = t2->next) {
-                if (t2 != t) {
-                    FE_PhysObj *obj2 = (FE_PhysObj *)t2->data;
-                    if (obj2->body.y < new_y && new_y < obj2->body.y + obj2->body.h) {
-                        new_velocity = 0;
-                        obj2->velocity.y = new_velocity;
-                        continue;
-                    }
-                }
-            }
-            
-            /* Check collision on ground below */
-            // create rect for checking collision where the player will be
-            SDL_Rect check_rect = {obj->body.x, new_y, obj->body.w, obj->body.h};
-            
-            Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
-            if (FE_VecNULL(GroundCollision)) {
-                obj->velocity.y = new_velocity;
-            } else {
-                obj->velocity.y = 0;
-            }
+            obj->velocity.y = new_velocity;
         }
     } 
 }
@@ -125,7 +93,10 @@ void FE_PhysLoop()
                 SDL_Rect check_rect = {obj->body.x, new_y, obj->body.w, obj->body.h};
                 Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
                 if (!FE_VecNULL(GroundCollision)) {
-                    obj->velocity.y = 0;
+                    if (obj->velocity.y > 4) {
+                        obj->velocity.y = obj->velocity.y * -BOUNCE;
+                    } else
+                        obj->velocity.y = 0;
                 }
 
                 obj->body.y += obj->velocity.y;
@@ -215,7 +186,7 @@ int FE_CleanPhys() // Removes all objects from linked list
     return 1;
 }
 
-void FE_FPSCounter()
+static void FE_FPSCounter()
 {
     static int frame_count = 0;
     static float last_time = 0;

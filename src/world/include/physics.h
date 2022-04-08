@@ -28,28 +28,28 @@ void FE_RunPhysics();
 
 
 /** Applies a force to a PhysObj body.
- *\param o - The object to apply the force to
- *\param force - The force to apply
+ *\param o The object to apply the force to
+ *\param force The force to apply
 */
 void FE_ApplyForce(FE_PhysObj *o, Vector2D force);
 
 
 /** Adds a given physics interactable to the physics system.
  * If this is not called, the object will not have any calculations applied 
- *\param o - The object to add to the physics system
+ *\param o The object to add to the physics system
  */
 int FE_AddPhysInteractable(FE_PhysObj *o);
 
 
 /** Removes a physics object from the physics system
- *\param o - The object to remove
+ *\param o The object to remove
 */
 int FE_RemovePhysInteractable(FE_PhysObj *o);
 
 
 /** AABB collision detection
- *\param a - The first rect
- *\param b - The second rect
+ *\param a The first rect
+ *\param b The second rect
  *\return true if the objects are colliding, false otherwise
 */
 bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b);

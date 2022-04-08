@@ -29,8 +29,14 @@ FE_LightObject *FE_CreateLightObject(SDL_Texture *obj_texture, SDL_Rect obj_rect
 */
 void FE_DestroyLightObject(FE_LightObject *o);
 
+
+/** Renders all light objects
+ *\param camera - The camera currently in use
+*/
 void FE_RenderLightObjects(FE_Camera *camera);
 
+
+/* Destroys all light objects */
 void FE_CleanLightObjects();
 
 #endif
