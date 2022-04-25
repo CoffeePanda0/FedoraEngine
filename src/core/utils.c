@@ -147,3 +147,12 @@ bool WriteStr(FILE *f, const char *str)
 	fwrite(str, sizeof(char), len, f);
 	return true;
 }
+
+bool StrInArr(char **arr, size_t n, char *str)
+{
+	for (size_t i = 0; i < n; i++) {
+		if (strcmp(arr[i], str) == 0)
+			return true;
+	}
+	return false;
+}

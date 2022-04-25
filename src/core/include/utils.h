@@ -57,6 +57,14 @@ char *ReadStr(FILE *f);
  */
 bool WriteStr(FILE *F, const char *str);
 
+
+/** Checks if a string exists in an array of strings
+ * \param arr The array of strings to check
+ * \param n The number of elements in the array
+ * \param str The string to compare against
+*/
+bool StrInArr(char **arr, size_t n, char *str);
+
 void log_init(void);
 void log_close(void);
 void vlog (enum logtypes, const char *, ...);
