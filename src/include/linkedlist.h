@@ -15,7 +15,7 @@ typedef struct FE_List {
 void FE_List_Add(FE_List **head, void *data);
 
 
-/* Removes a node from the list from data */
+/* Removes a node from the list from data. Does not free data */
 int FE_List_Remove(FE_List **head, void *data);
 
 

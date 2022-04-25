@@ -19,10 +19,10 @@ FE_LightObject *FE_CreateLightObject(SDL_Texture *obj_texture, SDL_Rect obj_rect
     texture_path = strcat(texture_path, effect_name);
     texture_path = strcat(texture_path, ".png");
     
-    o->effect_texture = FE_TextureFromFile(texture_path);
+    o->effect_texture = FE_LoadTexture(texture_path);
     o->effect_rect = (SDL_Rect){obj_rect.x + effect_offset_x, obj_rect.y + effect_offset_y, size, size};
 
-    free(texture_path);
+    xfree(texture_path);
     FE_List_Add(&LightList, o);
 
     return o;
@@ -34,6 +34,8 @@ void FE_DestroyLightObject(FE_LightObject *o)
         warn("FE_DestroyLightObject: Light object is null");
         return;
     }
+    FE_FreeTexture(o->effect_texture);
+    FE_FreeTexture(o->obj_texture);
 
     FE_List_Remove(&LightList, o);
 

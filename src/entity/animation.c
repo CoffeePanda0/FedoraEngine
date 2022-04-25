@@ -26,7 +26,7 @@ FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint
     FE_Animation *anim = xmalloc(sizeof(FE_Animation));
 
     char *temp_path = AddStr(ANIMATION_PATH, spritesheet_name);
-    anim->spritesheet = FE_TextureFromFile(temp_path);
+    anim->spritesheet = FE_LoadTexture(temp_path);
     xfree(temp_path);
 
     anim->frame_count = frame_count;
@@ -68,7 +68,7 @@ int FE_DestroyAnimation(FE_Animation *anim)
         warn("Tried to destroy a NULL animation");
         return -1;
     }
-    FE_DestroyTexture(anim->spritesheet);
+    FE_FreeTexture(anim->spritesheet);
     FE_List_Remove(&animation_list, anim);
     xfree(anim);
 
@@ -82,7 +82,7 @@ int FE_CleanAnimations()
 
     for (FE_List *l = animation_list; l; l = l->next) {
         FE_Animation *anim = (FE_Animation *)l->data;
-        SDL_DestroyTexture(anim->spritesheet);
+        FE_FreeTexture(anim->spritesheet);
         xfree(anim);
     }
 

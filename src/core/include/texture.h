@@ -51,4 +51,17 @@ int FE_RenderCopyEx(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double a
 void FE_CloseTextureManager();
 
 
+/** Loads a texture from a file. If the texture has been previously loaded, it will be returned instead of loading it again.
+ *\param path The path to the texture
+ *\return A pointer to the texture
+ */
+SDL_Texture *FE_LoadTexture(const char *path);
+
+
+/** Frees a texture (if the texture is not used elsewhere, it will be freed)
+ *\param texture The texture to free
+ */
+bool FE_FreeTexture(SDL_Texture *t);
+
+
 #endif

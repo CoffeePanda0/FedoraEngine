@@ -162,3 +162,5 @@ void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera)
             player->facing_right = false;
     }
 }
+
+// we forgot to free the player oops - TODO MAJOR

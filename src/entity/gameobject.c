@@ -16,7 +16,7 @@ FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *n
 	char *path = xmalloc(strlen(AssetPath) + strlen(texture_path) + 1);
 	strcpy(path, AssetPath);
 	strcat(path, texture_path);
-	obj->texture = FE_TextureFromFile(path);
+	obj->texture = FE_LoadTexture(path);
 	free(path);
 	
 	obj->type = type;
@@ -50,7 +50,7 @@ void FE_CleanGameObjects() // Destroys all game objects
 	for (FE_List *o = FE_GameObjects; o; o = o->next) {
 		FE_GameObject *obj = o->data;
 		FE_RemovePhysInteractable(obj->phys);
-		SDL_DestroyTexture(obj->texture);
+		FE_FreeTexture(obj->texture);
 		free(obj);
 	}
 
@@ -62,7 +62,7 @@ int FE_DestroyGameObject(FE_GameObject *obj)
 	// free gameobject data
 	FE_RemovePhysInteractable(obj->phys);
 	free(obj->phys);
-	SDL_DestroyTexture(obj->texture);
+	FE_FreeTexture(obj->texture);
 	
 	if (FE_List_Remove(&FE_GameObjects, obj) == -1) // remove from list
 		return -1;
