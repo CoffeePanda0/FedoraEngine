@@ -45,6 +45,14 @@ bool FE_VecComp(Vector2D v1, Vector2D v2);
 bool FE_VecNULL(Vector2D v);
 
 
+/** Returns a vector with the given x and y. Used so we don't have to constantly cast to struct.
+ * \param x - The x paramater of the vector
+ * \param y - The y paramater of the vector
+ * \return The new vector
+*/
+Vector2D FE_NewVector(float x, float y);
+
+
 #define VEC_EMPTY (Vector2D){0, 0}
 #define VEC_NULL (Vector2D){-1, -1}
 

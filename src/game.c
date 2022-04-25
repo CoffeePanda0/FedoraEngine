@@ -22,7 +22,7 @@ void FE_StartGame(const char *mapname)
 
 	// player setup
 	GamePlayer = FE_CreatePlayer(1, 15, 20, (SDL_Rect){0,0, 64, 128});
-	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, (Vector2D){300, 100});
+	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, FE_NewVector(300, 100));
 
 
 	FE_GameState = GAME_STATE_PLAY;
@@ -41,8 +41,8 @@ void FE_RenderGame()
 
 void FE_GameLoop()
 {
-	FE_UpdateTimers();
 	FE_GameEventHandler(&GameCamera, GamePlayer);
+	FE_UpdateTimers();
 	FE_RunPhysics();
 	FE_UpdatePlayer(GamePlayer, &GameCamera);
 	FE_UpdateAnimations();

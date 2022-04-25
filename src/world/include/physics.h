@@ -6,7 +6,7 @@
 
 #define DRAG 1.2f
 #define FRICTION 0.8f;
-#define BOUNCE 0.2f;
+#define BOUNCE 0.3f;
 
 extern float GRAVITY;
 

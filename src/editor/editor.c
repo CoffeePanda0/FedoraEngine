@@ -94,8 +94,9 @@ static void DeleteTile(int x, int y)
 		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
+	// find index of tile texture for removal later
 	int index = -1;
-	size_t used_texture = 0; // find index of tile texture for removal later
+	size_t used_texture = 0; 
 	for (size_t i = 0; i < newmap.tilecount; i++) {
 		if (newmap.tiles[i].position.x == x && newmap.tiles[i].position.y == y) {
 			index = i;
@@ -126,7 +127,7 @@ static void DeleteTile(int x, int y)
 	/* check if we need to delete the texture (if it is not used in any other tiles, we can safely remove it) */ 
 	bool delete = true;
 	for (size_t i = 0; i < newmap.tilecount; i++) {
-		if (newmap.tiles[i].texture_index == used_texture && i != (size_t)index) {
+		if (newmap.tiles[i].texture_index == used_texture) {
 			delete = false; // todo - being set to false when two tiles remain
 			break;
 		}
@@ -183,42 +184,15 @@ static void AddTile(int x, int y)
 		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
-	// check if tile already exists
+	// check if tile in that location already exists, and it it does then deletes it
 	for (size_t i = 0; i < newmap.tilecount; i++) {
 		if (newmap.tiles[i].position.x == x && newmap.tiles[i].position.y == y) {
-			// check if new texture exists in mapsave
-			int in = -1;
-			for (size_t i = 0; i < mapsave.texturecount; i++) {
-				if (strcmp(editor_texturepaths[selectedtexture], mapsave.texturepaths[i]) == 0) {
-					in = i;
-				}
-			}
-			if (in == -1) {
-				// add texture path to mapsave
-				if (mapsave.texturecount == 0)
-					mapsave.texturepaths = xmalloc(sizeof(char *));
-				else
-					mapsave.texturepaths = xrealloc(mapsave.texturepaths, sizeof(char*) * (mapsave.texturecount + 1));
-				mapsave.texturepaths[mapsave.texturecount] = xcalloc(64, 1);
-				mapsave.texturepaths[mapsave.texturecount] = strcpy(mapsave.texturepaths[mapsave.texturecount], editor_texturepaths[selectedtexture]);
-				mapsave.texturecount++;
-
-				// add tile texture to newmap
-				if (newmap.texturecount == 0)
-					newmap.textures = xmalloc(sizeof(SDL_Texture*));
-				else
-					newmap.textures = xrealloc(newmap.textures, sizeof(SDL_Texture*) * (newmap.texturecount + 1));
-				newmap.textures[newmap.texturecount++] = FE_TextureFromFile(mapsave.texturepaths[mapsave.texturecount-1]);
-				in = newmap.texturecount -1;
-			}
-			newmap.tiles[i].texture_index = in;
-			mapsave.tiles[i].texture_index = in;
-			return;
+			DeleteTile(x,y);
 		}
 	}
-	
+
+	// see if selected texture has been loaded. if it has already been added, return the index
 	int in = -1;
-	// see if selected texture has been added to newmap texture paths. if it has already been added, return the index
 	for (size_t i = 0; i < mapsave.texturecount; i++) {
 		if (strcmp(editor_texturepaths[selectedtexture], mapsave.texturepaths[i]) == 0) {
 			in = i;
@@ -249,14 +223,14 @@ static void AddTile(int x, int y)
 		mapsave.tiles = xmalloc(sizeof(FE_Map_Tile));
 	else
 		mapsave.tiles = xrealloc(mapsave.tiles, sizeof(FE_Map_Tile) * (mapsave.tilecount + 1));
-	mapsave.tiles[mapsave.tilecount++] = (FE_Map_Tile){in, 0, (Vector2D){x, y}};
+	mapsave.tiles[mapsave.tilecount++] = (FE_Map_Tile){in, 0, FE_NewVector(x, y)};
 	
 	// Add tile to newmap
 	if (newmap.tilecount == 0)
 		newmap.tiles = xmalloc(sizeof(FE_Map_Tile));
 	else
 		newmap.tiles = xrealloc(newmap.tiles, sizeof(FE_Map_Tile) * (newmap.tilecount + 1));
-	newmap.tiles[newmap.tilecount++] = (FE_Map_Tile){in, 0, (Vector2D){x, y}};
+	newmap.tiles[newmap.tilecount++] = (FE_Map_Tile){in, 0, FE_NewVector(x, y)};
 }
 
 static void SetSpawn(int x, int y)
@@ -267,8 +241,8 @@ static void SetSpawn(int x, int y)
 		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
-	newmap.PlayerSpawn = (Vector2D){x, y};
-	mapsave.PlayerSpawn = (Vector2D){x, y};
+	newmap.PlayerSpawn = FE_NewVector(x, y);
+	mapsave.PlayerSpawn = FE_NewVector(x, y);
 	info("Editor: Spawn set to (%d, %d)", x, y);
 }
 
@@ -279,8 +253,8 @@ static void SetEnd(int x, int y)
 		y = (y / mapsave.tilesize) * mapsave.tilesize;
 	}
 
-	newmap.EndFlag = (Vector2D){x, y};
-	mapsave.EndFlag = (Vector2D){x, y};
+	newmap.EndFlag = FE_NewVector(x, y);
+	mapsave.EndFlag = FE_NewVector(x, y);
 	info("Editor: Spawn end flag to (%d, %d)", x, y);
 }
 
@@ -489,8 +463,8 @@ void FE_CleanEditor()
 		xfree(mapsave.tiles);
 		mapsave.tilecount = 0;
 	}
-	mapsave.PlayerSpawn = (Vector2D){0, 0};
-	mapsave.EndFlag = (Vector2D){0, 0};
+	mapsave.PlayerSpawn = VEC_EMPTY;
+	mapsave.EndFlag = VEC_EMPTY;
 
 	// free memory held by newmap
 	if (newmap.name)
@@ -508,10 +482,10 @@ void FE_CleanEditor()
 		xfree(newmap.tiles);
 		newmap.tilecount = 0;
 	}
-	newmap.PlayerSpawn = (Vector2D){-1, -1};
-	newmap.EndFlag = (Vector2D){-1, -1};
-	mapsave.PlayerSpawn = (Vector2D){-1, -1};
-	mapsave.EndFlag = (Vector2D){-1, -1};
+	newmap.PlayerSpawn = VEC_NULL;
+	newmap.EndFlag = VEC_NULL;
+	mapsave.PlayerSpawn = VEC_NULL;
+	mapsave.EndFlag = VEC_NULL;
 }
 
 static void Exit()
@@ -575,10 +549,10 @@ void FE_StartEditor() // cleans up from other game modes
 
 	info("Editor: Started editor");
 
-	mapsave.PlayerSpawn = (Vector2D){-1,-1};
-	newmap.PlayerSpawn = (Vector2D){-1,-1};
-	mapsave.EndFlag = (Vector2D){-1,-1};
-	newmap.EndFlag = (Vector2D){-1,-1};
+	mapsave.PlayerSpawn = VEC_NULL;
+	newmap.PlayerSpawn = VEC_NULL;
+	mapsave.EndFlag = VEC_NULL;
+	newmap.EndFlag = VEC_NULL;
 	mapsave.tilesize = 64;
 	mapsave.gravity = 100;
 

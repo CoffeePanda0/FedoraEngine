@@ -41,12 +41,14 @@ int main (int argc, char* argv[])
 			case GAME_STATE_PLAY:
 				FE_GameLoop();
 			break;
+			case GAME_STATE_PAUSE:
+				FE_GameLoop();
+			break;
 			case GAME_STATE_EDITOR:
 				FE_RenderEditor();
 				FE_EventEditorHandler();
 			break;
-			case GAME_STATE_PAUSE:
-			break;
+
 		}
 		lastupdate = current;
 	}

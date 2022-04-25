@@ -28,3 +28,8 @@ bool FE_VecNULL(Vector2D v)
         return true;
     return false;
 }
+
+Vector2D FE_NewVector(float x, float y)
+{
+    return (Vector2D){x,y};
+}

@@ -60,9 +60,10 @@ void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera);
 
 
 /** Makes the player jump if they are on the ground
+ *\param jump_duration - How long the jump button was held for (longer means higher jump)
  *\param player - The player to jump
  *\param camera - The current camera in use
  */
-void FE_PlayerJump(FE_Player *player, FE_Camera *camera);
+void FE_PlayerJump(size_t jump_duration, FE_Player *player, FE_Camera *camera);
 
 #endif

@@ -47,4 +47,8 @@ int FE_RenderCopy(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst);
 int FE_RenderCopyEx(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip);
 
 
+/* Cleanly exits the texture manager */
+void FE_CloseTextureManager();
+
+
 #endif

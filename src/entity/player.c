@@ -92,9 +92,8 @@ static void PlayerCameraFollow(FE_Player *player, FE_Camera *camera)
         }
     }
 
-    // centre camera y around player
-    camera->y = player->PhysObj->body.y - (screen_height / 2);
-
+    player->render_rect.y = (screen_height / 2);
+    camera->y = -player->render_rect.y + player->PhysObj->body.y;
 }  
 
 void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D position)
@@ -112,7 +111,6 @@ void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D positio
     // centre camera on player
     camera->y = clamp(player->PhysObj->body.y - (screen_height / 2), 0, camera->y_bound);
     camera->x = clamp(player->PhysObj->body.x - (screen_width / 2), camera->x_min, camera->x_bound);
-
 }
 
 void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement)
@@ -124,11 +122,21 @@ void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement)
     PlayerCameraFollow(player, camera);
 }
 
-void FE_PlayerJump(FE_Player *player, FE_Camera *camera)
+void FE_PlayerJump(size_t jump_duration, FE_Player *player, FE_Camera *camera)
 {
-    // check if player is on ground first
+    // make jump force depend on how long the jump key was pressed for
+    float duration = jump_duration;
+    if (duration > 20) duration = 20;
+
+    float max_force = -player->jumpforce;
+    float min_force = -player->jumpforce / 1.5;
+
+    float jump_force = (duration / (max_force - min_force)) * 10;
+    if (jump_force < max_force) jump_force = max_force;
+    if (jump_force > min_force) jump_force = min_force;
+
     if (player->on_ground)
-        FE_MovePlayer(player, camera, (Vector2D){0, -player->jumpforce});
+        FE_MovePlayer(player, camera, FE_NewVector(0, jump_force));
 
 }
 

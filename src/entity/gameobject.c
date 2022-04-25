@@ -24,7 +24,7 @@ FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *n
 	/* create physics object */
 	FE_PhysObj *p = xmalloc(sizeof(FE_PhysObj));
 	p->body = r;
-	p->velocity = (Vector2D){0, 0};
+	p->velocity = VEC_EMPTY;
 	p->mass = mass;
 
 	FE_AddPhysInteractable(p);

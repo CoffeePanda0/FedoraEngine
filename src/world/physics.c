@@ -5,9 +5,10 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 /* TODO:
     - friction works less to the left?
     - nicer y movement on camera
-    - going to sides causes increase in Y velocity?
-    - longer player holds down space for, higher they jump
-- */
+    - player jump has a delay
+    - player can clip through map? check collision above!
+    - create nice pause UI (background, buttons to go to menu etc)
+*/
 
 float clampf(float num, float min, float max) // Clamps a float value
 {
@@ -32,13 +33,13 @@ void FE_Gravity() // Applies gravity to all objects
     if (FE_PhysObjects != 0) {
         for (FE_List *t = FE_PhysObjects; t; t = t->next) {
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
-                
-            float new_velocity = obj->velocity.y;
             
+            float new_velocity = obj->velocity.y;
+
             /* calc accel and max accel */
             float terminal_velocity = sqrtf((2 * obj->mass * GRAVITY) / DRAG);
             new_velocity = obj->velocity.y + (obj->velocity.y + GRAVITY) * dT;
-
+            
             /* clamp to terminal velocity */
             new_velocity = clamp(new_velocity, -terminal_velocity, terminal_velocity);    
             
@@ -61,7 +62,6 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 // check for map boundies
                 if (new_x <= 0 || new_x + obj->body.w > FE_Map_Width) {
                     obj->velocity.x = 0;
-                    continue;
                 }
                 
                 // check for collision from right
@@ -70,7 +70,6 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                     tmp_r.x = new_x;
                     if (!FE_VecNULL(FE_CheckMapCollisionRight(&tmp_r))) {
                         obj->velocity.x = 0;
-                        continue;
                     }
                 }
                 // check for collision from left
@@ -79,25 +78,29 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                     tmp_r.x = new_x;
                     if (!FE_VecNULL(FE_CheckMapCollisionLeft(&tmp_r))) {
                         obj->velocity.x = 0;
-                        continue;
                     }
                 }
-
-                obj->body.x = new_x;
+                if (obj->velocity.x != 0)
+                    obj->body.x = new_x;
             }
 
             if (obj->velocity.y != 0) {
                 SDL_Rect check_rect = {obj->body.x, new_y, obj->body.w, obj->body.h};
                 Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
-                if (!FE_VecNULL(GroundCollision)) {
-                    if (obj->velocity.y > 4) {
+    
+                if (!FE_VecNULL(GroundCollision)) { // If we collide with the ground
+                    obj->body.y = GroundCollision.y - obj->body.h;
+                    // If we hit the ground, bounce
+                    if (obj->velocity.y > 8) {
                         obj->velocity.y = obj->velocity.y * -BOUNCE;
-                    } else
+                    } else { // or come to rest if velocity not enough
                         obj->velocity.y = 0;
+                    }
                 }
 
                 obj->body.y += obj->velocity.y;
             }
+            
 
         }
     }
