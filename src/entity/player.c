@@ -15,6 +15,7 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     p->id = PlayerCount++;
     p->movespeed = movespeed;
     p->jumpforce = jumpforce;
+    p->jump_elapsed = 0;
 
     // physics object
     p->PhysObj = xmalloc(sizeof(FE_PhysObj));
@@ -27,6 +28,7 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     p->on_ground = false;
     p->moving = false;
     p->facing_right = true;
+    p->jump_started = false;
 
     // load animations
     p->idle_animation = FE_CreateAnimation(IDLE_ANIMATION, 2, 32, 64, 1000, true);
@@ -163,4 +165,26 @@ void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera)
     }
 }
 
-// we forgot to free the player oops - TODO MAJOR
+void FE_StartPlayerJump(FE_Player *player)
+{
+    if (!player || player->jump_started || !player->on_ground)
+        return;
+
+    player->jump_started = true;
+    player->jump_elapsed = 0;
+}
+
+void FE_UpdatePlayerJump(FE_Player *player, FE_Camera *camera)
+{
+    if (!player || !player->jump_started)
+        return;
+
+    if (player->jump_elapsed >= 5) {
+        player->jump_started = false;
+        player->jump_elapsed = 0;
+    } else {
+        player->jump_elapsed++;
+        FE_ApplyForce(player->PhysObj, FE_NewVector(0, -5));
+    }
+    
+}

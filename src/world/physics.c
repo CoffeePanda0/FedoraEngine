@@ -5,7 +5,6 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 /* TODO:
     - friction works less to the left?
     - nicer y movement on camera
-    - player jump has a delay
     - player can clip through map? check collision above!
     - create nice pause UI (background, buttons to go to menu etc)
 */

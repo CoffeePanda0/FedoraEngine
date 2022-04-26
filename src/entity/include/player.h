@@ -7,7 +7,10 @@ typedef struct FE_Player {
     int id;
 
     float movespeed;
+
     float jumpforce;
+    size_t jump_elapsed;
+    bool jump_started;
     
     bool on_ground;
     bool moving;
@@ -65,5 +68,8 @@ void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera);
  *\param camera - The current camera in use
  */
 void FE_PlayerJump(size_t jump_duration, FE_Player *player, FE_Camera *camera);
+
+void FE_UpdatePlayerJump(FE_Player *player, FE_Camera *camera);
+void FE_StartPlayerJump(FE_Player *player);
 
 #endif

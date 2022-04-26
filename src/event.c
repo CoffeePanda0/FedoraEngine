@@ -10,14 +10,8 @@
 static bool positionlog = false; // used for testing, probably removed later
 static size_t lastlogtime = 0;
 
-static bool startedjump = false;
-static size_t jump_duration = 0; // how long the player has been holding down space before releasing
-
 void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 {
-    if (startedjump)
-        jump_duration++;
-
     if (positionlog) {
         lastlogtime += 1;
         if (lastlogtime == 10) { // only log every 10 frames to save cpu use
@@ -63,23 +57,8 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                     
                     if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0)
                         positionlog = !positionlog;
-                    if (keyboard_state[SDL_SCANCODE_SPACE]) {
-                        if (!startedjump) {
-                            startedjump = true;
-                            jump_duration = 0;
-                        }
-                    }
+                    
                 break;
-
-                case SDL_KEYUP:
-                    if (!keyboard_state[SDL_SCANCODE_SPACE]) {
-                        if (startedjump) {
-                            startedjump = false;
-                            FE_PlayerJump(jump_duration, player, camera);
-                        }
-                    }
-                break;
-
             }
         }
     }
@@ -90,6 +69,12 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
             FE_MovePlayer(player, camera, FE_NewVector(-player->movespeed, 0));
         if (keyboard_state[SDL_SCANCODE_D])
             FE_MovePlayer(player, camera, FE_NewVector(player->movespeed, 0));
-
+        if (keyboard_state[SDL_SCANCODE_SPACE]) {
+            if (!player->jump_started) {
+                FE_StartPlayerJump(player);
+            } else {
+                FE_UpdatePlayerJump(player, camera);
+            }
+        }
     }
 }
