@@ -4,7 +4,7 @@
 #define WALK_ANIMATION "player_walk.png"
 #define JUMP_ANIMATION "player_jump.png"
 
-const int PLAYER_MASS = 70;
+const int PLAYER_MASS = 50;
 
 static size_t PlayerCount = 0;
 
@@ -18,11 +18,7 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     p->jump_elapsed = 0;
 
     // physics object
-    p->PhysObj = xmalloc(sizeof(FE_PhysObj));
-    p->PhysObj->body = body;
-    p->PhysObj->velocity = VEC_EMPTY;
-    p->PhysObj->maxvelocity = (Vector2D){maxspeed, 0};
-    p->PhysObj->mass = PLAYER_MASS;
+    p->PhysObj = FE_CreatePhysObj(PLAYER_MASS, maxspeed, body, true);
 
     // bool values
     p->on_ground = false;
@@ -31,9 +27,9 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     p->jump_started = false;
 
     // load animations
-    p->idle_animation = FE_CreateAnimation(IDLE_ANIMATION, 2, 32, 64, 1000, true);
-    p->walk_animation = FE_CreateAnimation(WALK_ANIMATION, 1, 32, 64, 1000, false);
-    p->jump_animation = FE_CreateAnimation(JUMP_ANIMATION, 1, 32, 64, 1000, false);
+    p->idle_animation = FE_CreateAnimation(IDLE_ANIMATION, 2, 30, 23, 250, true);
+    p->walk_animation = FE_CreateAnimation(WALK_ANIMATION, 3, 30, 23, 100, true);
+    p->jump_animation = FE_CreateAnimation(IDLE_ANIMATION, 1, 30, 23, 250, false);
 
     p->render_rect = p->PhysObj->body;
 
@@ -57,9 +53,9 @@ void FE_RenderPlayer(FE_Player *player)
 
     if (player->moving)
         current_animation = player->walk_animation;
-    else if (!player->on_ground)
+    if (!player->on_ground)
         current_animation = player->jump_animation;
-    else
+    if (!player->moving && player->on_ground)
         current_animation = player->idle_animation;
 
     // render the player
@@ -75,7 +71,7 @@ static void PlayerCameraFollow(FE_Player *player, FE_Camera *camera)
 
     // only move the camera if past half of the screen
     if (player->PhysObj->velocity.x > 0) {
-        if (player->render_rect.x > screen_width / 2 && camera->x < camera->x_bound) {
+        if (player->render_rect.x + player->render_rect.w > screen_width / 2 && camera->x < camera->x_bound) {
             FE_MoveCamera(player->PhysObj->velocity.x, 0, camera);
         } else {
             if (player->render_rect.x + player->render_rect.w + player->PhysObj->velocity.x >= screen_width)
@@ -84,7 +80,7 @@ static void PlayerCameraFollow(FE_Player *player, FE_Camera *camera)
                 player->render_rect.x += player->PhysObj->velocity.x;
         }
     } else if (player->PhysObj->velocity.x < 0) {
-        if (player->render_rect.x < screen_width / 2 && camera->x > camera->x_min) {
+        if (player->render_rect.x  + player->render_rect.w < screen_width / 2 && camera->x > camera->x_min) {
             FE_MoveCamera(player->PhysObj->velocity.x, 0, camera);
         } else {
             if (player->render_rect.x + player->PhysObj->velocity.x <= 0)
@@ -94,8 +90,10 @@ static void PlayerCameraFollow(FE_Player *player, FE_Camera *camera)
         }
     }
 
+    // move camera to keep player centered in y
     player->render_rect.y = (screen_height / 2);
     camera->y = -player->render_rect.y + player->PhysObj->body.y;
+
 }  
 
 void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D position)
@@ -107,7 +105,7 @@ void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D positio
     player->PhysObj->body.y = position.y;
 
     // calculate position relative on screen for render rect
-    player->render_rect.x = player->PhysObj->body.x - camera->x;
+    player->render_rect.x = player->PhysObj->body.x + player->render_rect.w - camera->x;
     player->render_rect.y = player->render_rect.h - (screen_height / 2); 
 
     // centre camera on player
@@ -124,28 +122,12 @@ void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement)
     PlayerCameraFollow(player, camera);
 }
 
-void FE_PlayerJump(size_t jump_duration, FE_Player *player, FE_Camera *camera)
-{
-    // make jump force depend on how long the jump key was pressed for
-    float duration = jump_duration;
-    if (duration > 20) duration = 20;
-
-    float max_force = -player->jumpforce;
-    float min_force = -player->jumpforce / 1.5;
-
-    float jump_force = (duration / (max_force - min_force)) * 10;
-    if (jump_force < max_force) jump_force = max_force;
-    if (jump_force > min_force) jump_force = min_force;
-
-    if (player->on_ground)
-        FE_MovePlayer(player, camera, FE_NewVector(0, jump_force));
-
-}
-
 void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera)
 {
-    player->render_rect =(SDL_Rect){player->PhysObj->body.x, screen_height / 2, player->PhysObj->body.w, player->PhysObj->body.h};
+    player->render_rect = (SDL_Rect){player->PhysObj->body.x, player->PhysObj->body.y , player->PhysObj->body.w, player->PhysObj->body.h};
     player->render_rect.x -= camera->x;
+    player->render_rect.y -= camera->y;
+
     PlayerCameraFollow(player, camera);
     
     // update bool values
@@ -154,7 +136,7 @@ void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera)
     else
         player->on_ground = false;
     
-    if (player->PhysObj->velocity.x == 0)
+    if (player->PhysObj->velocity.x < 0.15 && player->PhysObj->velocity.x > -0.15) // don't animate small amounts
         player->moving = false;
     else {
         player->moving = true;
@@ -174,7 +156,7 @@ void FE_StartPlayerJump(FE_Player *player)
     player->jump_elapsed = 0;
 }
 
-void FE_UpdatePlayerJump(FE_Player *player, FE_Camera *camera)
+void FE_UpdatePlayerJump(FE_Player *player)
 {
     if (!player || !player->jump_started)
         return;
@@ -184,7 +166,7 @@ void FE_UpdatePlayerJump(FE_Player *player, FE_Camera *camera)
         player->jump_elapsed = 0;
     } else {
         player->jump_elapsed++;
-        FE_ApplyForce(player->PhysObj, FE_NewVector(0, -5));
+        FE_ApplyForce(player->PhysObj, FE_NewVector(0, -player->jumpforce));
     }
     
 }

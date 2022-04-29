@@ -69,7 +69,17 @@ void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera);
  */
 void FE_PlayerJump(size_t jump_duration, FE_Player *player, FE_Camera *camera);
 
-void FE_UpdatePlayerJump(FE_Player *player, FE_Camera *camera);
+
+/** Continues to jump higher when called
+ *\param player - The player to jump
+ */
+void FE_UpdatePlayerJump(FE_Player *player);
+
+
+/** Begins the player jumping sequence
+ * \param player - The player to jump
+ */
 void FE_StartPlayerJump(FE_Player *player);
+
 
 #endif

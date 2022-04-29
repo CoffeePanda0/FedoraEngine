@@ -25,7 +25,7 @@ int FE_LoadMap(const char *name)
 {
     FE_MapLoaded = true;
     if (!flagtexture)
-        flagtexture = FE_TextureFromFile("game/map/end.png");
+        flagtexture = FE_LoadTexture("game/map/end.png");
 
     FE_Map_Width = 0;
     FE_Map_Height = 0;
@@ -155,7 +155,7 @@ void FE_CloseMap()
         return;
 
     if (flagtexture)
-        SDL_DestroyTexture(flagtexture);
+        FE_FreeTexture(flagtexture);
     flagtexture = 0;
 
     if (map.name)

@@ -5,7 +5,7 @@
 #include "../../core/include/vector2d.h"
 
 #define DRAG 1.2f
-#define FRICTION 0.8f;
+#define FRICTION 0.3;
 #define BOUNCE 0.3f;
 
 extern float GRAVITY;
@@ -20,6 +20,7 @@ typedef struct FE_PhysObj {
     Vector2D velocity;
     Vector2D maxvelocity;
     SDL_Rect body;
+    bool moveable;
 } FE_PhysObj;
 
 
@@ -32,6 +33,16 @@ void FE_RunPhysics();
  *\param force The force to apply
 */
 void FE_ApplyForce(FE_PhysObj *o, Vector2D force);
+
+
+/** Mallocs and creates a new physics object
+ * \param mass The mass of the object
+ * \param maxvelocity The maximum velocity of the object
+ * \param body The body of the object
+ * \param moveable Whether the object is moveable by other objects
+ * \return The new object
+*/
+FE_PhysObj *FE_CreatePhysObj(Uint16 mass, Uint16 maxvelocity, SDL_Rect body, bool moveable);
 
 
 /** Adds a given physics interactable to the physics system.

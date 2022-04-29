@@ -73,7 +73,7 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
             if (!player->jump_started) {
                 FE_StartPlayerJump(player);
             } else {
-                FE_UpdatePlayerJump(player, camera);
+                FE_UpdatePlayerJump(player);
             }
         }
     }

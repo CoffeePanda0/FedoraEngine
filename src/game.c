@@ -20,10 +20,10 @@ void FE_StartGame(const char *mapname)
 	int spawny = clamp(FE_GetSpawn().y, FE_Map_MinimumY, FE_Map_Height);
 	GameCamera = (FE_Camera){spawnx, spawny, FE_Map_MinimumX, FE_Map_MinimumY, FE_Map_Width, FE_Map_Height, false};
 
-	// player setup
-	GamePlayer = FE_CreatePlayer(1, 15, 20, (SDL_Rect){0,0, 64, 128});
-	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, FE_NewVector(300, 100));
 
+	// player setup
+	GamePlayer = FE_CreatePlayer(1, 8, 4, (SDL_Rect){0,0, 120, 100});
+	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, FE_NewVector(300, 100));
 
 	FE_GameState = GAME_STATE_PLAY;
 }

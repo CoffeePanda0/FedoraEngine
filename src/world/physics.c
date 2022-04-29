@@ -3,10 +3,14 @@
 static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 
 /* TODO:
-    - friction works less to the left?
     - nicer y movement on camera
-    - player can clip through map? check collision above!
+    - player can clip through map? check coll-'.;ision above!
     - create nice pause UI (background, buttons to go to menu etc)
+    - particle system
+    - handle end of level
+    - pushable objects
+    - have to jump twice for big jump
+    - player can teleport to top of tile?
 */
 
 float clampf(float num, float min, float max) // Clamps a float value
@@ -63,7 +67,7 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                     obj->velocity.x = 0;
                 }
                 
-                // check for collision from right
+                // check for collision on map from right
                 if (obj->velocity.x > 0) { 
                     SDL_Rect tmp_r = obj->body;
                     tmp_r.x = new_x;
@@ -71,7 +75,7 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                         obj->velocity.x = 0;
                     }
                 }
-                // check for collision from left
+                // check for collision on map from left
                 if (obj->velocity.x < 0) {
                     SDL_Rect tmp_r = obj->body;
                     tmp_r.x = new_x;
@@ -79,6 +83,10 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                         obj->velocity.x = 0;
                     }
                 }
+
+                // check for collision with other gameobjects
+                // TODO
+
                 if (obj->velocity.x != 0)
                     obj->body.x = new_x;
             }
@@ -124,7 +132,14 @@ void FE_Friction()
                 continue;
             }
 
-            obj->velocity.x = obj->velocity.x * FRICTION;
+            if (obj->velocity.x > 0) {
+                float new_velocity = obj->velocity.x - FRICTION;
+                obj->velocity.x = clamp(new_velocity, 0, obj->velocity.x);
+            } else {
+                float new_velocity = obj->velocity.x + FRICTION;
+                obj->velocity.x = clamp(new_velocity, obj->velocity.x, 0);
+            }
+
         }
     }
 }
@@ -137,13 +152,21 @@ void FE_ApplyForce(FE_PhysObj *o, Vector2D force)
     }
     
     // clamp to max velocity
-    if (o->velocity.x + force.x > 0)
-        o->velocity.x = clamp(o->velocity.x + force.x, 0, o->maxvelocity.x);
-    else if (o->velocity.x + force.x < 0)
-        o->velocity.x = clamp(o->velocity.x + force.x, -o->maxvelocity.x, 0);
+    o->velocity.x = clampf(o->velocity.x + force.x, -o->maxvelocity.x, o->maxvelocity.x);
 
-    o->velocity.x += force.x;
     o->velocity.y += force.y;
+}
+
+FE_PhysObj *FE_CreatePhysObj(Uint16 mass, Uint16 maxvelocity, SDL_Rect body, bool moveable)
+{
+    FE_PhysObj *o = xmalloc(sizeof(FE_PhysObj));
+    o->mass = mass;
+    o->velocity = FE_NewVector(0, 0);
+    o->maxvelocity = FE_NewVector(maxvelocity, 0);
+    o->body = body;
+    o->moveable = moveable;
+
+    return o;
 }
 
 int FE_AddPhysInteractable(FE_PhysObj *o) // Create new node with pointer to object, adds to linked list
@@ -207,8 +230,8 @@ void FE_RunPhysics()
 {    
     FE_FPSCounter();
     FE_Gravity();
-    FE_Friction();
     FE_PhysLoop();
+    FE_Friction();
 }
 
 bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b)

@@ -29,7 +29,7 @@ int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick), void *o
     }
     MB = xmalloc(sizeof(FE_MessageBox));
     MB->type = MESSAGEBOX_TEXTBOX;
-    MB->texture = FE_TextureFromFile("game/ui/messagebox.png");
+    MB->texture = FE_LoadTexture("game/ui/messagebox.png");
 
     // calculate display rect
     MB->displayrect = (SDL_Rect){
@@ -92,7 +92,7 @@ int FE_ShowMessageBox(char *title, char *body)
 
     MB = xmalloc(sizeof(FE_MessageBox));
     MB->type = MESSAGEBOX_TEXT;
-    MB->texture = FE_TextureFromFile("game/ui/messagebox.png");
+    MB->texture = FE_LoadTexture("game/ui/messagebox.png");
 
     // calculate display rect
     MB->displayrect = (SDL_Rect){
@@ -165,7 +165,7 @@ void FE_DestroyMessageBox()
         FE_DestroyTextBox(MB->textbox);
     }
     FE_DestroyButton(MB->button);
-    SDL_DestroyTexture(MB->texture);
+    FE_FreeTexture(MB->texture);
     SDL_DestroyTexture(MB->title_texture);
     SDL_DestroyTexture(MB->dialogue_texture);
     free(MB);

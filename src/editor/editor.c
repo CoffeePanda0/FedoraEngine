@@ -434,11 +434,11 @@ void FE_CleanEditor()
 	mode = true; grid = true;
 
 	if (spawntexture)
-		FE_DestroyTexture(spawntexture);
+		FE_FreeTexture(spawntexture);
 	spawntexture = 0;
 
 	if (endtexture)
-		FE_DestroyTexture(endtexture);
+		FE_FreeTexture(endtexture);
 	endtexture = 0;
 
 	// free memory held by mapsave
@@ -515,8 +515,8 @@ static void CreateUI()
 
 	thumbnail = (SDL_Rect){475, 6, 32, 32};
 	coord = FE_CreateLabel("X: 0 Y: 0", 340, 6, COLOR_BLACK);
-	spawntexture = FE_TextureFromFile("game/map/spawn.png");
-	endtexture = FE_TextureFromFile("game/map/end.png");
+	spawntexture = FE_LoadTexture("game/map/spawn.png");
+	endtexture = FE_LoadTexture("game/map/end.png");
 }
 
 void FE_StartEditor() // cleans up from other game modes
@@ -554,6 +554,6 @@ void FE_StartEditor() // cleans up from other game modes
 	mapsave.EndFlag = VEC_NULL;
 	newmap.EndFlag = VEC_NULL;
 	mapsave.tilesize = 64;
-	mapsave.gravity = 100;
+	mapsave.gravity = 70;
 
 }
