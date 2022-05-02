@@ -1,16 +1,24 @@
 #include "../include/game.h"
 
+#ifdef _WIN32
+    #include <math.h>
+#endif
+
 static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 
 /* TODO:
     - nicer y movement on camera
-    - player can clip through map? check coll-'.;ision above!
+    *player can clip through map? check collision above!
     - create nice pause UI (background, buttons to go to menu etc)
-    - particle system
+    *particle system
     - handle end of level
     - pushable objects
     - have to jump twice for big jump
-    - player can teleport to top of tile?
+    *player can teleport to top of tile?
+    *can we tie walking animation speed to player movement speed?
+    *editor memory issues
+    *working deltatime
+    *going right first causes camera to zoom
 */
 
 float clampf(float num, float min, float max) // Clamps a float value
@@ -58,7 +66,8 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
 
             float new_y = obj->body.y + obj->velocity.y;
-            
+
+
             if (obj->velocity.x != 0) {
                 float new_x = obj->body.x + obj->velocity.x;
 
@@ -96,9 +105,27 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
     
                 if (!FE_VecNULL(GroundCollision)) { // If we collide with the ground
+                    
                     obj->body.y = GroundCollision.y - obj->body.h;
                     // If we hit the ground, bounce
                     if (obj->velocity.y > 8) {
+
+                        // emit ground particles for high velocity bounce effect
+                        float force = obj->mass * obj->velocity.y;
+                        if (force > 500) {
+                            FE_CreateParticleSystem(
+                                (SDL_Rect){GroundCollision.x - obj->body.w, GroundCollision.y - 5, obj->body.w, 5},
+                                0,
+                                20,
+                                1000,
+                                false,
+                                "impact.png",
+                                FE_NewVector(10,10),
+                                FE_NewVector(-obj->velocity.y / 5, -obj->velocity.y / 10),
+                                false
+                            );
+                        }
+
                         obj->velocity.y = obj->velocity.y * -BOUNCE;
                     } else { // or come to rest if velocity not enough
                         obj->velocity.y = 0;
@@ -246,3 +273,4 @@ bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b)
         return false;
     return true;
 }
+

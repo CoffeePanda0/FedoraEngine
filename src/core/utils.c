@@ -156,3 +156,10 @@ bool StrInArr(char **arr, size_t n, char *str)
 	}
 	return false;
 }
+
+int s_Rand(int val)
+{
+	if (val == 0)
+		return 0;
+	return rand() % val;
+}

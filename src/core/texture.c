@@ -139,6 +139,11 @@ void FE_CloseTextureManager()
 
 SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a file
 {
+    if (!path) {
+        warn("TextureManager: Passing NULL to FE_TextureFromFile");
+        return FE_TextureFromRGBA(COLOR_PINK);
+    }
+
     if (StrInArr(failed_textures, failed_textures_count, (char*)path))
         return FE_TextureFromRGBA(COLOR_PINK);
     
@@ -175,6 +180,11 @@ SDL_Texture* FE_TextureFromRGBA(SDL_Color color) // Returns a plain texture from
 
 int FE_RenderCopy(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst) // Renders a texture to the screen if in camera bounds
 {
+    if (!texture || !dst) {
+        error("FE_RenderCopy: NULL texture or dst");
+        return -1;
+    }
+
     // Check if rect is in screen bounds
     if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0,screen_width,screen_height}))
         return SDL_RenderCopy(renderer, texture, src, dst);
@@ -184,6 +194,11 @@ int FE_RenderCopy(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst) // Renders
 
 int FE_RenderCopyEx(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip)
 {
+    if (!texture || !dst) {
+        error("FE_RenderCopyEx: NULL texture or dst");
+        return -1;
+    }
+
     if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0,screen_width,screen_height})) {
         const SDL_Point center = (SDL_Point){dst->w/2, dst->h/2};
         return SDL_RenderCopyEx(renderer, texture, src, dst, angle, &center, flip);

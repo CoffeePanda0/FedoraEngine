@@ -56,6 +56,7 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_CleanTimers();
 	FE_CleanLightObjects();
 	FE_CleanAnimations();
+	FE_CleanParticles();
 }
 
 void FE_Clean() // Exits the game cleanly, freeing all resources

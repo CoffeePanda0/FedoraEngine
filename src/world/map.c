@@ -130,13 +130,6 @@ err:
 
 void FE_RenderMap(FE_Camera *camera)
 {
-	// render background
-	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
-	SDL_QueryTexture(map.bg, NULL, NULL, &bgrect.w ,&bgrect.h);
-	bgrect.x -= camera->x;
-	bgrect.y -= camera->y;
-	SDL_RenderCopy(renderer, map.bg, NULL, &bgrect);
-
 	// render all tiles
 	for (size_t i = 0; i < map.tilecount; i++) {
 		SDL_Rect r = (SDL_Rect){map.tiles[i].position.x - camera->x, map.tiles[i].position.y - camera->y, map.tilesize, map.tilesize};
@@ -147,6 +140,16 @@ void FE_RenderMap(FE_Camera *camera)
     SDL_Rect r = (SDL_Rect){map.EndFlag.x - camera->x, map.EndFlag.y - camera->y, map.tilesize, map.tilesize};
     FE_RenderCopy(flagtexture, NULL, &r);
 
+}
+
+void FE_RenderMapBackground(FE_Camera *camera)
+{
+    // render background
+	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
+	SDL_QueryTexture(map.bg, NULL, NULL, &bgrect.w ,&bgrect.h);
+	bgrect.x -= camera->x;
+	bgrect.y -= camera->y;
+	SDL_RenderCopy(renderer, map.bg, NULL, &bgrect);
 }
 
 void FE_CloseMap()

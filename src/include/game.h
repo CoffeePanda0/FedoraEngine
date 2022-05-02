@@ -8,6 +8,7 @@
 #include "../entity/include/light.h"
 #include "../entity/include/animation.h"
 #include "../entity/include/player.h"
+#include "../entity/include/particle.h"
 
 #include "../world/include/camera.h"
 #include "../world/include/physics.h"

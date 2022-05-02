@@ -65,6 +65,14 @@ bool WriteStr(FILE *F, const char *str);
 */
 bool StrInArr(char **arr, size_t n, char *str);
 
+
+/** Safe random function - catches floating point exception if 0 is passed
+ * \param val The maximum random value
+ * \return A number between 0 and val
+*/
+int s_Rand(int val);
+
+
 void log_init(void);
 void log_close(void);
 void vlog (enum logtypes, const char *, ...);

@@ -66,6 +66,12 @@ int FE_LoadMap(const char *name);
 void FE_RenderMap(FE_Camera *camera);
 
 
+/** Renders the map background
+ * \param camera The camera to render the map from
+ */
+void FE_RenderMapBackground(FE_Camera *camera);
+
+
 /* Closes and frees resources from currently used map */
 void FE_CloseMap();
 
