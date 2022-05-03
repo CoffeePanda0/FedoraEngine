@@ -9,18 +9,15 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 /* TODO:
     - nicer y movement on camera
     - parallax
-    *player can clip through map? check collision above!
     - create nice pause UI (background, buttons to go to menu etc)
     - handle end of level
     - pushable objects
     - have to jump twice for big jump
     - fullscreen support
-    -player can teleport to top of tile?
     -can we tie walking animation speed to player movement speed?
     -editor memory issues
     -particles on jumping odd location
     -going right first causes camera to zoom
-    -collision is kinda broken
     -holding space results in longer jump
 */
 
@@ -80,17 +77,22 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 if (obj->velocity.x > 0) { 
                     SDL_Rect tmp_r = (SDL_Rect){obj->position.x, obj->position.y, obj->body.w, obj->body.h};
                     tmp_r.x = new_x;
-                    if (!FE_VecNULL(FE_CheckMapCollisionRight(&tmp_r))) {
+                    Vector2D collision = FE_CheckMapCollisionRight(&tmp_r);
+                    if (!FE_VecNULL(collision)) {
                         obj->velocity.x = 0;
+                        obj->position.x = collision.x - obj->body.w;
                     }
                 }
                 // check for collision on map from left
                 if (obj->velocity.x < 0) {
                     SDL_Rect tmp_r = (SDL_Rect){obj->position.x, obj->position.y, obj->body.w, obj->body.h};
                     tmp_r.x = new_x;
-                    if (!FE_VecNULL(FE_CheckMapCollisionLeft(&tmp_r))) {
+                    Vector2D collision = FE_CheckMapCollisionLeft(&tmp_r);
+                    if (!FE_VecNULL(collision)) {
                         obj->velocity.x = 0;
+                        obj->position.x = collision.x;
                     }
+
                 }
 
                 // check for collision with other gameobjects
@@ -107,7 +109,7 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
 
                 if (!FE_VecNULL(GroundCollision)) { // If we collide with the ground
                     
-                    obj->body.y = GroundCollision.y - obj->body.h;
+                    obj->position.y = GroundCollision.y - obj->body.h;
                     // If we hit the ground, bounce
                     if (obj->velocity.y > 8) {
 
@@ -156,7 +158,7 @@ void FE_Friction()
                 obj->velocity.x = 0;
                 continue;
             }
-            
+
             if (obj->velocity.x > 0) {
                 float new_velocity = obj->velocity.x - (FRICTION * FE_DT_MULTIPLIER);
                 obj->velocity.x = clamp(new_velocity, 0, obj->velocity.x);

@@ -28,7 +28,7 @@ void FE_StartGame(const char *mapname)
 	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, FE_NewVector(300, 100)); // todo spawn
 
 	// test object
-	test = FE_CreateGameObject((SDL_Rect){200, 50, 50, 50}, "doge.png", "deez", ENEMY, 20, true);
+	//test = FE_CreateGameObject((SDL_Rect){200, 50, 50, 50}, "doge.png", "deez", ENEMY, 20, true);
 
 	// test particle system
 	SnowParticles = FE_CreateParticleSystem(

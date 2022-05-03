@@ -206,33 +206,69 @@ static bool InBounds(SDL_Rect *r)// checks if rect is in map bounds
 
 static size_t LeftTileRange(SDL_Rect *r) // calculates the left-most tile near the player to check for collision
 {
-    int r_left = r->x;
+    /*  check if the rect hasn't moved, if so we can just return the previous value
+        Stores the last 5 calculations as we can return for 5 objects if there is no change. This is more
+        efficient than searching the list every time when there has been no x movement
+    */
+    static uint16_t prev_x[5];
+    static uint16_t prev_mid[5];
+    static uint8_t arr_pt = 0;
+    for (size_t i = 0; i < 5; i++) {
+        if (r->x == prev_x[i]) {
+            return prev_mid[i];
+        }
+    }
+    if (arr_pt == 4)
+        arr_pt = 0;
+    else
+        arr_pt++;
 
     // find the tile closest to the player's left side using a binary search
-    int left = 0;
-    int right = map.tilecount - 1;
-    int mid = 0;
-    while (left <= right) {
+    Uint16 left = 0;
+    Uint16 right = map.tilecount - 1;
+    Uint16 mid = 0;
+    while (left <= right && right < map.tilecount) {
         mid = (left + right) / 2;
-        if (map.tiles[mid].position.x == r_left)
+        if (map.tiles[mid].position.x + map.tilesize == r->x) {
             break;
-        else if (map.tiles[mid].position.x < r_left)
+        } else if (map.tiles[mid].position.x + map.tilesize < r->x)
             left = mid + 1;
         else
             right = mid - 1;
     }
-    return clamp(mid - 2, 0, map.tilecount);
+
+    prev_x[arr_pt] = r->x;
+    prev_mid[arr_pt] = mid;
+
+    return mid;
 }
 
 static size_t RightTileRange(size_t left, SDL_Rect *r) // calculates the right-most tile near the player to check for collision
 {
-    int r_right = r->x + r->w;
-
-    size_t right_tile = left;
-    while (right_tile < map.tilecount && map.tiles[right_tile].position.x <= r_right) {
-        right_tile++;
+    // check if the rect hasn't moved, if so we can just return the previous value
+    static uint16_t prev_x[5];
+    static uint16_t prev_mid[5];
+    static uint8_t arr_pt = 0;
+    for (size_t i = 0; i < 5; i++) {
+        if (r->x == prev_x[i]) {
+            return prev_mid[i];
+        }
     }
-    return right_tile;
+    if (arr_pt == 4)
+        arr_pt = 0;
+    else
+        arr_pt++;
+
+    Uint16 r_right = r->x + r->w;
+    prev_x[arr_pt] = r_right;
+
+    // find the tile closest to the player's right side
+    for (size_t i = left; i < map.tilecount; i++) {
+        if (map.tiles[i].position.x > r_right)
+            return i;
+    }
+    prev_mid[arr_pt] = map.tilecount -1;
+    return map.tilecount -1;
 }
 
 Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
@@ -255,7 +291,7 @@ Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
         if (out.h < 10 || out.w == 0)
             continue;
         if (tilerect.x < r->x && out.w > 0)
-            return map.tiles[i].position;
+            return FE_NewVector(map.tiles[i].position.x + map.tilesize, map.tiles[i].position.y);
     } 
     return VEC_NULL;
 }
