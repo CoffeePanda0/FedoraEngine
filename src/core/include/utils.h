@@ -73,7 +73,7 @@ bool StrInArr(char **arr, size_t n, char *str);
 int s_Rand(int val);
 
 
-void log_init(void);
+void FE_Log_Init(void);
 void log_close(void);
 void vlog (enum logtypes, const char *, ...);
 

@@ -33,3 +33,11 @@ Vector2D FE_NewVector(float x, float y)
 {
     return (Vector2D){x,y};
 }
+
+void FE_DT_RECT(Vector2D position, SDL_Rect *rect)
+{
+    if (!rect) return;
+    
+    rect->x = position.x;
+    rect->y = position.y;
+}

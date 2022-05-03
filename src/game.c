@@ -25,9 +25,7 @@ void FE_StartGame(const char *mapname)
 
 	// player setup
 	GamePlayer = FE_CreatePlayer(1, 8, 4, (SDL_Rect){0,0, 120, 100});
-	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, FE_NewVector(300, 100));
-
-	FE_GameState = GAME_STATE_PLAY;
+	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, FE_NewVector(300, 100)); // todo spawn
 
 	// test object
 	test = FE_CreateGameObject((SDL_Rect){200, 50, 50, 50}, "doge.png", "deez", ENEMY, 20, true);
@@ -44,6 +42,8 @@ void FE_StartGame(const char *mapname)
 		(Vector2D){0, 3}, // Set initial velocity so particle doesn't float until they accelerate
 		true
 	);
+
+	FE_GameState = GAME_STATE_PLAY;
 
 }
 

@@ -14,9 +14,9 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 {
     if (positionlog) {
         lastlogtime += 1;
-        if (lastlogtime == 10) { // only log every 10 frames to save cpu use
+        if (lastlogtime >= (10 / FE_DT_MULTIPLIER)) { // only log every 10 frames to save cpu use
             lastlogtime = 0;
-            printf("PLAYER X: %i | PLAYER Y: %i| VELOCITY: %f,%f\n", player->PhysObj->body.x + camera->x, player->PhysObj->body.y + camera->y, player->PhysObj->velocity.x, player->PhysObj->velocity.y);
+            printf("PLAYER X: %i | PLAYER Y: %i| VELOCITY: %f,%f\n", player->PhysObj->body.x, player->PhysObj->body.y + camera->y, player->PhysObj->velocity.x, player->PhysObj->velocity.y);
         }
     }
 

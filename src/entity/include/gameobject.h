@@ -40,8 +40,9 @@ int FE_DestroyGameObject(FE_GameObject *obj);
  *\param name - The name to be displayed on-screen for the object
  *\param type - The type of object (e.g entity, enemy)
  *\param mass - The mass to be applied to the physics of the object (or 0 to not fall)
+ *\param moveable - Whether the object can be moved by another object (or player)
  *\returns A pointer to the new object
 */
-FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *name, enum FE_ObjectType type, int mass);
+FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *name, enum FE_ObjectType type, int mass, bool moveable);
 
 #endif

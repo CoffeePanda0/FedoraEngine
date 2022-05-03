@@ -21,8 +21,13 @@ char *strseps(char **sp, char *sep)
 	return(s);
 }
 
-void log_init(void) {
+void FE_Log_Init(void) {
 	f = fopen("log.txt", "a");
+	info("Started FedoraEngine");
+	if (!f) {
+		printf("Fatal Error: Failed to create log file\n");
+		exit(-1);
+	}
 }
 
 void log_close(void) {
@@ -68,8 +73,6 @@ void die (enum dietypes type, const char *s, ...) {
 
 void vlog (enum logtypes type, const char *s, ...) {
 
-	if (!FE_GameActive) return;
-
 	va_list ap, ap2, ap3;
 	time_t t;
 	struct tm *tm;
@@ -111,7 +114,9 @@ void vlog (enum logtypes type, const char *s, ...) {
 	va_end(ap);
 	fputc('\n', f);
 	fflush(f);
-	FE_ConsoleSetText(out);
+	if (FE_GameActive) {
+		FE_ConsoleSetText(out);
+	}
 	free(out);
 }
 

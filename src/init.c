@@ -2,25 +2,38 @@
 
 /* Contains functions for initializing and exiting the game */
 
+int screen_height = 512;
+int screen_width = 512;
+
 SDL_Window* window;
 SDL_Renderer* renderer;
 bool FE_GameActive;
 
-void FE_init(const char* window_title, int xpos, int ypos, int window_width, int window_height)
+void FE_Init(FE_InitConfig InitConfig)
 {
+	FE_Log_Init();
+
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{	
 		FE_ConsoleInit();
 
 		// Check that everything has loaded in correctly
-		window = SDL_CreateWindow(window_title, xpos, ypos, window_width, window_height, SDL_WINDOW_ALLOW_HIGHDPI);
+		window = SDL_CreateWindow(
+			InitConfig.window_title,
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+			InitConfig.window_width, InitConfig.window_height,
+			SDL_WINDOW_ALLOW_HIGHDPI
+		);
 		
 		if (window) {
 			info("Window Created");
 		} else 
 			error("Window could not be created! SDL_Error: %s", SDL_GetError());
-
-		renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+		
+		if (InitConfig.vsync)
+			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+		else
+			renderer = SDL_CreateRenderer(window, -1, 0);
 
 		if (renderer)
 			info("Renderer Created");
@@ -34,8 +47,7 @@ void FE_init(const char* window_title, int xpos, int ypos, int window_width, int
 	 	if (!Sans)
 		 	warn("Failed to load font baloo.ttf");
 
-		FE_Menu_MainMenu();
-
+		info("FedoraEngine started successfully");
 		FE_GameActive = true;
 
 	} else {

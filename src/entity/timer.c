@@ -4,7 +4,7 @@ static FE_Timer **timers; // basic list of timers
 static size_t list_size;
 static size_t timer_count;
 
-unsigned long int FE_LastUpdate = 0;
+static unsigned long int FE_LastUpdate = 0;
 
 static int AddToList(FE_Timer *t)
 {

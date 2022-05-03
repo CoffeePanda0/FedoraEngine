@@ -4,7 +4,7 @@
 #define WALK_ANIMATION "player_walk.png"
 #define JUMP_ANIMATION "player_jump.png"
 
-const int PLAYER_MASS = 50;
+static const int PLAYER_MASS = 50;
 
 static size_t PlayerCount = 0;
 
@@ -101,8 +101,8 @@ void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D positio
     if (!player)
         return;
     
-    player->PhysObj->body.x = position.x;
-    player->PhysObj->body.y = position.y;
+    player->PhysObj->position.x = position.x;
+    player->PhysObj->position.y = position.y;
 
     // calculate position relative on screen for render rect
     player->render_rect.x = player->PhysObj->body.x + player->render_rect.w - camera->x;
@@ -110,7 +110,8 @@ void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D positio
 
     // centre camera on player
     camera->y = clamp(player->PhysObj->body.y - (screen_height / 2), 0, camera->y_bound);
-    camera->x = clamp(player->PhysObj->body.x - (screen_width / 2), camera->x_min, camera->x_bound);
+    camera->x = clamp(player->PhysObj->body.x  - (screen_width / 2), camera->x_min, camera->x_bound);
+
 }
 
 void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement)
@@ -118,8 +119,13 @@ void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement)
     if (!player || !camera)
         return;
 
-    FE_ApplyForce(player->PhysObj, movement);
+    Vector2D mov_vec = FE_NewVector(movement.x * FE_DT_MULTIPLIER, movement.y * FE_DT_MULTIPLIER);
+    FE_ApplyForce(player->PhysObj, mov_vec);
     PlayerCameraFollow(player, camera);
+
+    static float fps_timer = 0;
+    fps_timer += FE_DT;
+
 }
 
 void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera)
@@ -161,12 +167,12 @@ void FE_UpdatePlayerJump(FE_Player *player)
     if (!player || !player->jump_started)
         return;
 
-    if (player->jump_elapsed >= 5) {
+    if (player->jump_elapsed >= (5 / FE_DT_MULTIPLIER)) {
         player->jump_started = false;
         player->jump_elapsed = 0;
     } else {
         player->jump_elapsed++;
-        FE_ApplyForce(player->PhysObj, FE_NewVector(0, -player->jumpforce));
+        FE_ApplyForce(player->PhysObj, FE_NewVector(0, -player->jumpforce * FE_DT_MULTIPLIER));
     }
     
 }

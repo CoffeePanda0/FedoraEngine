@@ -2,6 +2,7 @@
 #define H_GAME
 
 #include "include.h"
+#include "audio.h"
 
 #include "../entity/include/gameobject.h"
 #include "../entity/include/timer.h"
@@ -20,12 +21,16 @@
 #include "../core/include/texture.h"
 #include "../core/include/circle.h"
 #include "../core/include/vector2d.h"
+#include "../core/include/linkedlist.h"
+#include "../core/include/timing.h"
 
 #include "../ui/include/ui.h"
-#include "audio.h"
-#include "linkedlist.h"
 
-#define LEN(x) (sizeof(x)/sizeof(x[0]))
+typedef struct FE_InitConfig {
+    const char *window_title;
+    Uint16 window_width, window_height;
+    bool vsync;
+} FE_InitConfig;
 
 enum FE_GAMESTATE {
     GAME_STATE_MENU,
@@ -40,10 +45,7 @@ extern void (*MenuPage)(); // pointer to current menu page function for redrawin
 extern int screen_height;
 extern int screen_width;
 
-extern unsigned long int FE_LastUpdate;
-extern float dT;
-
-void FE_init(const char* window_title, int xpos, int ypos, int window_width, int window_height);
+void FE_Init(FE_InitConfig InitConfig);
 void FE_Clean();
 
 extern bool FE_GameActive;

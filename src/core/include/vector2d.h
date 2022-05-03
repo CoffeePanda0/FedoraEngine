@@ -53,6 +53,13 @@ bool FE_VecNULL(Vector2D v);
 Vector2D FE_NewVector(float x, float y);
 
 
+/** Sets the rect values to the Vector position
+ *\param position The position of the rect
+ *\param rect The rect to set
+*/ 
+void FE_DT_RECT(Vector2D position, SDL_Rect *rect);
+
+
 #define VEC_EMPTY (Vector2D){0, 0}
 #define VEC_NULL (Vector2D){-1, -1}
 

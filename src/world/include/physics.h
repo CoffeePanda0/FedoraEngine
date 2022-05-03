@@ -5,8 +5,8 @@
 #include "../../core/include/vector2d.h"
 
 #define DRAG 1.2f
-#define FRICTION 0.3;
-#define BOUNCE 0.3f;
+#define FRICTION 0.3f
+#define BOUNCE 0.3f
 
 extern float GRAVITY;
 
@@ -19,7 +19,10 @@ typedef struct FE_PhysObj {
     Uint16 mass;
     Vector2D velocity;
     Vector2D maxvelocity;
+
     SDL_Rect body;
+    Vector2D position;
+    
     bool moveable;
 } FE_PhysObj;
 

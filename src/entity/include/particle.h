@@ -7,6 +7,8 @@ typedef struct FE_Particle {
     Vector2D velocity; // Velocity of the particle
 
     SDL_Rect body; // Body of the particle
+    Vector2D position; // Position of the particle
+    
     Uint16 rotation; // Rotation of the particle
 
     SDL_Texture *texture; // Texture of the particle

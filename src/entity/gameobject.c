@@ -1,11 +1,11 @@
 // basic gameobject functions
 #include "../include/game.h"
 
-#define AssetPath "game/assets/"
+#define AssetPath "game/sprites/"
 
 static FE_List *FE_GameObjects = 0; // list of all gameobjects
 
-FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *name, enum FE_ObjectType type, int mass)
+FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *name, enum FE_ObjectType type, int mass, bool moveable)
 {
 	/* fill data from passed parameters */
 	struct FE_GameObject *obj;
@@ -22,10 +22,7 @@ FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *n
 	obj->type = type;
 
 	/* create physics object */
-	FE_PhysObj *p = xmalloc(sizeof(FE_PhysObj));
-	p->body = r;
-	p->velocity = VEC_EMPTY;
-	p->mass = mass;
+	FE_PhysObj *p = FE_CreatePhysObj(mass, 128, r, moveable);
 
 	FE_AddPhysInteractable(p);
 

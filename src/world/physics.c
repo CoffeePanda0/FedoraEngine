@@ -8,17 +8,20 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 
 /* TODO:
     - nicer y movement on camera
+    - parallax
     *player can clip through map? check collision above!
     - create nice pause UI (background, buttons to go to menu etc)
-    *particle system
     - handle end of level
     - pushable objects
     - have to jump twice for big jump
-    *player can teleport to top of tile?
-    *can we tie walking animation speed to player movement speed?
-    *editor memory issues
-    *working deltatime
-    *going right first causes camera to zoom
+    - fullscreen support
+    -player can teleport to top of tile?
+    -can we tie walking animation speed to player movement speed?
+    -editor memory issues
+    -particles on jumping odd location
+    -going right first causes camera to zoom
+    -collision is kinda broken
+    -holding space results in longer jump
 */
 
 float clampf(float num, float min, float max) // Clamps a float value
@@ -44,17 +47,17 @@ void FE_Gravity() // Applies gravity to all objects
     if (FE_PhysObjects != 0) {
         for (FE_List *t = FE_PhysObjects; t; t = t->next) {
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
-            
+
             float new_velocity = obj->velocity.y;
 
             /* calc accel and max accel */
             float terminal_velocity = sqrtf((2 * obj->mass * GRAVITY) / DRAG);
-            new_velocity = obj->velocity.y + (obj->velocity.y + GRAVITY) * dT;
+            new_velocity = obj->velocity.y + (obj->velocity.y + GRAVITY) * FE_DT;
             
             /* clamp to terminal velocity */
-            new_velocity = clamp(new_velocity, -terminal_velocity, terminal_velocity);    
-            
+            new_velocity = clamp(new_velocity, -terminal_velocity, terminal_velocity);
             obj->velocity.y = new_velocity;
+           
         }
     } 
 }
@@ -65,12 +68,9 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
         for (FE_List *t = FE_PhysObjects; t; t = t->next) {
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
 
-            float new_y = obj->body.y + obj->velocity.y;
-
-
+            /* Apply X force */
             if (obj->velocity.x != 0) {
-                float new_x = obj->body.x + obj->velocity.x;
-
+                float new_x = obj->position.x + obj->velocity.x;
                 // check for map boundies
                 if (new_x <= 0 || new_x + obj->body.w > FE_Map_Width) {
                     obj->velocity.x = 0;
@@ -78,7 +78,7 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 
                 // check for collision on map from right
                 if (obj->velocity.x > 0) { 
-                    SDL_Rect tmp_r = obj->body;
+                    SDL_Rect tmp_r = (SDL_Rect){obj->position.x, obj->position.y, obj->body.w, obj->body.h};
                     tmp_r.x = new_x;
                     if (!FE_VecNULL(FE_CheckMapCollisionRight(&tmp_r))) {
                         obj->velocity.x = 0;
@@ -86,7 +86,7 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 }
                 // check for collision on map from left
                 if (obj->velocity.x < 0) {
-                    SDL_Rect tmp_r = obj->body;
+                    SDL_Rect tmp_r = (SDL_Rect){obj->position.x, obj->position.y, obj->body.w, obj->body.h};
                     tmp_r.x = new_x;
                     if (!FE_VecNULL(FE_CheckMapCollisionLeft(&tmp_r))) {
                         obj->velocity.x = 0;
@@ -96,14 +96,15 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 // check for collision with other gameobjects
                 // TODO
 
-                if (obj->velocity.x != 0)
-                    obj->body.x = new_x;
+                obj->position.x += (obj->velocity.x * FE_DT_MULTIPLIER);
             }
 
+            /* Apply Y force  */
             if (obj->velocity.y != 0) {
+                float new_y = obj->position.y + obj->velocity.y;
                 SDL_Rect check_rect = {obj->body.x, new_y, obj->body.w, obj->body.h};
                 Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
-    
+
                 if (!FE_VecNULL(GroundCollision)) { // If we collide with the ground
                     
                     obj->body.y = GroundCollision.y - obj->body.h;
@@ -132,10 +133,11 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                     }
                 }
 
-                obj->body.y += obj->velocity.y;
+                obj->position.y += (obj->velocity.y * FE_DT_MULTIPLIER);
+                
             }
-            
-
+            // calculate new position
+            FE_DT_RECT(obj->position, &obj->body);
         }
     }
 }
@@ -150,20 +152,16 @@ void FE_Friction()
                 continue;
 
             // don't bother with negligble amounts
-            if (obj->velocity.x > 0 && obj->velocity.x < 0.02) {
+            if (!(obj->velocity.x > 0.01 || obj->velocity.x < -0.01)) {
                 obj->velocity.x = 0;
                 continue;
             }
-            if (obj->velocity.x < 0 && obj->velocity.x > -0.02) {
-                obj->velocity.x = 0;
-                continue;
-            }
-
+            
             if (obj->velocity.x > 0) {
-                float new_velocity = obj->velocity.x - FRICTION;
+                float new_velocity = obj->velocity.x - (FRICTION * FE_DT_MULTIPLIER);
                 obj->velocity.x = clamp(new_velocity, 0, obj->velocity.x);
             } else {
-                float new_velocity = obj->velocity.x + FRICTION;
+                float new_velocity = obj->velocity.x + (FRICTION * FE_DT_MULTIPLIER);
                 obj->velocity.x = clamp(new_velocity, obj->velocity.x, 0);
             }
 
@@ -191,6 +189,7 @@ FE_PhysObj *FE_CreatePhysObj(Uint16 mass, Uint16 maxvelocity, SDL_Rect body, boo
     o->velocity = FE_NewVector(0, 0);
     o->maxvelocity = FE_NewVector(maxvelocity, 0);
     o->body = body;
+    o->position = FE_NewVector(body.x, body.y);
     o->moveable = moveable;
 
     return o;
@@ -237,28 +236,23 @@ int FE_CleanPhys() // Removes all objects from linked list
 
 static void FE_FPSCounter()
 {
-    static int frame_count = 0;
-    static float last_time = 0;
-    static float fps = 0;
-    frame_count++;
-    float current_time = SDL_GetTicks();
-    if (current_time - last_time >= 1000) {
-        fps = frame_count;
-        frame_count = 0;
-        last_time = current_time;
+    // only update every second
+    static float fps_timer = 0;
+    fps_timer += FE_DT;
+    if (fps_timer > 1) {
+        fps_timer = 0;
+        char title[64];    
+        snprintf(title, 64, "FedoraEngine - FPS: %i", FE_FPS);
+        SDL_SetWindowTitle(window, title);
     }
-
-    char title[64];    
-    snprintf(title, 64, "FedoraEngine - FPS: %i", (int)fps);
-    SDL_SetWindowTitle(window, title);
 }
 
 void FE_RunPhysics()
 {    
     FE_FPSCounter();
     FE_Gravity();
-    FE_PhysLoop();
     FE_Friction();
+    FE_PhysLoop();
 }
 
 bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b)

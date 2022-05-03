@@ -20,6 +20,10 @@ static void GenerateParticle(FE_ParticleSystem *p, size_t index)
     // Generate random location inside emission area
     particle.body.x = p->emission_area.x + s_Rand(p->emission_area.w);
     particle.body.y = p->emission_area.y + s_Rand(p->emission_area.h);
+
+    particle.position.x = particle.body.x;
+    particle.position.y = particle.body.y;
+
     particle.body.w = s_Rand((int)p->max_size.x);
     particle.body.h = s_Rand((int)p->max_size.y);
     particle.rotation = rand() % 360;
@@ -90,7 +94,7 @@ void FE_UpdateParticles()
         bool emit = false;
         if (p->respawns) {
             float rate = (1.0f / p->emission_rate);
-            p->emission_rate_timer += dT;
+            p->emission_rate_timer += FE_DT;
             if (p->emission_rate_timer > rate) {
                 if (p->num_particles < p->max_particles)
                     emit = true;
@@ -130,8 +134,11 @@ void FE_UpdateParticles()
             particle->velocity.y = clampf(new_velocity_y, -MAX_VELOCITY, MAX_VELOCITY);
             particle->velocity.x *= (1 - PARTICLE_DRAG);
 
-            particle->body.y += particle->velocity.y;
-            particle->body.x += particle->velocity.x;
+            // separate position as floating point to hold deltatime small values
+            particle->position.y += (particle->velocity.y * FE_DT_MULTIPLIER);
+            particle->position.x += (particle->velocity.x * FE_DT_MULTIPLIER);
+
+            FE_DT_RECT(particle->position, &particle->body);
 
             // kill particle if it's out of map bounds
             if (particle->body.x < 0 || particle->body.x > FE_Map_Width ||  particle->body.y > screen_height) {
