@@ -10,6 +10,7 @@ static size_t selectedbackground;
 
 static bool mode = true; // true = map, false = bg
 static bool grid = true;
+static uint16_t rotation = 0;
 
 static FE_Map mapsave; // for exporting to file
 static FE_LoadedMap newmap; // for rendering
@@ -23,7 +24,10 @@ static FE_Texture *endtexture;
 
 static bool saving = false;
 
-// TODO: loading previous maps, tile bg, drag and click? change tilesize/gravity, nice UI
+static bool drag_place = false;
+static bool drag_delete = false;
+
+// TODO: loading previous maps, tile bg, change tilesize/gravity, nice UI
 
 void FE_RenderEditor()
 {
@@ -231,13 +235,17 @@ static void AddTile(int x, int y)
 	else
 		mapsave.tiles = xrealloc(mapsave.tiles, sizeof(FE_Map_Tile) * (mapsave.tilecount + 1));
 	mapsave.tiles[mapsave.tilecount++] = (FE_Map_Tile){in, 0, FE_NewVector(x, y)};
-	
+
 	// Add tile to newmap
 	if (newmap.tilecount == 0)
 		newmap.tiles = xmalloc(sizeof(FE_Map_Tile));
 	else
 		newmap.tiles = xrealloc(newmap.tiles, sizeof(FE_Map_Tile) * (newmap.tilecount + 1));
 	newmap.tiles[newmap.tilecount++] = (FE_Map_Tile){in, 0, FE_NewVector(x, y)};
+
+	// Apply persistent rotation
+	mapsave.tiles[mapsave.tilecount-1].rotation = rotation;
+	newmap.tiles[newmap.tilecount-1].rotation = rotation;
 }
 
 static void SetSpawn(int x, int y)
@@ -276,7 +284,6 @@ static void RotateTile(int x, int y)
 	// check if tile already exists
 	for (size_t i = 0; i < newmap.tilecount; i++) {
 		if (newmap.tiles[i].position.x == x && newmap.tiles[i].position.y == y) {
-			int rotation = 0;
 			if (newmap.tiles[i].rotation == 0)
 				rotation = 90;
 			else if (newmap.tiles[i].rotation == 90)
@@ -305,6 +312,7 @@ static void Reset()
 
 static void ChangeSelection(size_t sel)
 {
+	rotation = 0;
 	if (mode) { // change selected tile
 		if (texturecount -1 < sel)
 			return;
@@ -322,6 +330,21 @@ void FE_EventEditorHandler()
 	SDL_PumpEvents();
 	SDL_Event event;
 
+	/* Allow user to drag to place tiles */
+	if (drag_place) {
+		int mouse_x, mouse_y;
+		SDL_GetMouseState(&mouse_x, &mouse_y);
+		if (mode)
+			AddTile(mouse_x + camera.x, mouse_y + camera.y);
+		else
+			SetBG(mouse_x + camera.x, mouse_y + camera.y);
+	} else if (drag_delete) {
+		int mouse_x, mouse_y;
+		SDL_GetMouseState(&mouse_x, &mouse_y);
+		DeleteTile(mouse_x + camera.x, mouse_y + camera.y);
+	}
+
+
     while (SDL_PollEvent(&event)) {
 		if (FE_ConsoleVisible) {
 			FE_HandleConsoleInput(&event, keyboard_state);
@@ -334,20 +357,24 @@ void FE_EventEditorHandler()
 				case SDL_MOUSEBUTTONDOWN:
 					if (event.button.button == SDL_BUTTON_LEFT) {
 						if (!FE_UI_HandleClick(&event)) {
-							int mouse_x, mouse_y;
-							SDL_GetMouseState(&mouse_x, &mouse_y);
 							if (!saving) {
-								if (mode)
-									AddTile(mouse_x + camera.x, mouse_y + camera.y);
-								else
-									SetBG(mouse_x + camera.x, mouse_y + camera.y);
+								drag_place = true;
+								drag_delete = false;
 							}
 						}
 					} else if (event.button.button == SDL_BUTTON_RIGHT) {
-						int mouse_x, mouse_y;
-						SDL_GetMouseState(&mouse_x, &mouse_y);
-						if (!saving)
-							DeleteTile(mouse_x + camera.x, mouse_y + camera.y);
+						if (!saving) {
+							drag_delete = true;
+							drag_place = false;
+						}
+					}
+				break;
+
+				case SDL_MOUSEBUTTONUP:
+					if (event.button.button == SDL_BUTTON_LEFT) {
+						drag_place = false;
+					} else if (event.button.button == SDL_BUTTON_RIGHT) {
+						drag_delete = false;
 					}
 				break;
 
@@ -385,16 +412,6 @@ void FE_EventEditorHandler()
 						RotateTile(mouse_x + camera.x, mouse_y + camera.y);
 					}
 
-					// moving camera
-					if (keyboard_state[SDL_SCANCODE_W])
-						FE_MoveCamera(0, -10, &camera);
-					else if (keyboard_state[SDL_SCANCODE_A])
-						FE_MoveCamera(-10, 0, &camera);
-					else if (keyboard_state[SDL_SCANCODE_S])
-						FE_MoveCamera(0, 10, &camera);
-					else if (keyboard_state[SDL_SCANCODE_D])
-						FE_MoveCamera(10, 0, &camera);
-
 					// update label with camera x and y
 					char buffer[64];
 					sprintf(buffer, "X: %d, Y: %d", camera.x, camera.y);
@@ -402,6 +419,16 @@ void FE_EventEditorHandler()
 
 				break;
 			}
+			
+			// moving camera
+			if (keyboard_state[SDL_SCANCODE_W])
+				FE_MoveCamera(0, -10, &camera);
+			else if (keyboard_state[SDL_SCANCODE_A])
+				FE_MoveCamera(-10, 0, &camera);
+			else if (keyboard_state[SDL_SCANCODE_S])
+				FE_MoveCamera(0, 10, &camera);
+			else if (keyboard_state[SDL_SCANCODE_D])
+				FE_MoveCamera(10, 0, &camera);
 		}
 	}
 }

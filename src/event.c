@@ -7,7 +7,7 @@
     4- User input
 */
 
-static bool positionlog = true; // used for testing, probably removed later
+static bool positionlog = false; // used for testing, probably removed later
 static size_t lastlogtime = 0;
 
 static bool fullscreen = false;

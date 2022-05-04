@@ -26,7 +26,7 @@ static void GenerateParticle(FE_ParticleSystem *p, size_t index)
 
     particle.body.w = s_Rand((int)p->max_size.x);
     particle.body.h = s_Rand((int)p->max_size.y);
-    particle.rotation = rand() % 360;
+    particle.rotation = 0;
 
     // Generate random velocity
     particle.velocity.x = -s_Rand((int)p->initial_velocity.x) + s_Rand((int)p->initial_velocity.x); // dispersion either side

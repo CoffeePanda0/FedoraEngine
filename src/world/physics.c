@@ -12,17 +12,19 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
     - create nice pause UI (background, buttons to go to menu etc)
     - handle end of level
     - pushable objects
-    - have to jump twice for big jump
-    -can we tie walking animation speed to player movement speed?
-    -editor memory issues
-    -particles on jumping odd location
-    -going right first causes camera to zoom
-    -holding space results in longer jump
-    -animation can sometimes miss a frame (has issues with no vsync)
-    - small velocity when moving to the right into a wall
+    * have to jump twice for big jump
+    - can we tie walking animation speed to player movement speed?
+    * particles on jumping odd location
+    * holding space results in longer jump
+    * animation can sometimes miss a frame (has issues with no vsync)
+    * small velocity when moving to the right into a wall
     - sound emission
-    -fullscreen console
-    - DT is broken in first few frames
+    * fullscreen console
+    * DT is broken in first few frames
+    - camera zoom
+    * emit multiple particles in one frame if emission rate 
+    * friction on particle is broken
+    * tile collision from below
 
 */
 

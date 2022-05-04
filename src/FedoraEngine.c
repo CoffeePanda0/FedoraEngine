@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 
 	FE_InitConfig i = (FE_InitConfig){
 		"FedoraEngine",
-		512, 512,
+		1920, 1080,
 		true
 	};
 	FE_Init(i);	

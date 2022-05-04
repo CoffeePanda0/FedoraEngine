@@ -25,7 +25,7 @@ void FE_StartGame(const char *mapname)
 
 	// player setup
 	GamePlayer = FE_CreatePlayer(1, 8, 4, (SDL_Rect){0,0, 120, 100});
-	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, FE_NewVector(300, 100)); // todo spawn
+	FE_SetPlayerWorldPos(GamePlayer, &GameCamera, FE_NewVector(spawnx, spawny)); // todo spawn
 
 	// test object
 	//test = FE_CreateGameObject((SDL_Rect){200, 50, 50, 50}, "doge.png", "deez", ENEMY, 20, true);
@@ -33,13 +33,13 @@ void FE_StartGame(const char *mapname)
 	// test particle system
 	SnowParticles = FE_CreateParticleSystem(
 		(SDL_Rect){0, -20, FE_Map_Width, 20}, // Position for the whole screen, slightly above the top to create more random
-		60, // Emission rate
-		1000, // Max particles
+		100, // Emission rate
+		10000, // Max particles
 		10000, // Max lifetime
 		true, // Particles to respawn once they go off screen
-		"snow.png", // Texture
-		(Vector2D){12, 12}, // Max size of each particle
-		(Vector2D){0, 3}, // Set initial velocity so particle doesn't float until they accelerate
+		"rain.png", // Texture
+		(Vector2D){15, 15}, // Max size of each particle
+		(Vector2D){10, 3}, // Set initial velocity so particle doesn't float until they accelerate
 		false
 	);
 
