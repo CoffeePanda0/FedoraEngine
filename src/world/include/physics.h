@@ -10,10 +10,9 @@
 
 extern float GRAVITY;
 
-#define clamp(num, min, max) _Generic((num), \
-        int: clampi, \
-        float: clampf \
-    )((num), (min), (max))
+
+#define clamp(value, min, max)\
+    (value < min ? min : (value > max ? max : value))
 
 typedef struct FE_PhysObj {
     Uint16 mass;

@@ -33,13 +33,13 @@ void FE_StartGame(const char *mapname)
 	// test particle system
 	SnowParticles = FE_CreateParticleSystem(
 		(SDL_Rect){0, -20, FE_Map_Width, 20}, // Position for the whole screen, slightly above the top to create more random
-		100, // Emission rate
-		10000, // Max particles
+		240, // Emission rate
+		3000, // Max particles
 		10000, // Max lifetime
 		true, // Particles to respawn once they go off screen
-		"rain.png", // Texture
+		"snow.png", // Texture
 		(Vector2D){15, 15}, // Max size of each particle
-		(Vector2D){10, 3}, // Set initial velocity so particle doesn't float until they accelerate
+		(Vector2D){15, 3}, // Set initial velocity so particle doesn't float until they accelerate
 		false
 	);
 
@@ -62,6 +62,12 @@ void FE_RenderGame()
 
 void FE_GameLoop()
 {
+	FE_CalculateDT();
+
+	if (FE_FPS == 0) {
+		return;
+	}
+	
 	FE_GameEventHandler(&GameCamera, GamePlayer);
 	FE_UpdateTimers();
 	FE_RunPhysics();

@@ -90,6 +90,13 @@ Vector2D FE_GetSpawn();
 Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r);
 
 
+/** Checks if a rect is colliding below the map tiles
+ * \param r The rectangle to check for collision
+ * \returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
+ */
+Vector2D FE_CheckMapCollisionBelow(SDL_Rect *r);
+
+
 /** Checks if a rect is colliding with the right-hand side of the rect
  *\param r The rectangle to check for collision
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision

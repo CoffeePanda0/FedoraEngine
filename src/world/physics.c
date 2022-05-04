@@ -14,17 +14,16 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
     - pushable objects
     * have to jump twice for big jump
     - can we tie walking animation speed to player movement speed?
-    * particles on jumping odd location
+* particles on jumping odd location
     * holding space results in longer jump
-    * animation can sometimes miss a frame (has issues with no vsync)
-    * small velocity when moving to the right into a wall
     - sound emission
     * fullscreen console
-    * DT is broken in first few frames
     - camera zoom
-    * emit multiple particles in one frame if emission rate 
-    * friction on particle is broken
-    * tile collision from below
+    - pre-load all fonts
+    - rewrite map editor to have cleaner code
+    - Make jump animation play once
+    - Change button to middle of screen by default
+    - Change map editor tiles to allow for negative Y values
 
 */
 
@@ -72,6 +71,7 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
         for (FE_List *t = FE_PhysObjects; t; t = t->next) {
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
 
+
             /* Apply X force */
             if (obj->velocity.x != 0) {
                 float new_x = obj->position.x + obj->velocity.x;
@@ -82,18 +82,15 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 
                 // check for collision on map from right
                 if (obj->velocity.x > 0) { 
-                    SDL_Rect tmp_r = (SDL_Rect){obj->position.x, obj->position.y, obj->body.w, obj->body.h};
-                    tmp_r.x = new_x;
+                    SDL_Rect tmp_r = (SDL_Rect){new_x, obj->position.y, obj->body.w, obj->body.h};
                     Vector2D collision = FE_CheckMapCollisionRight(&tmp_r);
                     if (!FE_VecNULL(collision)) {
                         obj->velocity.x = 0;
-                        obj->position.x = collision.x - obj->body.w;
                     }
                 }
                 // check for collision on map from left
-                if (obj->velocity.x < 0) {
-                    SDL_Rect tmp_r = (SDL_Rect){obj->position.x, obj->position.y, obj->body.w, obj->body.h};
-                    tmp_r.x = new_x;
+                else if (obj->velocity.x < 0) {
+                    SDL_Rect tmp_r = (SDL_Rect){new_x, obj->position.y, obj->body.w, obj->body.h};
                     Vector2D collision = FE_CheckMapCollisionLeft(&tmp_r);
                     if (!FE_VecNULL(collision)) {
                         obj->velocity.x = 0;
@@ -112,36 +109,43 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
             if (obj->velocity.y != 0) {
                 float new_y = obj->position.y + obj->velocity.y;
                 SDL_Rect check_rect = {obj->body.x, new_y, obj->body.w, obj->body.h};
-                Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
+                                
+                if (obj->velocity.y > 0) { // if player is falling
+                    Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
+                    if (!FE_VecNULL(GroundCollision)) { // If we collide with the ground
+                        
+                        obj->position.y = GroundCollision.y - obj->body.h + 1;
 
-                if (!FE_VecNULL(GroundCollision)) { // If we collide with the ground
-                    
-                    obj->position.y = GroundCollision.y - obj->body.h;
-                    // If we hit the ground, bounce
-                    if (obj->velocity.y > 8) {
+                        if (obj->velocity.y > 8) {
+                            // emit ground particles for high velocity bounce effect
+                            float force = obj->mass * obj->velocity.y;
+                            if (force > 500) {
+                                FE_CreateParticleSystem(
+                                    (SDL_Rect){GroundCollision.x - obj->body.w, GroundCollision.y - 5, obj->body.w, 5},
+                                    0,
+                                    20,
+                                    1000,
+                                    false,
+                                    "impact.png",
+                                    FE_NewVector(10,10),
+                                    FE_NewVector(-obj->velocity.y / 5, -obj->velocity.y / 10),
+                                    false
+                                );
+                            }
 
-                        // emit ground particles for high velocity bounce effect
-                        float force = obj->mass * obj->velocity.y;
-                        if (force > 500) {
-                            FE_CreateParticleSystem(
-                                (SDL_Rect){GroundCollision.x - obj->body.w, GroundCollision.y - 5, obj->body.w, 5},
-                                0,
-                                20,
-                                1000,
-                                false,
-                                "impact.png",
-                                FE_NewVector(10,10),
-                                FE_NewVector(-obj->velocity.y / 5, -obj->velocity.y / 10),
-                                false
-                            );
+                            obj->velocity.y = obj->velocity.y * -BOUNCE;
+                        } else { // or come to rest if velocity not enough
+                            obj->velocity.y = 0;
                         }
-
-                        obj->velocity.y = obj->velocity.y * -BOUNCE;
-                    } else { // or come to rest if velocity not enough
+                    }
+                } else { // If player is going up
+                    Vector2D CeilingCollision = FE_CheckMapCollisionBelow(&check_rect);
+                    if (!FE_VecNULL(CeilingCollision)) { // If we collide with the ceiling
+                        obj->position.y = CeilingCollision.y;
                         obj->velocity.y = 0;
                     }
                 }
-
+                
                 obj->position.y += (obj->velocity.y * FE_DT_MULTIPLIER);
                 
             }

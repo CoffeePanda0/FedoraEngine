@@ -190,15 +190,18 @@ void FE_CloseMap()
 
 static bool InBounds(SDL_Rect *r)// checks if rect is in map bounds
 {
+     if (!r)
+        return false;
+
     if (r->y < 0)
         return false;
-    
     if (r->x < 0)
         return false;
-
     if (r->x + r->w > FE_Map_Width)
         return false;
-
+    if (r->y + r->h > FE_Map_Height)
+        return false;
+    
     return true;
 }
 
@@ -271,7 +274,7 @@ static size_t RightTileRange(size_t left, SDL_Rect *r) // calculates the right-m
 
 Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
 {
-    if (!r || !InBounds(r)) return VEC_NULL;
+    if (!InBounds(r)) return VEC_NULL;
 
     size_t left = LeftTileRange(r);
     size_t right = RightTileRange(left, r);
@@ -296,7 +299,7 @@ Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
 
 Vector2D FE_CheckMapCollisionRight(SDL_Rect *r)
 {
-    if (!r || !InBounds(r)) return VEC_NULL;
+    if (!InBounds(r)) return VEC_NULL;
 
     size_t left = LeftTileRange(r);
     size_t right = RightTileRange(left, r);
@@ -308,24 +311,22 @@ Vector2D FE_CheckMapCollisionRight(SDL_Rect *r)
 
         SDL_Rect tilerect = (SDL_Rect){map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
         SDL_Rect out;
-        if (!SDL_IntersectRect(r, &tilerect, &out)) {
+        if (!SDL_IntersectRect(r, &tilerect, &out))
             continue;
-        }
-        if (out.h < 10 || out.w == 0)
+        
+        if (out.h < 5 || out.w == 0)
             continue;
-        if (tilerect.x > r->x && out.w > 0)
+        if (tilerect.x > r->x && out.w > 0) {
             return map.tiles[i].position;
+        }
     } 
+    
     return VEC_NULL;
 }
 
 Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
 {
-    if (!r || !InBounds(r)) return VEC_NULL;
-
-    // Check if the object is in map bounds
-    if (r->x < FE_Map_MinimumX || r->x + r->w > FE_Map_Width)
-        return VEC_NULL;
+    if (!InBounds(r)) return VEC_NULL;
     
     // Only checks the tiles closest to the player's X coordinate to save performance
     size_t left_tile = LeftTileRange(r);
@@ -339,8 +340,34 @@ Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
         if (!SDL_IntersectRect(&tilerect, r, &collrect))
             continue;
 
-        if (collrect.h > 0)
+        if (r->x + r->w < tilerect.x || r->x > tilerect.x + tilerect.w || collrect.h > map.tilesize)
+            continue;
+
+        if (collrect.h > 0 && (r->y + r->h < tilerect.y + (tilerect.h / 2)))
             return map.tiles[i].position;
+
     }
     return VEC_NULL;
+}
+
+Vector2D FE_CheckMapCollisionBelow(SDL_Rect *r)
+{
+    if (!InBounds(r)) return VEC_NULL;
+
+    size_t left_tile = LeftTileRange(r);
+    size_t right_tile = RightTileRange(left_tile, r);
+
+    // check if each tile is colliding from below with the rect
+    for (size_t i = left_tile; i < right_tile; i++) {
+        SDL_Rect tilerect = (SDL_Rect){map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
+        SDL_Rect collrect;
+
+        if (!SDL_IntersectRect(&tilerect, r, &collrect))
+            continue;
+
+        if (collrect.h > 0 && (r->y > tilerect.y + (tilerect.h / 2)))
+            return FE_NewVector(map.tiles[i].position.x, map.tiles[i].position.y + map.tilesize);
+    }
+    return VEC_NULL;
+
 }

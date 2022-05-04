@@ -65,7 +65,6 @@ int main(int argc, char* argv[])
 			break;
 
 		}
-		FE_CalculateDT();
 	}
 	
 	FE_Clean();

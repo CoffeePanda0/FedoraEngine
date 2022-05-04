@@ -85,6 +85,7 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		IMG_Quit();
 		FE_CleanAll();
 		FE_DestroyConsole();
+		SDL_DestroyRenderer(renderer);
 		SDL_DestroyWindow(window);
 		TTF_CloseFont(Sans);
 		SDL_Quit();

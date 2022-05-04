@@ -8,14 +8,6 @@ static const int PLAYER_MASS = 50;
 
 static size_t PlayerCount = 0;
 
-/* Current TODO:
-- Make jump animation play once
-- Map editor drag to select
-- Map editor drag to delete
-- Change button to middle of screen by default
-- Change map editor tiles to allow for negative Y values
-*/
-
 FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL_Rect body)
 {
     // basic player vars
