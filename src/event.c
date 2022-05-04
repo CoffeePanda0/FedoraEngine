@@ -7,8 +7,10 @@
     4- User input
 */
 
-static bool positionlog = false; // used for testing, probably removed later
+static bool positionlog = true; // used for testing, probably removed later
 static size_t lastlogtime = 0;
+
+static bool fullscreen = false;
 
 void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 {
@@ -16,7 +18,7 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
         lastlogtime += 1;
         if (lastlogtime >= (10 / FE_DT_MULTIPLIER)) { // only log every 10 frames to save cpu use
             lastlogtime = 0;
-            printf("PLAYER X: %i | PLAYER Y: %i| VELOCITY: %f,%f\n", player->PhysObj->body.x, player->PhysObj->body.y + camera->y, player->PhysObj->velocity.x, player->PhysObj->velocity.y);
+            printf("PLAYER X: %i | PLAYER Y: %i| VELOCITY: %f,%f | DT: %f\n", player->PhysObj->body.x, player->PhysObj->body.y + camera->y, player->PhysObj->velocity.x, player->PhysObj->velocity.y, FE_DT);
         }
     }
 
@@ -58,6 +60,11 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                     if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0)
                         positionlog = !positionlog;
                     
+                    if (keyboard_state[SDL_SCANCODE_F] && event.key.repeat == 0) {
+                        fullscreen = !fullscreen;
+                        SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+                        SDL_GetWindowSize(window, &screen_width, &screen_height); // recalculate window size
+                    }
                 break;
             }
         }

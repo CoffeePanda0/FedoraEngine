@@ -33,19 +33,12 @@ size_t Editor_LoadTextures() // Load up to 10 textures for the editor from the m
 						break;
 					}
 
-					// copy path into texurepaths
-					if (texturecount == 0)
-						editor_texturepaths = xmalloc(sizeof(char *));
-					else
-						editor_texturepaths = xrealloc(editor_texturepaths, sizeof(char*) * (texturecount + 1));
-					editor_texturepaths[texturecount] = strdup(path);
-
 					// load to texture array
 					if (texturecount == 0 || !editor_textures)
-						editor_textures = xmalloc(sizeof(SDL_Texture*));
+						editor_textures = xmalloc(sizeof(FE_Texture*));
 					else
-						editor_textures = xrealloc(editor_textures, sizeof(SDL_Texture*) * (texturecount + 1));
-					editor_textures[texturecount++] = FE_TextureFromFile(path);
+						editor_textures = xrealloc(editor_textures, sizeof(FE_Texture*) * (texturecount + 1));
+					editor_textures[texturecount++] = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
 
 				}
 				SDL_FreeSurface(tmp);
@@ -79,20 +72,12 @@ size_t Editor_LoadBackgrounds()
 						info("Too many backgrounds in map directory, only loading 10");
 						break;
 					}
-
-					// copy path into backgroundpaths
-					if (bgcount == 0)
-						editor_backgroundpaths = xmalloc(sizeof(char *));
-					else
-						editor_backgroundpaths = xrealloc(editor_backgroundpaths, sizeof(char*) * (bgcount + 1));
-					editor_backgroundpaths[bgcount] = strdup(path);
-
 					// load to texture array
 					if (bgcount == 0)
-						editor_backgrounds = xmalloc(sizeof(SDL_Texture*));
+						editor_backgrounds = xmalloc(sizeof(FE_Texture*));
 					else
-						editor_backgrounds = xrealloc(editor_backgrounds, sizeof(SDL_Texture*) * (bgcount + 1));
-					editor_backgrounds[bgcount++] = FE_TextureFromFile(path);
+						editor_backgrounds = xrealloc(editor_backgrounds, sizeof(FE_Texture*) * (bgcount + 1));
+					editor_backgrounds[bgcount++] = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
 				}
 				SDL_FreeSurface(tmp);
 				free(path);

@@ -16,7 +16,7 @@ FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *n
 	char *path = xmalloc(strlen(AssetPath) + strlen(texture_path) + 1);
 	strcpy(path, AssetPath);
 	strcat(path, texture_path);
-	obj->texture = FE_LoadTexture(path);
+	obj->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
 	free(path);
 	
 	obj->type = type;
@@ -37,7 +37,7 @@ void FE_RenderGameObjects(FE_Camera *c)
 	for (FE_List *o = FE_GameObjects; o; o = o->next) {
 		FE_GameObject *obj = o->data;
 		SDL_Rect renderrect = (SDL_Rect){obj->phys->body.x - c->x, obj->phys->body.y - c->y, obj->phys->body.w, obj->phys->body.h};
-		SDL_RenderCopy(renderer, obj->texture, NULL, &renderrect);
+		SDL_RenderCopy(renderer, obj->texture->Texture, NULL, &renderrect);
 	}
 }
 
@@ -47,7 +47,7 @@ void FE_CleanGameObjects() // Destroys all game objects
 	for (FE_List *o = FE_GameObjects; o; o = o->next) {
 		FE_GameObject *obj = o->data;
 		FE_RemovePhysInteractable(obj->phys);
-		FE_FreeTexture(obj->texture);
+		FE_DestroyResource(obj->texture->path);
 		free(obj);
 	}
 
@@ -59,7 +59,7 @@ int FE_DestroyGameObject(FE_GameObject *obj)
 	// free gameobject data
 	FE_RemovePhysInteractable(obj->phys);
 	free(obj->phys);
-	FE_FreeTexture(obj->texture);
+	FE_DestroyResource(obj->texture->path);
 	
 	if (FE_List_Remove(&FE_GameObjects, obj) == -1) // remove from list
 		return -1;

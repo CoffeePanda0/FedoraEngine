@@ -2,10 +2,11 @@
 #define H_UIOBJECT
 
 #include <SDL.h>
+#include "../../core/include/texture.h"
 
 typedef struct FE_UIObject {
     SDL_Rect r;
-    SDL_Texture *text;
+    FE_Texture *texture;
 } FE_UIObject;
 
 void FE_RenderUIObjects();

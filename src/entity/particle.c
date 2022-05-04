@@ -63,7 +63,7 @@ FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emissio
     p->camera_locked = camera_locked;
 
     char *path = AddStr(AssetPath, texture);
-    p->texture = FE_LoadTexture(path);
+    p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     xfree(path);
 
     p->particles = xmalloc(sizeof(FE_Particle) * max_particles);
@@ -83,7 +83,7 @@ FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emissio
     return p;
 }
 
-void FE_UpdateParticles()
+void FE_UpdateParticles() // TODO - Optimise this
 {
     if (!ParticleSystems)
         return;
@@ -141,7 +141,7 @@ void FE_UpdateParticles()
             FE_DT_RECT(particle->position, &particle->body);
 
             // kill particle if it's out of map bounds
-            if (particle->body.x < 0 || particle->body.x > FE_Map_Width ||  particle->body.y > screen_height) {
+            if (particle->body.x < 0 || particle->body.x > FE_Map_Width ||  particle->body.y > (FE_Map_Height - particle->body.h)) {
                 particle->is_dead = true;
                 p->num_particles--;
             }
@@ -178,7 +178,7 @@ bool FE_DestroyParticleSystem(FE_ParticleSystem *p)
     }
 
     xfree(p->particles);
-    FE_FreeTexture(p->texture);
+    FE_DestroyResource(p->texture->path);
 
     FE_List_Remove(&ParticleSystems, p);
     
@@ -194,7 +194,7 @@ void FE_CleanParticles()
     for (FE_List *l = ParticleSystems; l; l = l->next) {
         FE_ParticleSystem *p = l->data;
         xfree(p->particles);
-        FE_FreeTexture(p->texture);
+        FE_DestroyResource(p->texture->path);
         xfree(p);
     }
 

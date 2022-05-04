@@ -34,6 +34,7 @@ static void LoadArgs(int argc, char *argv[])
 int main(int argc, char* argv[])
 {
 	/* Initialise FedoraEngine systems first */
+
 	FE_InitConfig i = (FE_InitConfig){
 		"FedoraEngine",
 		512, 512,
@@ -43,6 +44,7 @@ int main(int argc, char* argv[])
 
 	/* Check launch args */
 	LoadArgs(argc, argv);
+	
 	
 	while (FE_GameActive) {
 		// main game loop - calls functions based on game state
@@ -67,6 +69,7 @@ int main(int argc, char* argv[])
 	}
 	
 	FE_Clean();
+
 	return 0;
 
 }

@@ -3,7 +3,6 @@
 #define ANIMATION_PATH "game/sprites/animations/"
 
 static FE_List *animation_list = NULL;
-static long last_update;
 
 void FE_UpdateAnimations()
 {
@@ -11,14 +10,13 @@ void FE_UpdateAnimations()
     for (FE_List *l = animation_list; l; l = l->next) {
         FE_Animation *anim = (FE_Animation *)l->data;
         if (anim->active) {
-            anim->time_passed += SDL_GetTicks() - last_update;
+            anim->time_passed += (FE_DT * 1000);
             if (anim->time_passed >= anim->frame_duration) {
                 anim->current_frame = (anim->current_frame + 1) < anim->frame_count ? anim->current_frame + 1 : 0;
                 anim->time_passed = 0;
             }
         }
     }
-    last_update = SDL_GetTicks();
 }
 
 FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint16 frame_width, Uint16 frame_height, Uint16 frame_duration, bool active)
@@ -26,7 +24,7 @@ FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint
     FE_Animation *anim = xmalloc(sizeof(FE_Animation));
 
     char *temp_path = AddStr(ANIMATION_PATH, spritesheet_name);
-    anim->spritesheet = FE_LoadTexture(temp_path);
+    anim->spritesheet = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, temp_path);
     xfree(temp_path);
 
     anim->frame_count = frame_count;
@@ -68,7 +66,7 @@ int FE_DestroyAnimation(FE_Animation *anim)
         warn("Tried to destroy a NULL animation");
         return -1;
     }
-    FE_FreeTexture(anim->spritesheet);
+    FE_DestroyResource(anim->spritesheet->path);
     FE_List_Remove(&animation_list, anim);
     xfree(anim);
 
@@ -82,7 +80,7 @@ int FE_CleanAnimations()
 
     for (FE_List *l = animation_list; l; l = l->next) {
         FE_Animation *anim = (FE_Animation *)l->data;
-        FE_FreeTexture(anim->spritesheet);
+        FE_DestroyResource(anim->spritesheet->path);
         xfree(anim);
     }
 

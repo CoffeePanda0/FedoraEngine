@@ -7,11 +7,11 @@ static FE_List *LightList = 0;
 
 /* todo this really is not great - redo later with proper map support */
 
-FE_LightObject *FE_CreateLightObject(SDL_Texture *obj_texture, SDL_Rect obj_rect, char *effect_name, int effect_offset_x, int effect_offset_y, int size)
+FE_LightObject *FE_CreateLightObject(char *obj_image, SDL_Rect obj_rect, char *effect_name, int effect_offset_x, int effect_offset_y, int size)
 {
     FE_LightObject *o = xmalloc(sizeof(FE_LightObject));
 
-    o->obj_texture = obj_texture;
+    o->obj_texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, obj_image);
     o->obj_rect = obj_rect;
     
     char *texture_path = xmalloc(strlen(EFFECT_TEXTURE_PATH) + strlen(effect_name) + 5);
@@ -19,7 +19,7 @@ FE_LightObject *FE_CreateLightObject(SDL_Texture *obj_texture, SDL_Rect obj_rect
     texture_path = strcat(texture_path, effect_name);
     texture_path = strcat(texture_path, ".png");
     
-    o->effect_texture = FE_LoadTexture(texture_path);
+    o->effect_texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, texture_path);
     o->effect_rect = (SDL_Rect){obj_rect.x + effect_offset_x, obj_rect.y + effect_offset_y, size, size};
 
     xfree(texture_path);
@@ -34,8 +34,8 @@ void FE_DestroyLightObject(FE_LightObject *o)
         warn("FE_DestroyLightObject: Light object is null");
         return;
     }
-    FE_FreeTexture(o->effect_texture);
-    FE_FreeTexture(o->obj_texture);
+    FE_DestroyResource(o->effect_texture->path);
+    FE_DestroyResource(o->obj_texture->path);
 
     FE_List_Remove(&LightList, o);
 

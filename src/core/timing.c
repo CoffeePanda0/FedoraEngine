@@ -1,5 +1,4 @@
-#include <SDL.h>
-#include "include/timing.h"
+#include "../include/game.h"
 
 float FE_DT = 0; // Time taken for each loop
 const float FE_DT_TARGET = 1.0f / 60;
@@ -7,6 +6,19 @@ float FE_DT_MULTIPLIER = 1.0f; // The value that we need to multiply by to reach
 uint32_t FE_FPS = 60;
 
 float FE_GAME_RUNNING = 0; // How many seconds the game has been running for
+
+static void FE_FPSCounter()
+{
+    // only update every second
+    static float fps_timer = 0;
+    fps_timer += FE_DT;
+    if (fps_timer > 1) {
+        fps_timer = 0;
+        char title[64];    
+        snprintf(title, 64, "FedoraEngine - FPS: %i", FE_FPS);
+        SDL_SetWindowTitle(window, title);
+    }
+}
 
 int FE_CalculateDT()
 {
@@ -23,5 +35,7 @@ int FE_CalculateDT()
 	FE_FPS = (1 / FE_DT);
 	FE_DT_MULTIPLIER = (FE_DT / FE_DT_TARGET);
 
+	FE_FPSCounter();
+	
     return 1;
 }

@@ -1,12 +1,10 @@
 #include "../include/game.h"
 
-SDL_Texture **editor_textures; // The texture atlas (stores 10)
-char **editor_texturepaths;
+FE_Texture **editor_textures; // The texture atlas (stores 10)
 static size_t texturecount;
 static size_t selectedtexture;
 
-SDL_Texture **editor_backgrounds; // The background atlas (stores 10)
-char **editor_backgroundpaths;
+FE_Texture **editor_backgrounds; // The background atlas (stores 10)
 static size_t bgcount;
 static size_t selectedbackground;
 
@@ -20,12 +18,12 @@ static SDL_Rect thumbnail;
 static FE_Camera camera;
 static FE_Label *coord;
 
-static SDL_Texture *spawntexture;
-static SDL_Texture *endtexture;
+static FE_Texture *spawntexture;
+static FE_Texture *endtexture;
 
 static bool saving = false;
 
-// TODO: free textures if they are deleted and not used in map, loading previous maps, tile bg, drag and click? change tilesize/gravity
+// TODO: loading previous maps, tile bg, drag and click? change tilesize/gravity, nice UI
 
 void FE_RenderEditor()
 {
@@ -34,10 +32,10 @@ void FE_RenderEditor()
 
 	// render background
 	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
-	SDL_QueryTexture(newmap.bg, NULL, NULL, &bgrect.w ,&bgrect.h);
+	FE_QueryTexture(newmap.bg, &bgrect.w ,&bgrect.h);
 	bgrect.x -= camera.x;
 	bgrect.y -= camera.y;
-	SDL_RenderCopy(renderer, newmap.bg, NULL, &bgrect);
+	SDL_RenderCopy(renderer, newmap.bg->Texture, NULL, &bgrect);
 
 	// render all tiles
 	for (size_t i = 0; i < newmap.tilecount; i++) {
@@ -76,9 +74,9 @@ void FE_RenderEditor()
 	FE_RenderUI();
 
 	if (mode)
-		SDL_RenderCopy(renderer, editor_textures[selectedtexture], NULL, &thumbnail);
+		FE_RenderCopy(editor_textures[selectedtexture], NULL, &thumbnail);
 	else
-		SDL_RenderCopy(renderer, editor_backgrounds[selectedbackground], NULL, &thumbnail);
+		FE_RenderCopy(editor_backgrounds[selectedbackground], NULL, &thumbnail);
 
 	SDL_RenderPresent(renderer);
 }
@@ -124,6 +122,7 @@ static void DeleteTile(int x, int y)
 	xfree(temp);
 	mapsave.tilecount--;
 
+
 	/* check if we need to delete the texture (if it is not used in any other tiles, we can safely remove it) */ 
 	bool delete = true;
 	for (size_t i = 0; i < newmap.tilecount; i++) {
@@ -133,20 +132,21 @@ static void DeleteTile(int x, int y)
 		}
 	}
 
-	if (delete) { // todo invalid read here - line 146 and 139
+	if (delete) {
 		// remove from textures array
-		FE_DestroyTexture(newmap.textures[used_texture]);
-		for (size_t i = used_texture; i < newmap.texturecount; i++) {
-			newmap.textures[i] = newmap.textures[i+1];
+		FE_DestroyResource(newmap.textures[used_texture]->path);
+		// move all other textures down
+		for (int i = used_texture; i < mapsave.texturecount -1; i++) {
+			newmap.textures[i] = newmap.textures[i + 1];
 		}
-		newmap.textures = xrealloc(newmap.textures, sizeof(SDL_Texture*) * newmap.texturecount -1);
+		newmap.textures = xrealloc(newmap.textures, sizeof(FE_Texture*) * --newmap.texturecount);
 		
 		// remove from texturepaths array
 		xfree(mapsave.texturepaths[used_texture]);
-		for (size_t i = used_texture; i < mapsave.texturecount; i++) {
+		for (int i = used_texture; i < mapsave.texturecount -1; i++) {
 			mapsave.texturepaths[i] = mapsave.texturepaths[i+1];
 		}
-		mapsave.texturepaths = xrealloc(mapsave.texturepaths, sizeof(char*) * mapsave.texturecount -1);
+		mapsave.texturepaths = xrealloc(mapsave.texturepaths, sizeof(char*) * --mapsave.texturecount);
 
 		// as array indexes will have changed, change tile textureids to reflect this
 		for (size_t i = 0; i < mapsave.tilecount; i++) {
@@ -156,8 +156,17 @@ static void DeleteTile(int x, int y)
 			}
 		}
 
-		newmap.texturecount--;
-		mapsave.texturecount--;	
+		if (mapsave.tilecount == 0) {
+			if (mapsave.tiles)
+				xfree(mapsave.tiles);
+			if (newmap.tiles)
+				xfree(newmap.tiles);
+			if (mapsave.texturepaths)
+				xfree(mapsave.texturepaths);
+			if (newmap.textures)
+				xfree(newmap.textures);
+		}
+
 	}
 }
 
@@ -173,7 +182,7 @@ static void SetBG(int x, int y)
 	mapsave.bg_texturepath = 0;
 
 	newmap.bg = editor_backgrounds[selectedbackground];
-	mapsave.bg_texturepath = strdup(editor_backgroundpaths[selectedbackground]);
+	mapsave.bg_texturepath = strdup(newmap.bg->path);
 }
 
 static void AddTile(int x, int y)
@@ -194,7 +203,7 @@ static void AddTile(int x, int y)
 	// see if selected texture has been loaded. if it has already been added, return the index
 	int in = -1;
 	for (size_t i = 0; i < mapsave.texturecount; i++) {
-		if (strcmp(editor_texturepaths[selectedtexture], mapsave.texturepaths[i]) == 0) {
+		if (strcmp(editor_textures[selectedtexture]->path, mapsave.texturepaths[i]) == 0) {
 			in = i;
 			break;
 		}
@@ -205,16 +214,14 @@ static void AddTile(int x, int y)
 			mapsave.texturepaths = xmalloc(sizeof(char*));
 		else
 			mapsave.texturepaths = xrealloc(mapsave.texturepaths, sizeof(char*) * (mapsave.texturecount + 1));
-		mapsave.texturepaths[mapsave.texturecount] = xcalloc(64, 1);
-		mapsave.texturepaths[mapsave.texturecount] = strcpy(mapsave.texturepaths[mapsave.texturecount], editor_texturepaths[selectedtexture]);
-		mapsave.texturecount++;
+		mapsave.texturepaths[mapsave.texturecount++] = strdup(editor_textures[selectedtexture]->path);
 
 		// add tile texture to newmap
 		if (newmap.texturecount == 0)
-			newmap.textures = xmalloc(sizeof(SDL_Texture*));
+			newmap.textures = xmalloc(sizeof(FE_Texture*));
 		else
-			newmap.textures = xrealloc(newmap.textures, sizeof(SDL_Texture*) * (newmap.texturecount + 1));
-		newmap.textures[newmap.texturecount++] = FE_TextureFromFile(mapsave.texturepaths[mapsave.texturecount-1]);
+			newmap.textures = xrealloc(newmap.textures, sizeof(FE_Texture*) * (newmap.texturecount + 1));
+		newmap.textures[newmap.texturecount++] = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, mapsave.texturepaths[mapsave.texturecount-1]);
 		in = newmap.texturecount -1;
 	}
 
@@ -404,14 +411,9 @@ void FE_CleanEditor()
 	if (texturecount > 0) {
 		// free editor textures
 		for (size_t i = 0; i < texturecount; i++)
-			FE_DestroyTexture(editor_textures[i]);
+			FE_DestroyResource(editor_textures[i]->path);
 		xfree(editor_textures);
 		
-		// free texturepaths
-		for (size_t i = 0; i < texturecount; i++)
-			xfree(editor_texturepaths[i]);
-		xfree(editor_texturepaths);
-
 		texturecount = 0;
 		selectedtexture = 0;
 	}
@@ -419,13 +421,8 @@ void FE_CleanEditor()
 	if (bgcount > 0) {
 	// free editor backgrounds
 		for (size_t i = 0; i < bgcount; i++)
-			FE_DestroyTexture(editor_backgrounds[i]);
+			FE_DestroyResource(editor_backgrounds[i]->path);
 		xfree(editor_backgrounds);
-
-		// free backgroundpaths
-		for (size_t i = 0; i < bgcount; i++)
-			xfree(editor_backgroundpaths[i]);
-		xfree(editor_backgroundpaths);
 
 		bgcount = 0;
 		selectedbackground = 0;
@@ -434,11 +431,11 @@ void FE_CleanEditor()
 	mode = true; grid = true;
 
 	if (spawntexture)
-		FE_FreeTexture(spawntexture);
+		FE_DestroyResource(spawntexture->path);
 	spawntexture = 0;
 
 	if (endtexture)
-		FE_FreeTexture(endtexture);
+		FE_DestroyResource(endtexture->path);
 	endtexture = 0;
 
 	// free memory held by mapsave
@@ -473,7 +470,7 @@ void FE_CleanEditor()
 	// free textures
 	if (newmap.texturecount > 0) {
 		for (size_t i = 0; i < newmap.texturecount; i++)
-			FE_DestroyTexture(newmap.textures[i]);
+			FE_DestroyResource(newmap.textures[i]->path);
 		xfree(newmap.textures);
 		newmap.texturecount = 0;
 	}
@@ -515,8 +512,8 @@ static void CreateUI()
 
 	thumbnail = (SDL_Rect){475, 6, 32, 32};
 	coord = FE_CreateLabel("X: 0 Y: 0", 340, 6, COLOR_BLACK);
-	spawntexture = FE_LoadTexture("game/map/spawn.png");
-	endtexture = FE_LoadTexture("game/map/end.png");
+	spawntexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/spawn.png");
+	endtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 }
 
 void FE_StartEditor() // cleans up from other game modes
@@ -541,7 +538,7 @@ void FE_StartEditor() // cleans up from other game modes
 	CreateUI();
 
 	newmap.bg = editor_backgrounds[0];
-	mapsave.bg_texturepath = strdup(editor_backgroundpaths[0]);
+	mapsave.bg_texturepath = strdup(newmap.bg->path);
 
 	mode = true;
 

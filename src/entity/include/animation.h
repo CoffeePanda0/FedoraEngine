@@ -4,14 +4,14 @@
 #include <SDL.h>
 
 typedef struct FE_Animation {
-    SDL_Texture *spritesheet; // The spritesheet
+    FE_Texture *spritesheet; // The spritesheet
 
     Uint8 frame_count; // The number of frames in the spritesheet
     Uint16 frame_width; // The width of each frame
     Uint16 frame_height; // The height of each frame
     
     unsigned long frame_duration; // The duration of each frame (in ms)
-    unsigned long time_passed; // The time passed since the last frame was changed
+    float time_passed; // The time passed since the last frame was changed
     
     Uint8 current_frame; // The current frame
 

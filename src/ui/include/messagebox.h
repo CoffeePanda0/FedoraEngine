@@ -16,7 +16,7 @@ typedef struct FE_MessageBox {
 
     SDL_Rect displayrect;
 
-    SDL_Texture *texture;
+    FE_Texture *texture;
 
     SDL_Texture *title_texture;
     SDL_Rect title_rect;

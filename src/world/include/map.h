@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 #include "../../core/include/vector2d.h"
+#include "../../core/include/texture.h"
 
 typedef struct FE_Map_Tile {
     Uint16 texture_index;
@@ -10,6 +11,7 @@ typedef struct FE_Map_Tile {
     Vector2D position;
 } FE_Map_Tile;
 
+/* The Map format when written to file */
 typedef struct FE_Map {
     char *name;
 
@@ -28,15 +30,17 @@ typedef struct FE_Map {
     Vector2D EndFlag;
 } FE_Map;
 
+
+/* The map format when loaded in RAM */
 typedef struct FE_LoadedMap {
     char *name;
 
     float gravity;
 
     Uint16 texturecount;
-    SDL_Texture **textures;
+    FE_Texture **textures;
 
-    SDL_Texture *bg;
+    FE_Texture *bg;
 
     Uint16 tilecount;
     Uint16 tilesize;
@@ -47,7 +51,7 @@ typedef struct FE_LoadedMap {
 } FE_LoadedMap;
 
 typedef struct FE_EndFlag {
-    SDL_Texture *texture;
+    FE_Texture *texture;
     SDL_Rect r;
 } FE_EndFlag;
 
@@ -102,6 +106,5 @@ Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r);
 extern Uint16 FE_Map_Width;
 extern Uint16 FE_Map_Height;
 extern Uint16 FE_Map_MinimumX;
-extern Uint16 FE_Map_MinimumY;
 
 #endif

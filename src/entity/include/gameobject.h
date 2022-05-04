@@ -4,6 +4,8 @@
 #include <SDL.h>
 #include "../../world/include/physics.h"
 #include "../../world/include/camera.h"
+#include "../../core/include/texture.h"
+#include "../../core/include/resourcemanager.h"
 
 enum FE_ObjectType {
 	ENEMY,
@@ -13,7 +15,7 @@ typedef struct FE_GameObject {
 	char *name;
 	enum FE_ObjectType type;
 	FE_PhysObj *phys;
-	SDL_Texture* texture;
+	FE_Texture* texture;
 } FE_GameObject;
 
 

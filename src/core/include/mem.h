@@ -29,11 +29,4 @@ void *xcalloc(size_t num, size_t size);
 */
 void xfree(void *pt);
 
-
-/** Frees SDL_Texture, sets pointer to 0
-*\param pt Pointer to SDL_Texture to free
-*/
-void FE_DestroyTexture(SDL_Texture *texture);
-
-
 #endif

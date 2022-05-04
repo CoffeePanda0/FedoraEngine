@@ -11,7 +11,7 @@ int FE_DestroyUIObject(FE_UIObject *o) // Frees resources and removes from linke
         warn("Passing nullptr (FE_DestroyUIObject)");
         return 1;
     }
-    FE_FreeTexture(o->text);
+    FE_DestroyResource(o->texture->path);
     FE_List_Remove(&UIObjects, o);
      
     xfree(o);
@@ -22,7 +22,7 @@ int FE_CleanUIObjects() // removes all UI object nodes and frees memory
 {
     for (struct FE_List *l = UIObjects; l; l = l->next) {
         FE_UIObject *tmp = l->data;
-        FE_FreeTexture(tmp->text);
+        FE_DestroyResource(tmp->texture->path);
         xfree(tmp);
     }
 
@@ -40,7 +40,7 @@ FE_UIObject *FE_CreateUIObject(int x, int y, int w, int h, char *texture_path)  
     char *path = xmalloc(strlen(AssetPath) + strlen(texture_path) + 1);
     strcpy(path, AssetPath);
     strcat(path, texture_path);
-    tmp->text = FE_LoadTexture(path);
+    tmp->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     xfree(path);
 
     SDL_Rect r = {x, y, h, w};
@@ -55,6 +55,6 @@ void FE_RenderUIObjects()
 {
     for (FE_List *o = UIObjects; o; o = o->next) {
         FE_UIObject *tmp = o->data;
-        SDL_RenderCopy(renderer, tmp->text, NULL, &tmp->r);
+        SDL_RenderCopy(renderer, tmp->texture->Texture, NULL, &tmp->r);
     }
 }

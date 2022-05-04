@@ -2,8 +2,8 @@
 
 /* Contains functions for initializing and exiting the game */
 
-int screen_height = 512;
-int screen_width = 512;
+int screen_height;
+int screen_width;
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -16,7 +16,8 @@ void FE_Init(FE_InitConfig InitConfig)
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{	
 		FE_ConsoleInit();
-
+		FE_ResourceManager_Init();
+		
 		// Check that everything has loaded in correctly
 		window = SDL_CreateWindow(
 			InitConfig.window_title,
@@ -25,6 +26,9 @@ void FE_Init(FE_InitConfig InitConfig)
 			SDL_WINDOW_ALLOW_HIGHDPI
 		);
 		
+		screen_height = InitConfig.window_height;
+		screen_width = InitConfig.window_width;
+
 		if (window) {
 			info("Window Created");
 		} else 
@@ -33,7 +37,7 @@ void FE_Init(FE_InitConfig InitConfig)
 		if (InitConfig.vsync)
 			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 		else
-			renderer = SDL_CreateRenderer(window, -1, 0);
+			renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
 		if (renderer)
 			info("Renderer Created");
@@ -81,7 +85,6 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		IMG_Quit();
 		FE_CleanAll();
 		FE_DestroyConsole();
-		FE_CloseTextureManager();
 		SDL_DestroyWindow(window);
 		TTF_CloseFont(Sans);
 		SDL_Quit();

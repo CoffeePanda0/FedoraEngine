@@ -11,7 +11,7 @@ typedef struct FE_Particle {
     
     Uint16 rotation; // Rotation of the particle
 
-    SDL_Texture *texture; // Texture of the particle
+    FE_Texture *texture; // Texture of the particle
 
     bool expires; // If the particle expires with time
     Uint32 life; // in ms (only applicable if expires is true)
@@ -22,7 +22,7 @@ typedef struct FE_Particle {
 
 typedef struct FE_ParticleSystem {
     FE_Particle *particles; // Array of particles to render
-    SDL_Texture *texture; // Texture of the particles (add support for multiple textures later on)
+    FE_Texture *texture; // Texture of the particles (add support for multiple textures later on)
 
     Vector2D initial_velocity; // Initial velocity of the particles
     Uint16 particle_life; // Life of the particles in ms

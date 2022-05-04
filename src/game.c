@@ -19,9 +19,9 @@ void FE_StartGame(const char *mapname)
 	}
 
 	// camera setup
-	int spawnx = clamp(FE_GetSpawn().x, FE_Map_MinimumX, FE_Map_Width);
-	int spawny = clamp(FE_GetSpawn().y, FE_Map_MinimumY, FE_Map_Height);
-	GameCamera = (FE_Camera){spawnx, spawny, FE_Map_MinimumX, FE_Map_MinimumY, FE_Map_Width, FE_Map_Height, false};
+	int spawnx = FE_GetSpawn().x;
+	int spawny = FE_GetSpawn().y;
+	GameCamera = (FE_Camera){spawnx, spawny, FE_Map_MinimumX, FE_Map_Height, FE_Map_Width, FE_Map_Height, false};
 
 	// player setup
 	GamePlayer = FE_CreatePlayer(1, 8, 4, (SDL_Rect){0,0, 120, 100});
@@ -32,7 +32,7 @@ void FE_StartGame(const char *mapname)
 
 	// test particle system
 	SnowParticles = FE_CreateParticleSystem(
-		(SDL_Rect){0, -20, 512, 20}, // Position for the whole screen, slightly above the top to create more random
+		(SDL_Rect){0, -20, FE_Map_Width, 20}, // Position for the whole screen, slightly above the top to create more random
 		60, // Emission rate
 		1000, // Max particles
 		10000, // Max lifetime
@@ -40,7 +40,7 @@ void FE_StartGame(const char *mapname)
 		"snow.png", // Texture
 		(Vector2D){12, 12}, // Max size of each particle
 		(Vector2D){0, 3}, // Set initial velocity so particle doesn't float until they accelerate
-		true
+		false
 	);
 
 	FE_GameState = GAME_STATE_PLAY;
@@ -48,7 +48,7 @@ void FE_StartGame(const char *mapname)
 }
 
 void FE_RenderGame()
-{
+{	
 	SDL_RenderClear(renderer);
 	FE_RenderMapBackground(&GameCamera);
 	FE_RenderParticles(&GameCamera);

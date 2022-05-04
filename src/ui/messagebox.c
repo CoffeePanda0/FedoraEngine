@@ -29,7 +29,7 @@ int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick), void *o
     }
     MB = xmalloc(sizeof(FE_MessageBox));
     MB->type = MESSAGEBOX_TEXTBOX;
-    MB->texture = FE_LoadTexture("game/ui/messagebox.png");
+    MB->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/messagebox.png");
 
     // calculate display rect
     MB->displayrect = (SDL_Rect){
@@ -68,7 +68,6 @@ int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick), void *o
 
     // create button
     MB->button = FE_CreateButton("OK", MB->displayrect.x + (MB->dialogue_rect.w / 2) + 64, MB->displayrect.y + MB->displayrect.h - 60, BUTTON_SMALL, &HandleCallBack, NULL);
-    // TODO - a better fix that closes the box when the button is clicked
     FE_MBShown = true;
 
     // get the current active textbox so that we can set it back to being active once message is complete
@@ -92,7 +91,7 @@ int FE_ShowMessageBox(char *title, char *body)
 
     MB = xmalloc(sizeof(FE_MessageBox));
     MB->type = MESSAGEBOX_TEXT;
-    MB->texture = FE_LoadTexture("game/ui/messagebox.png");
+    MB->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/messagebox.png");
 
     // calculate display rect
     MB->displayrect = (SDL_Rect){
@@ -136,7 +135,7 @@ void FE_RenderMessageBox()
 {
     if (!FE_MBShown)
         return;
-    SDL_RenderCopy(renderer, MB->texture, NULL, &MB->displayrect);
+    SDL_RenderCopy(renderer, MB->texture->Texture, NULL, &MB->displayrect);
     SDL_RenderCopy(renderer, MB->title_texture, NULL, &MB->title_rect);
     SDL_RenderCopy(renderer, MB->dialogue_texture, NULL, &MB->dialogue_rect);
     
@@ -165,7 +164,7 @@ void FE_DestroyMessageBox()
         FE_DestroyTextBox(MB->textbox);
     }
     FE_DestroyButton(MB->button);
-    FE_FreeTexture(MB->texture);
+    FE_DestroyResource(MB->texture->path);
     SDL_DestroyTexture(MB->title_texture);
     SDL_DestroyTexture(MB->dialogue_texture);
     free(MB);

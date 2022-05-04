@@ -7,12 +7,11 @@
 static FE_LoadedMap map;
 bool FE_MapLoaded = false;
 
-static SDL_Texture *flagtexture;
+static FE_Texture *flagtexture;
 
 Uint16 FE_Map_Width = 0;
 Uint16 FE_Map_Height = 0;
 Uint16 FE_Map_MinimumX = 0;
-Uint16 FE_Map_MinimumY = 0;
 
 float GRAVITY;
 
@@ -25,12 +24,12 @@ int FE_LoadMap(const char *name)
 {
     FE_MapLoaded = true;
     if (!flagtexture)
-        flagtexture = FE_LoadTexture("game/map/end.png");
+        flagtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 
     FE_Map_Width = 0;
     FE_Map_Height = 0;
     FE_Map_MinimumX = 0;
-    FE_Map_MinimumY = screen_height;
+    FE_Map_Height = 0;
 
     // Combine map directory and map file path
     char *map_path = AddStr(MAP_DIRECTORY, name);
@@ -59,9 +58,9 @@ int FE_LoadMap(const char *name)
     }
     
     // load texture from path to textures array
-    map.textures = xmalloc(sizeof(SDL_Texture*) * map.texturecount);
+    map.textures = xmalloc(sizeof(FE_Texture*) * map.texturecount);
     for (int i = 0; i < map.texturecount; i++) {
-        map.textures[i] = FE_TextureFromFile(texturepaths[i]);
+        map.textures[i] = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, texturepaths[i]);
     }
 
     // free texturepaths array
@@ -73,8 +72,8 @@ int FE_LoadMap(const char *name)
     char *bg_path = 0;
     if (!(bg_path = ReadStr(f))) goto err;
 
-    map.bg = FE_TextureFromFile(bg_path);
-    free(bg_path);
+    map.bg = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, bg_path);
+    xfree(bg_path);
 
     // Read Map tiles and sizes
     if (fread(&map.tilecount, sizeof(Uint16), 1, f) != 1) goto err;
@@ -97,12 +96,11 @@ int FE_LoadMap(const char *name)
             FE_Map_MinimumX = map.tiles[i].position.x;
             setminX = true;
         }
-        if ((Uint16)map.tiles[i].position.y < FE_Map_MinimumY) {
-            FE_Map_MinimumY = map.tiles[i].position.y;
-        }
+        
+        // calculate highest Y value
+        if ((Uint16)map.tiles[i].position.y + map.tilesize > FE_Map_Height) FE_Map_Height = map.tiles[i].position.y + map.tilesize;
     }
 
-    FE_Map_MinimumY = screen_height - FE_Map_MinimumY  + (map.tilesize * 2);
 
     GRAVITY = map.gravity;
 
@@ -145,11 +143,11 @@ void FE_RenderMap(FE_Camera *camera)
 void FE_RenderMapBackground(FE_Camera *camera)
 {
     // render background
-	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
-	SDL_QueryTexture(map.bg, NULL, NULL, &bgrect.w ,&bgrect.h);
+	SDL_Rect bgrect = (SDL_Rect){0,800,0,0};
+	FE_QueryTexture(map.bg, &bgrect.w ,&bgrect.h);
 	bgrect.x -= camera->x;
 	bgrect.y -= camera->y;
-	SDL_RenderCopy(renderer, map.bg, NULL, &bgrect);
+	SDL_RenderCopy(renderer, map.bg->Texture, NULL, &bgrect);
 }
 
 void FE_CloseMap()
@@ -158,7 +156,7 @@ void FE_CloseMap()
         return;
 
     if (flagtexture)
-        FE_FreeTexture(flagtexture);
+        FE_DestroyResource(flagtexture->path);
     flagtexture = 0;
 
     if (map.name)
@@ -169,15 +167,15 @@ void FE_CloseMap()
     if (map.textures) {
         for (size_t i = 0; i < map.texturecount; i++) {
             if (map.textures[i])
-                SDL_DestroyTexture(map.textures[i]);
+                FE_DestroyResource(map.textures[i]->path);
         }
-        free(map.textures);
+        xfree(map.textures);
         map.textures = 0;
     }
     map.texturecount = 0;
     
     if (map.bg)
-        SDL_DestroyTexture(map.bg);
+        FE_DestroyResource(map.bg->path);
     map.bg = 0;
 
     if (map.tiles) {

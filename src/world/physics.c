@@ -13,12 +13,17 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
     - handle end of level
     - pushable objects
     - have to jump twice for big jump
-    - fullscreen support
     -can we tie walking animation speed to player movement speed?
     -editor memory issues
     -particles on jumping odd location
     -going right first causes camera to zoom
     -holding space results in longer jump
+    -animation can sometimes miss a frame (has issues with no vsync)
+    - small velocity when moving to the right into a wall
+    - sound emission
+    -fullscreen console
+    - DT is broken in first few frames
+
 */
 
 float clampf(float num, float min, float max) // Clamps a float value
@@ -139,7 +144,9 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 
             }
             // calculate new position
-            FE_DT_RECT(obj->position, &obj->body);
+            if (obj->body.x != obj->position.x || obj->body.y != obj->position.y) {
+                FE_DT_RECT(obj->position, &obj->body);
+            }
         }
     }
 }
@@ -236,25 +243,11 @@ int FE_CleanPhys() // Removes all objects from linked list
     return 1;
 }
 
-static void FE_FPSCounter()
-{
-    // only update every second
-    static float fps_timer = 0;
-    fps_timer += FE_DT;
-    if (fps_timer > 1) {
-        fps_timer = 0;
-        char title[64];    
-        snprintf(title, 64, "FedoraEngine - FPS: %i", FE_FPS);
-        SDL_SetWindowTitle(window, title);
-    }
-}
-
 void FE_RunPhysics()
 {    
-    FE_FPSCounter();
     FE_Gravity();
-    FE_Friction();
     FE_PhysLoop();
+    FE_Friction();
 }
 
 bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b)

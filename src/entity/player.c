@@ -8,6 +8,14 @@ static const int PLAYER_MASS = 50;
 
 static size_t PlayerCount = 0;
 
+/* Current TODO:
+- Make jump animation play once
+- Map editor drag to select
+- Map editor drag to delete
+- Change button to middle of screen by default
+- Change map editor tiles to allow for negative Y values
+*/
+
 FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL_Rect body)
 {
     // basic player vars
@@ -29,7 +37,8 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     // load animations
     p->idle_animation = FE_CreateAnimation(IDLE_ANIMATION, 2, 30, 23, 250, true);
     p->walk_animation = FE_CreateAnimation(WALK_ANIMATION, 3, 30, 23, 100, true);
-    p->jump_animation = FE_CreateAnimation(IDLE_ANIMATION, 1, 30, 23, 250, false);
+    p->jump_animation = FE_CreateAnimation(JUMP_ANIMATION, 4, 30, 23, 50, false);
+    p->jump_animation->current_frame = 3;
 
     p->render_rect = p->PhysObj->body;
 
@@ -90,10 +99,6 @@ static void PlayerCameraFollow(FE_Player *player, FE_Camera *camera)
         }
     }
 
-    // move camera to keep player centered in y
-    player->render_rect.y = (screen_height / 2);
-    camera->y = -player->render_rect.y + player->PhysObj->body.y;
-
 }  
 
 void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D position)
@@ -109,9 +114,10 @@ void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D positio
     player->render_rect.y = player->render_rect.h - (screen_height / 2); 
 
     // centre camera on player
-    camera->y = clamp(player->PhysObj->body.y - (screen_height / 2), 0, camera->y_bound);
     camera->x = clamp(player->PhysObj->body.x  - (screen_width / 2), camera->x_min, camera->x_bound);
 
+    //set camera y so that map height is always the same
+    camera->y = FE_Map_Height - screen_height;
 }
 
 void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement)

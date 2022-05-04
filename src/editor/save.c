@@ -34,9 +34,8 @@ bool Editor_CallSave(FE_Map *save) // used to call the save function as a callba
 {
 	if (save->name)
 		xfree(save->name);
-	
-	save->name = xcalloc(64, 1);
-	save->name = strcpy(save->name, FE_GetMessageBoxInput());
+
+	save->name = strdup(FE_GetMessageBoxInput());
 	if (save->name[0] == '\0') {
 		warn("Editor: Map name cannot be empty! Aborting save.");
 		FE_ShowMessageBox("Warning", "Map name cannot be empty!");

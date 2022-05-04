@@ -4,6 +4,8 @@
 #include "include.h"
 #include "audio.h"
 
+#include "../core/include/resourcemanager.h"
+
 #include "../entity/include/gameobject.h"
 #include "../entity/include/timer.h"
 #include "../entity/include/light.h"
@@ -54,7 +56,6 @@ extern TTF_Font* Sans;
 
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
-
 
 /* Loads a map and initalises a game */
 void FE_StartGame(const char *mapname);
