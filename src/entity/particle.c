@@ -3,7 +3,7 @@
 #define AssetPath "game/sprites/particles/"
 
 static const double PARTICLE_GRAVITY = 0.1;
-static const double PARTICLE_DRAG = 0.1;
+static const double PARTICLE_DRAG = 0.5;
 static const double MAX_VELOCITY = 7;
 
 static FE_List *ParticleSystems = 0;
@@ -91,13 +91,16 @@ void FE_UpdateParticles() // TODO - Optimise this
     for (FE_List *ps = ParticleSystems; ps; ps = ps->next) { // loop through each particle system
         FE_ParticleSystem *p = ps->data;
 
-        bool emit = false;
+        uint16_t to_emit = 0; // The amount of particles to emit this frame
         if (p->respawns) {
             float rate = (1.0f / p->emission_rate);
             p->emission_rate_timer += FE_DT;
             if (p->emission_rate_timer > rate) {
-                if (p->num_particles < p->max_particles)
-                    emit = true;
+                if (p->num_particles < p->max_particles) {
+                    // Calculate how many particles to emit this frame based on FPS
+                    to_emit = (uint16_t)(p->emission_rate / FE_FPS);
+                    to_emit = clamp(to_emit, 1, p->max_particles - p->num_particles);
+                }
                 p->emission_rate_timer = 0;
             }
         }
@@ -106,9 +109,9 @@ void FE_UpdateParticles() // TODO - Optimise this
             FE_Particle *particle = &p->particles[i];    
             
             if (particle->is_dead) { // if we are already due to emit a new particle, use this one
-                if (emit) {
+                if (to_emit > 0) {
                     GenerateParticle(p, i);
-                    emit = false;
+                    to_emit--;
                     p->num_particles++;
                 } else continue;
             }
@@ -132,7 +135,7 @@ void FE_UpdateParticles() // TODO - Optimise this
             // apply gravity and friction to all particles
             float new_velocity_y = particle->velocity.y += PARTICLE_GRAVITY;
             particle->velocity.y = clampf(new_velocity_y, -MAX_VELOCITY, MAX_VELOCITY);
-            particle->velocity.x *= (1 - PARTICLE_DRAG);
+            particle->velocity.x *= (1.0f - (PARTICLE_DRAG * FE_DT));
 
             // separate position as floating point to hold deltatime small values
             particle->position.y += (particle->velocity.y * FE_DT_MULTIPLIER);

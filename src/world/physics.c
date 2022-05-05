@@ -12,18 +12,15 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
     - create nice pause UI (background, buttons to go to menu etc)
     - handle end of level
     - pushable objects
-    * have to jump twice for big jump
     - can we tie walking animation speed to player movement speed?
-* particles on jumping odd location
-    * holding space results in longer jump
     - sound emission
     * fullscreen console
     - camera zoom
     - pre-load all fonts
-    - rewrite map editor to have cleaner code
     - Make jump animation play once
     - Change button to middle of screen by default
     - Change map editor tiles to allow for negative Y values
+    - stop segfaulting when loading invalid maps
 
 */
 
@@ -119,16 +116,16 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                         if (obj->velocity.y > 8) {
                             // emit ground particles for high velocity bounce effect
                             float force = obj->mass * obj->velocity.y;
-                            if (force > 500) {
+                            if (force > 1000) {
                                 FE_CreateParticleSystem(
-                                    (SDL_Rect){GroundCollision.x - obj->body.w, GroundCollision.y - 5, obj->body.w, 5},
+                                    (SDL_Rect){GroundCollision.x, GroundCollision.y - 5, obj->body.w, 5},
                                     0,
-                                    20,
+                                    100,
                                     1000,
                                     false,
                                     "impact.png",
-                                    FE_NewVector(10,10),
-                                    FE_NewVector(-obj->velocity.y / 5, -obj->velocity.y / 10),
+                                    FE_NewVector(5,5),
+                                    FE_NewVector(-obj->velocity.y / 10, -obj->velocity.y / 20),
                                     false
                                 );
                             }
