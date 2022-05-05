@@ -87,3 +87,13 @@ int FE_QueryTexture(FE_Texture *t, int *w, int *h)
 
     return SDL_QueryTexture(t->Texture, NULL, NULL, w, h);
 }
+
+SDL_Rect FE_RectCamera(SDL_Rect rect, SDL_Rect *camera)
+{
+    if (!camera) {
+        error("FE_ApplyCamera: NULL camera");
+        return (SDL_Rect){0,0,0,0};
+    }
+
+    return (SDL_Rect){rect.x - camera->x, rect.y - camera->y, rect.w, rect.h};
+}

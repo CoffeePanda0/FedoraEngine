@@ -68,4 +68,12 @@ int FE_QueryTexture(FE_Texture *t, int *w, int *h);
 /* Cleanly exits the texture manager */
 void FE_CloseTextureManager();
 
+
+/* Returns a rect with the camera applied to it
+ * \param rect The rect to apply the camera to
+ * \param camera The camera to apply to the rect
+ * \return The rect with the camera applied to it
+ */
+SDL_Rect FE_RectCamera(SDL_Rect rect, SDL_Rect *camera);
+
 #endif

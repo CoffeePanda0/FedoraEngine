@@ -32,9 +32,7 @@ static void SortTiles(FE_Map *save)
 
 bool Editor_CallSave(FE_Map *save) // used to call the save function as a callback and display dialogues 
 {
-	if (save->name)
-		xfree(save->name);
-
+    save->name = 0;
 	save->name = strdup(FE_GetMessageBoxInput());
 	if (save->name[0] == '\0') {
 		warn("Editor: Map name cannot be empty! Aborting save.");
@@ -58,11 +56,15 @@ bool Editor_CallSave(FE_Map *save) // used to call the save function as a callba
     }
     SortTiles(save);
 	Editor_Save(save);
-	return false;
+
+    if (save->name && strlen(save->name) > 0) {
+        free(save->name);
+    }
+
+	return true;
 
 fail:
 	xfree(save->name);
-	save->name = 0;
 	return false;
 }
 
