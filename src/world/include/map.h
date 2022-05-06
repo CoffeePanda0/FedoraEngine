@@ -110,8 +110,5 @@ Vector2D FE_CheckMapCollisionRight(SDL_Rect *r);
 */
 Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r);
 
-extern Uint16 FE_Map_Width;
-extern Uint16 FE_Map_Height;
-extern Uint16 FE_Map_MinimumX;
 
 #endif

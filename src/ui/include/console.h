@@ -1,8 +1,6 @@
 #ifndef H_CONSOLE
 #define H_CONSOLE
 
-extern bool FE_ConsoleVisible;
-
 int FE_ConsoleInit();
 void FE_ConsoleShow();
 void FE_ConsoleHide();

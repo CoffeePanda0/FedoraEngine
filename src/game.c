@@ -1,12 +1,10 @@
 //Core game loops and functions for game operation
 #include "include/game.h"
 
-enum FE_GAMESTATE FE_GameState;
-
 static FE_Camera GameCamera;
 static FE_Player *GamePlayer;
 
-static FE_GameObject *test;
+// static FE_GameObject *test;
 static FE_ParticleSystem *SnowParticles;
 
 /* Starts the main game */
@@ -21,7 +19,7 @@ void FE_StartGame(const char *mapname)
 	// camera setup
 	int spawnx = FE_GetSpawn().x;
 	int spawny = FE_GetSpawn().y;
-	GameCamera = (FE_Camera){spawnx, spawny, FE_Map_MinimumX, FE_Map_Height, FE_Map_Width, FE_Map_Height, false};
+	GameCamera = (FE_Camera){spawnx, spawny, PresentGame->MapConfig.MinimumX, 0, PresentGame->MapConfig.MapWidth, PresentGame->MapConfig.MapHeight, false};
 
 	// player setup
 	GamePlayer = FE_CreatePlayer(1, 8, 4, (SDL_Rect){0,0, 120, 100});
@@ -32,7 +30,7 @@ void FE_StartGame(const char *mapname)
 
 	// test particle system
 	SnowParticles = FE_CreateParticleSystem(
-		(SDL_Rect){0, -20, FE_Map_Width, 20}, // Position for the whole screen, slightly above the top to create more random
+		(SDL_Rect){0, -20, PresentGame->MapConfig.MapWidth, 20}, // Position for the whole screen, slightly above the top to create more random
 		240, // Emission rate
 		3000, // Max particles
 		10000, // Max lifetime
@@ -43,13 +41,13 @@ void FE_StartGame(const char *mapname)
 		false
 	);
 
-	FE_GameState = GAME_STATE_PLAY;
+	PresentGame->GameState = GAME_STATE_PLAY;
 
 }
 
 void FE_RenderGame()
 {	
-	SDL_RenderClear(renderer);
+	SDL_RenderClear(PresentGame->renderer);
 	FE_RenderMapBackground(&GameCamera);
 	FE_RenderParticles(&GameCamera);
 	FE_RenderMap(&GameCamera);
@@ -57,7 +55,7 @@ void FE_RenderGame()
 	FE_RenderLightObjects(&GameCamera);
 	FE_RenderPlayer(GamePlayer);
 	FE_RenderUI();
-	SDL_RenderPresent(renderer);
+	SDL_RenderPresent(PresentGame->renderer);
 }
 
 void FE_GameLoop()

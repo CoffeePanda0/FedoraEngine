@@ -5,6 +5,7 @@
 #include "audio.h"
 
 #include "../core/include/resourcemanager.h"
+#include "../core/include/fedoraengine.h"
 
 #include "../entity/include/gameobject.h"
 #include "../entity/include/timer.h"
@@ -28,34 +29,10 @@
 
 #include "../ui/include/ui.h"
 
-typedef struct FE_InitConfig {
-    const char *window_title;
-    Uint16 window_width, window_height;
-    bool vsync;
-} FE_InitConfig;
-
-enum FE_GAMESTATE {
-    GAME_STATE_MENU,
-    GAME_STATE_PLAY,
-    GAME_STATE_EDITOR,
-    GAME_STATE_PAUSE
-};
-
-extern enum FE_GAMESTATE FE_GameState;
 extern void (*MenuPage)(); // pointer to current menu page function for redrawing
 
-extern int screen_height;
-extern int screen_width;
-
-void FE_Init(FE_InitConfig InitConfig);
+void FE_Init(FE_InitConfig *InitConfig);
 void FE_Clean();
-
-extern bool FE_GameActive;
-
-extern TTF_Font* Sans;
-
-extern SDL_Window* window;
-extern SDL_Renderer* renderer;
 
 /* Loads a map and initalises a game */
 void FE_StartGame(const char *mapname);
@@ -65,6 +42,9 @@ void FE_GameLoop();
 
 /* Cleans all resources possible without exiting */
 void FE_CleanAll();
+
+/* Returns a FedoraEngine init configuration with default values */
+FE_InitConfig *FE_NewInitConfig();
 
 void FE_GameEventHandler(FE_Camera *camera, FE_Player *player);
 

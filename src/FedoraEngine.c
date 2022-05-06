@@ -9,12 +9,14 @@
 */
 #include "include/game.h"
 
+FE_Game *PresentGame;
+
 static void LoadArgs(int argc, char *argv[])
 {
 	if (argc > 1) {
 		if (strcmp(argv[1], "--editor") == 0 || strcmp(argv[1], "-e") == 0) {
 			/* If command --editor or -e, skip the menu and load directly into editor */
-			FE_GameState = GAME_STATE_EDITOR;
+			PresentGame->GameState = GAME_STATE_EDITOR;
 			FE_StartEditor();
 		} else if (strcmp(argv[1], "--map") == 0 || strcmp(argv[1], "-m") == 0) {
 			/* If command --map or -m, skip the menu and load directly into given map */
@@ -34,21 +36,17 @@ static void LoadArgs(int argc, char *argv[])
 int main(int argc, char* argv[])
 {
 	/* Initialise FedoraEngine systems first */
-
-	FE_InitConfig i = (FE_InitConfig){
-		"FedoraEngine",
-		1920, 1080,
-		true
-	};
-	FE_Init(i);	
+	
+	FE_InitConfig *IC = FE_NewInitConfig();
+	FE_Init(IC);
 
 	/* Check launch args */
 	LoadArgs(argc, argv);
 	
 	
-	while (FE_GameActive) {
+	while (PresentGame->GameActive) {
 		// main game loop - calls functions based on game state
-		switch (FE_GameState) {
+		switch (PresentGame->GameState) {
 			case GAME_STATE_MENU:
 				FE_RenderMenu();
 				FE_MenuEventHandle();

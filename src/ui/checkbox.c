@@ -30,8 +30,8 @@ FE_CheckBox *FE_CreateCheckbox(const char *label, int x, int y, bool checked, vo
     c->onclick_data = onclick_data;
 
     // create label from text
-    SDL_Surface *text_surface = TTF_RenderText_Solid(Sans, label, COLOR_BLACK); 
-    SDL_Texture *button_label = SDL_CreateTextureFromSurface(renderer, text_surface);
+    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, label, COLOR_BLACK); 
+    SDL_Texture *button_label = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
 
     // calculate label rect from texture size
     SDL_Rect label_rect;
@@ -75,12 +75,12 @@ void FE_RenderCheckBoxes()
     for (struct FE_List *l = FE_Checkboxes; l; l = l->next) {
         struct FE_Checkbox *c = l->data;
         if (c->checked) {
-            SDL_RenderCopy(renderer, checkbox_active_texture, NULL, &c->r);
+            SDL_RenderCopy(PresentGame->renderer, checkbox_active_texture, NULL, &c->r);
         } else {
-            SDL_RenderCopy(renderer, checkbox_texture, NULL, &c->r);
+            SDL_RenderCopy(PresentGame->renderer, checkbox_texture, NULL, &c->r);
         }
 
-        SDL_RenderCopy(renderer, c->label, NULL, &c->label_rect); // render label
+        SDL_RenderCopy(PresentGame->renderer, c->label, NULL, &c->label_rect); // render label
     }
 }
 

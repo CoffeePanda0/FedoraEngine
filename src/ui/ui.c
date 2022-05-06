@@ -1,7 +1,5 @@
 #include "../include/game.h"
 
-TTF_Font* Sans;
-
 void FE_RenderUI()
 {
 	FE_RenderUIObjects();
@@ -21,7 +19,7 @@ void FE_MenuEventHandle() // we use a different event handler so it doesnt move 
 	SDL_Event event;
 
 	while (SDL_PollEvent(&event)) {
-		if (FE_ConsoleVisible) {
+		if (PresentGame->ConsoleVisible) {
 			FE_HandleConsoleInput(&event, keyboard_state);
 		} else {
 			switch (event.type)
@@ -33,10 +31,10 @@ void FE_MenuEventHandle() // we use a different event handler so it doesnt move 
 				case SDL_KEYDOWN:
 						if (keyboard_state[SDL_SCANCODE_GRAVE] && event.key.repeat == 0) {
 							SDL_StartTextInput();
-							FE_StartedInput = true;
+							PresentGame->StartedInput = true;
 							FE_ConsoleShow();
 						}
-						else if (FE_DialogueActive)
+						else if (PresentGame->DialogueActive)
 							FE_DialogueInteract();
 						else {
 							FE_TextBox *t = FE_GetActiveTextBox();
@@ -54,6 +52,24 @@ void FE_MenuEventHandle() // we use a different event handler so it doesnt move 
 	}
 }
 
+void FE_CentreRect(FE_UI_CENTRE_TYPE type, SDL_Rect *r)
+{
+	switch (type) {
+		case FE_UI_CENTRE_NONE:
+			break;
+		case FE_UI_CENTRE_HORIZONTAL:
+			r->x = (PresentGame->window_width - r->w) / 2;
+			break;
+		case FE_UI_CENTRE_VERTICAL:
+			r->y = (PresentGame->window_height - r->h) / 2;
+			break;
+		case FE_UI_CENTRE_ALL:
+			r->x = (PresentGame->window_width - r->w) / 2;
+			r->y = (PresentGame->window_height - r->h) / 2;
+		break;
+	}
+}
+
 void FE_FreeUI() // Destroys all UI objects and dialogue
 {
 	FE_DestroyMessageBox();
@@ -67,8 +83,8 @@ void FE_FreeUI() // Destroys all UI objects and dialogue
 
 void FE_RenderMenu()
 {
-    SDL_RenderClear(renderer);
-	SDL_SetRenderDrawColor(renderer, 0, 255, 255, 0);
+    SDL_RenderClear(PresentGame->renderer);
+	SDL_SetRenderDrawColor(PresentGame->renderer, 0, 255, 255, 0);
 	FE_RenderUI();
-	SDL_RenderPresent(renderer);
+	SDL_RenderPresent(PresentGame->renderer);
 }

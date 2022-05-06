@@ -16,7 +16,7 @@ void FE_Menu_ShowMaps()
 {
 	FE_FreeUI();
 	
-	FE_GameState = GAME_STATE_MENU;
+	PresentGame->GameState = GAME_STATE_MENU;
 	MenuPage = &FE_Menu_ShowMaps;
 
 	FE_CreateLabel("FedoraEngine - Load Map", 142, 0, COLOR_BLACK);
@@ -32,7 +32,7 @@ void FE_Menu_MainMenu()
 {
 	FE_FreeUI();
 
-	FE_GameState = GAME_STATE_MENU;
+	PresentGame->GameState = GAME_STATE_MENU;
 	MenuPage = &FE_Menu_MainMenu;
 
 	FE_CreateLabel("FedoraEngine - Main Menu", 128, 0, COLOR_BLACK);
@@ -53,7 +53,7 @@ void FE_Menu_OptionsMenu()
 {
 	FE_FreeUI();
 
-	FE_GameState = GAME_STATE_MENU;
+	PresentGame->GameState = GAME_STATE_MENU;
 	MenuPage = &FE_Menu_OptionsMenu;
 
 	FE_CreateLabel("FedoraEngine - Options Menu", 112, 0, COLOR_BLACK);
@@ -63,11 +63,11 @@ void FE_Menu_OptionsMenu()
 	FE_CreateButton("-", 156, 200, BUTTON_TINY, &ChangeVol, (void *)-10);
 	FE_CreateButton("+", 256, 200, BUTTON_TINY, &ChangeVol, (void *)10);
 
-	char *MusicVolStr = IntToSTR(FE_MusicVolume);
+	char *MusicVolStr = IntToSTR(PresentGame->AudioConfig.Volume);
 	FE_CreateLabel(MusicVolStr, 210, 200, COLOR_BLACK);
 	free(MusicVolStr);
 
-	FE_CreateCheckbox("Muted", 150, 250, FE_MusicMuted, &FE_MuteAudio, NULL);
+	FE_CreateCheckbox("Muted", 150, 250, PresentGame->AudioConfig.Muted, &FE_MuteAudio, NULL);
 
 	FE_CreateButton("Back", 156,400, BUTTON_MEDIUM, &FE_Menu_MainMenu, NULL);
 

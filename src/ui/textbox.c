@@ -2,7 +2,6 @@
 
 #define TEXTURE "game/ui/textbox.png"
 
-bool FE_intext = false;
 static FE_List *FE_Textboxes = 0;
 
 FE_TextBox *FE_GetActiveTextBox()
@@ -73,9 +72,9 @@ FE_TextBox *FE_CreateTextBox(int x, int y, int w, int h, char *value) // Makes a
     temp->r = (SDL_Rect){x,y,w,h};
     
     // make box label
-    SDL_Surface *text_surface = TTF_RenderText_Solid(Sans, value, COLOR_WHITE); 
+    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, value, COLOR_WHITE); 
     temp->label = xmalloc(sizeof(FE_Label));
-    temp->label->text = SDL_CreateTextureFromSurface(renderer, text_surface);
+    temp->label->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
 
     SDL_QueryTexture(temp->label->text, NULL, NULL, &temp->label->r.w, &temp->label->r.h); // Get w and h for rect
     SDL_FreeSurface(text_surface);
@@ -108,8 +107,8 @@ int FE_SetContent(FE_TextBox *t, char *value) // Sets the content of a textbox
     // redo label texture
     SDL_DestroyTexture(t->label->text);
     
-    SDL_Surface *text_surface = TTF_RenderText_Solid(Sans, t->content, COLOR_WHITE); 
-    t->label->text = SDL_CreateTextureFromSurface(renderer, text_surface);
+    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, t->content, COLOR_WHITE); 
+    t->label->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     SDL_QueryTexture(t->label->text, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
@@ -158,8 +157,8 @@ int FE_UpdateTextBox(char c) // Adds or subtracts a character from the text of a
     // redo label textures
     SDL_DestroyTexture(t->label->text);
     
-    SDL_Surface *text_surface = TTF_RenderText_Solid(Sans, t->content, COLOR_WHITE); 
-    t->label->text = SDL_CreateTextureFromSurface(renderer, text_surface);
+    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, t->content, COLOR_WHITE); 
+    t->label->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     SDL_QueryTexture(t->label->text, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
@@ -201,7 +200,7 @@ void FE_RenderTextBox()
 {
     for (FE_List *l = FE_Textboxes; l; l = l->next) {
         FE_TextBox *t = l->data;
-        SDL_RenderCopy(renderer, t->text, NULL, &t->r);
-        SDL_RenderCopy(renderer, t->label->text, NULL, &t->label->r);
+        SDL_RenderCopy(PresentGame->renderer, t->text, NULL, &t->r);
+        SDL_RenderCopy(PresentGame->renderer, t->label->text, NULL, &t->label->r);
     }
 }

@@ -8,9 +8,6 @@
 #define FRICTION 0.3f
 #define BOUNCE 0.3f
 
-extern float GRAVITY;
-
-
 #define clamp(value, min, max)\
     (value < min ? min : (value > max ? max : value))
 
@@ -67,8 +64,5 @@ int FE_RemovePhysInteractable(FE_PhysObj *o);
 */
 bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b);
 
-
-float clampf(float num, float min, float max);
-int clampi(int num, int min, int max);
 
 #endif

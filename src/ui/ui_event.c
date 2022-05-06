@@ -8,7 +8,7 @@ static char InputBuffer[256];
 bool FE_UI_HandleClick(SDL_Event *e)
 {
     if (e->button.button == SDL_BUTTON_LEFT) {
-        if (FE_ConsoleVisible)
+        if (PresentGame->ConsoleVisible)
             return true;
         
         int mouse_x, mouse_y;
@@ -19,7 +19,7 @@ bool FE_UI_HandleClick(SDL_Event *e)
         // Check for which element was clicked
         if (FE_ButtonClick(mouse_x, mouse_y))
             return true;
-        if (FE_MBShown) // prevent clicking under box
+        if (PresentGame->MBShown) // prevent clicking under box
             return false;
         if (FE_CheckboxClick(mouse_x, mouse_y))
             return true;

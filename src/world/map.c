@@ -5,15 +5,9 @@
 #define MAP_DIRECTORY "game/map/maps/"
 
 static FE_LoadedMap map;
-bool FE_MapLoaded = false;
+static bool FE_MapLoaded = false;
 
 static FE_Texture *flagtexture;
-
-Uint16 FE_Map_Width = 0;
-Uint16 FE_Map_Height = 0;
-Uint16 FE_Map_MinimumX = 0;
-
-float GRAVITY;
 
 Vector2D FE_GetSpawn()
 {
@@ -26,10 +20,10 @@ int FE_LoadMap(const char *name)
     if (!flagtexture)
         flagtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 
-    FE_Map_Width = 0;
-    FE_Map_Height = 0;
-    FE_Map_MinimumX = 0;
-    FE_Map_Height = 0;
+    PresentGame->MapConfig.MapWidth = 0;
+    PresentGame->MapConfig.MapHeight = 0;
+    PresentGame->MapConfig.MinimumX = 0;
+    PresentGame->MapConfig.MaximumY = 0;
 
     // Combine map directory and map file path
     char *map_path = AddStr(MAP_DIRECTORY, name);
@@ -88,21 +82,21 @@ int FE_LoadMap(const char *name)
         if (fread(&map.tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
 
         // calculate map height and width
-        if ((Uint16)map.tiles[i].position.x + map.tilesize > FE_Map_Width) FE_Map_Width = map.tiles[i].position.x + map.tilesize;
-        if ((Uint16)map.tiles[i].position.y - screen_height + map.tilesize > FE_Map_Height) FE_Map_Height = map.tiles[i].position.y + map.tilesize - screen_height;
+        if ((Uint16)map.tiles[i].position.x + map.tilesize > PresentGame->MapConfig.MapWidth) PresentGame->MapConfig.MapWidth = map.tiles[i].position.x + map.tilesize;
+        if ((Uint16)map.tiles[i].position.y - PresentGame->window_height + map.tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = map.tiles[i].position.y + map.tilesize - PresentGame->MapConfig.MapHeight;
     
         // calculate minimum x point and minimum y point for camera bounds
-        if ((Uint16)map.tiles[i].position.x < FE_Map_MinimumX || !setminX) {
-            FE_Map_MinimumX = map.tiles[i].position.x;
+        if ((Uint16)map.tiles[i].position.x < PresentGame->MapConfig.MinimumX || !setminX) {
+            PresentGame->MapConfig.MinimumX = map.tiles[i].position.x;
             setminX = true;
         }
         
         // calculate highest Y value
-        if ((Uint16)map.tiles[i].position.y + map.tilesize > FE_Map_Height) FE_Map_Height = map.tiles[i].position.y + map.tilesize;
+        if ((Uint16)map.tiles[i].position.y + map.tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = map.tiles[i].position.y + map.tilesize;
     }
 
 
-    GRAVITY = map.gravity;
+    PresentGame->MapConfig.Gravity = map.gravity;
 
     // read player spawn
     if (fread(&map.PlayerSpawn, sizeof(Vector2D), 1, f) != 1) goto err;
@@ -114,7 +108,7 @@ int FE_LoadMap(const char *name)
     info("Loaded map '%s'", map.name);
 
     FE_FreeUI();
-    FE_GameState = GAME_STATE_PLAY;
+    PresentGame->GameState = GAME_STATE_PLAY;
     return 1;
     
 err:
@@ -147,7 +141,7 @@ void FE_RenderMapBackground(FE_Camera *camera)
 	FE_QueryTexture(map.bg, &bgrect.w ,&bgrect.h);
 	bgrect.x -= camera->x;
 	bgrect.y -= camera->y;
-	SDL_RenderCopy(renderer, map.bg->Texture, NULL, &bgrect);
+	SDL_RenderCopy(PresentGame->renderer, map.bg->Texture, NULL, &bgrect);
 }
 
 void FE_CloseMap()
@@ -197,9 +191,9 @@ static bool InBounds(SDL_Rect *r)// checks if rect is in map bounds
         return false;
     if (r->x < 0)
         return false;
-    if (r->x + r->w > FE_Map_Width)
+    if (r->x + r->w > PresentGame->MapConfig.MapWidth)
         return false;
-    if (r->y + r->h > FE_Map_Height)
+    if (r->y + r->h > PresentGame->MapConfig.MapHeight)
         return false;
     
     return true;

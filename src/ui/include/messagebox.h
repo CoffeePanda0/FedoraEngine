@@ -8,8 +8,6 @@ enum FE_MBTYPE {
     MESSAGEBOX_TEXTBOX
 };
 
-/* Whether or not a messagebox is currently open */
-extern bool FE_MBShown;
 
 typedef struct FE_MessageBox {
     enum FE_MBTYPE type;

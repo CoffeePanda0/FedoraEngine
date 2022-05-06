@@ -72,16 +72,16 @@ static void PlayerCameraFollow(FE_Player *player, FE_Camera *camera)
 
     // only move the camera if past half of the screen
     if (player->PhysObj->velocity.x > 0) {
-        if (player->render_rect.x + player->render_rect.w > screen_width / 2 && camera->x < camera->x_bound) {
+        if (player->render_rect.x + player->render_rect.w > PresentGame->window_width / 2 && camera->x < camera->x_bound) {
             FE_MoveCamera(player->PhysObj->velocity.x, 0, camera);
         } else {
-            if (player->render_rect.x + player->render_rect.w + player->PhysObj->velocity.x >= screen_width)
-                player->render_rect.x = screen_width - player->render_rect.w;
+            if (player->render_rect.x + player->render_rect.w + player->PhysObj->velocity.x >= PresentGame->window_width )
+                player->render_rect.x = PresentGame->window_width  - player->render_rect.w;
             else
                 player->render_rect.x += player->PhysObj->velocity.x;
         }
     } else if (player->PhysObj->velocity.x < 0) {
-        if (player->render_rect.x  + player->render_rect.w < screen_width / 2 && camera->x > camera->x_min) {
+        if (player->render_rect.x  + player->render_rect.w < PresentGame->window_width  / 2 && camera->x > camera->x_min) {
             FE_MoveCamera(player->PhysObj->velocity.x, 0, camera);
         } else {
             if (player->render_rect.x + player->PhysObj->velocity.x <= 0)
@@ -103,13 +103,13 @@ void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D positio
 
     // calculate position relative on screen for render rect
     player->render_rect.x = player->PhysObj->body.x + player->render_rect.w - camera->x;
-    player->render_rect.y = player->render_rect.h - (screen_height / 2); 
+    player->render_rect.y = player->render_rect.h - (PresentGame->window_height / 2); 
 
     // centre camera on player
-    camera->x = clamp(player->PhysObj->body.x  - (screen_width / 2), camera->x_min, camera->x_bound);
+    camera->x = clamp(player->PhysObj->body.x  - (PresentGame->window_width  / 2), camera->x_min, camera->x_bound);
 
     //set camera y so that map height is always the same
-    camera->y = FE_Map_Height - screen_height;
+    camera->y = PresentGame->MapConfig.MapHeight - PresentGame->window_height;
 }
 
 void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement)

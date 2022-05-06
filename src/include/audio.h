@@ -1,12 +1,6 @@
 #ifndef H_AUDIO
 #define H_AUDIO
 
-/* (0-100), contains the level of bg music */
-extern int FE_MusicVolume;
-
-/* Whether or not the bg music is muted */
-extern bool FE_MusicMuted;
-
 /* Loads a wav for into memory and returns a pointer to i
     * \param path Filename of the wav to load
     * \return Pointer to the loaded wav

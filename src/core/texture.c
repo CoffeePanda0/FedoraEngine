@@ -10,7 +10,7 @@ SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a fi
     SDL_Surface* s = IMG_Load(path); // we have this to check the image is valid
     if (s) {
         SDL_Surface* tmpSurface = IMG_Load(path); 
-        SDL_Texture* text = SDL_CreateTextureFromSurface(renderer, tmpSurface);
+        SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->renderer, tmpSurface);
         SDL_FreeSurface(tmpSurface);
         SDL_FreeSurface(s);
         return text;
@@ -25,7 +25,7 @@ SDL_Texture* FE_TextureFromRGBA(SDL_Color color) // Returns a plain texture from
 {
     SDL_Surface* s = SDL_CreateRGBSurface(0,1,1,32,0,0,0,0);
     SDL_FillRect(s, NULL, SDL_MapRGBA(s->format, color.r, color.g, color.b, color.a));
-    SDL_Texture* text = SDL_CreateTextureFromSurface(renderer, s);
+    SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->renderer, s);
     SDL_FreeSurface(s);
 
     if (!text) {
@@ -44,8 +44,8 @@ int FE_RenderCopy(FE_Texture *texture, SDL_Rect *src, SDL_Rect *dst) // Renders 
     }
 
     // Check if rect is in screen bounds
-    if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0,screen_width,screen_height}))
-        return SDL_RenderCopy(renderer, texture->Texture, src, dst);
+    if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0,PresentGame->window_width, PresentGame->window_height}))
+        return SDL_RenderCopy(PresentGame->renderer, texture->Texture, src, dst);
     else
         return 0;
 }
@@ -57,9 +57,9 @@ int FE_RenderCopyEx(FE_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double an
         return -1;
     }
 
-    if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0,screen_width,screen_height})) {
+    if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0, PresentGame->window_width, PresentGame->window_height})) {
         const SDL_Point center = (SDL_Point){dst->w/2, dst->h/2};
-        return SDL_RenderCopyEx(renderer, texture->Texture, src, dst, angle, &center, flip);
+        return SDL_RenderCopyEx(PresentGame->renderer, texture->Texture, src, dst, angle, &center, flip);
     } else
         return 0;
 }

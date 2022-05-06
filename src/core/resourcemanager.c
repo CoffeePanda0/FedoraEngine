@@ -16,9 +16,6 @@ static void DestroyResource(FE_Resource *res)
         case FE_RESOURCE_TYPE_UNKNOWN:
             free(res->data);
             break;
-        case FE_RESOURCE_TYPE_FONT:
-            TTF_CloseFont((TTF_Font *)res->data);
-            break;
         case FE_RESOURCE_TYPE_TEXTURE:
             FE_Texture *t = (FE_Texture *)res->data;
             FE_DestroyTexture(t);
@@ -53,6 +50,7 @@ void FE_ResourceManager_Init()
 void FE_ResourceManager_Destroy()
 {
     htclear(&Resources);
+    FE_CleanFonts();
 }
 
 /* Loads the data depending on the type */
@@ -61,8 +59,6 @@ static void *LoadResource(FE_RESOURCE_TYPE type, char *filepath)
     switch (type) {
         case FE_RESOURCE_TYPE_UNKNOWN:
             return NULL;
-        case FE_RESOURCE_TYPE_FONT:
-            return TTF_OpenFont(filepath, 20);
         case FE_RESOURCE_TYPE_TEXTURE:
             FE_Texture *t = xmalloc(sizeof(FE_Texture));
             t->path = strdup(filepath);

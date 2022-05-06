@@ -23,8 +23,8 @@ void FE_MoveCamera(int x, int y, FE_Camera *c)
 
     // check if in x bounds
     if (x != 0) {
-        if (c->x + x > c->x_bound - screen_width)
-            c->x = c->x_bound - screen_width;
+        if (c->x + x > c->x_bound - PresentGame->window_width)
+            c->x = c->x_bound - PresentGame->window_width;
         else if (c->x + x < c->x_min)
             c->x = c->x_min;
         else

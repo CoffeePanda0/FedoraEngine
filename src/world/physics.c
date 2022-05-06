@@ -16,31 +16,14 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
     - sound emission
     * fullscreen console
     - camera zoom
-    - pre-load all fonts
     - Make jump animation play once
     - Change button to middle of screen by default
     - Change map editor tiles to allow for negative Y values
     - stop segfaulting when loading invalid maps
+    - check dialogue
+    - nicer event handling
 
 */
-
-float clampf(float num, float min, float max) // Clamps a float value
-{
-    if (num < min)
-        return min;
-    if (num > max)
-        return max;
-    return num;
-}
-
-int clampi(int num, int min, int max) // Clamps an int value
-{
-    if (num < min)
-        return min;
-    if (num > max)
-        return max;
-    return num;
-}
 
 void FE_Gravity() // Applies gravity to all objects
 {
@@ -51,8 +34,8 @@ void FE_Gravity() // Applies gravity to all objects
             float new_velocity = obj->velocity.y;
 
             /* calc accel and max accel */
-            float terminal_velocity = sqrtf((2 * obj->mass * GRAVITY) / DRAG);
-            new_velocity = obj->velocity.y + (obj->velocity.y + GRAVITY) * FE_DT;
+            float terminal_velocity = sqrtf((2 * obj->mass * PresentGame->MapConfig.Gravity) / DRAG);
+            new_velocity = obj->velocity.y + (obj->velocity.y + PresentGame->MapConfig.Gravity) * FE_DT;
             
             /* clamp to terminal velocity */
             new_velocity = clamp(new_velocity, -terminal_velocity, terminal_velocity);
@@ -73,7 +56,7 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
             if (obj->velocity.x != 0) {
                 float new_x = obj->position.x + obj->velocity.x;
                 // check for map boundies
-                if (new_x <= 0 || new_x + obj->body.w > FE_Map_Width) {
+                if (new_x <= 0 || new_x + obj->body.w > PresentGame->MapConfig.MapWidth) {
                     obj->velocity.x = 0;
                 }
                 
@@ -189,7 +172,7 @@ void FE_ApplyForce(FE_PhysObj *o, Vector2D force)
     }
     
     // clamp to max velocity
-    o->velocity.x = clampf(o->velocity.x + force.x, -o->maxvelocity.x, o->maxvelocity.x);
+    o->velocity.x = clamp(o->velocity.x + force.x, -o->maxvelocity.x, o->maxvelocity.x);
 
     o->velocity.y += force.y;
 }

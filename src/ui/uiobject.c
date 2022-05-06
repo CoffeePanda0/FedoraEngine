@@ -55,6 +55,6 @@ void FE_RenderUIObjects()
 {
     for (FE_List *o = UIObjects; o; o = o->next) {
         FE_UIObject *tmp = o->data;
-        SDL_RenderCopy(renderer, tmp->texture->Texture, NULL, &tmp->r);
+        SDL_RenderCopy(PresentGame->renderer, tmp->texture->Texture, NULL, &tmp->r);
     }
 }

@@ -14,13 +14,12 @@ static size_t max_index; // last index of the text
 static char **speakers; // array of speakers
 static char **contents; // array containing all content
 
-bool FE_DialogueActive; // Stores whether we are locked to a dialogue prompt
 
 int FE_DialogueFromFile();
 
 int FE_FreeDialogue() // frees both speakers and content array
 {
-    FE_DialogueActive = false;
+    PresentGame->DialogueActive = false;
 
     if (max_index > 0) {
         if (box)
@@ -51,8 +50,8 @@ int FE_PlayDialogue() // plays current dialogue
         return -1;
     }
     
-    if (!FE_DialogueActive) { // if elements have not been made yet
-        box = FE_CreateUIObject(0, 0, screen_width, 120, DIALOGUETEXT);
+    if (!PresentGame->DialogueActive) { // if elements have not been made yet
+        box = FE_CreateUIObject(0, 0, PresentGame->window_width, 120, DIALOGUETEXT);
         title = FE_CreateLabel(speakers[cur_index-1], 10, 10, COLOR_WHITE);
         content = FE_CreateLabel(contents[cur_index-1], 10, 50, COLOR_WHITE);
     } else {
@@ -60,7 +59,7 @@ int FE_PlayDialogue() // plays current dialogue
         FE_UpdateLabel(content, contents[cur_index-1]);
     }
 
-    FE_DialogueActive = true;
+    PresentGame->DialogueActive = true;
     return 1;
 }
 

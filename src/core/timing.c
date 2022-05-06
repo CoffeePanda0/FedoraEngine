@@ -16,7 +16,7 @@ static void FE_FPSCounter()
         fps_timer = 0;
         char title[64];    
         snprintf(title, 64, "FedoraEngine - FPS: %i", FE_FPS);
-        SDL_SetWindowTitle(window, title);
+        SDL_SetWindowTitle(PresentGame->window, title);
     }
 }
 
@@ -35,7 +35,8 @@ int FE_CalculateDT()
 	FE_FPS = (1 / FE_DT);
 	FE_DT_MULTIPLIER = (FE_DT / FE_DT_TARGET);
 
-	FE_FPSCounter();
+    if (PresentGame->config->show_fps)
+	    FE_FPSCounter();
 	
     return 1;
 }

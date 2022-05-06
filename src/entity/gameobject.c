@@ -37,7 +37,7 @@ void FE_RenderGameObjects(FE_Camera *c)
 	for (FE_List *o = FE_GameObjects; o; o = o->next) {
 		FE_GameObject *obj = o->data;
 		SDL_Rect renderrect = (SDL_Rect){obj->phys->body.x - c->x, obj->phys->body.y - c->y, obj->phys->body.w, obj->phys->body.h};
-		SDL_RenderCopy(renderer, obj->texture->Texture, NULL, &renderrect);
+		SDL_RenderCopy(PresentGame->renderer, obj->texture->Texture, NULL, &renderrect);
 	}
 }
 

@@ -134,7 +134,7 @@ void FE_UpdateParticles() // TODO - Optimise this
 
             // apply gravity and friction to all particles
             float new_velocity_y = particle->velocity.y += PARTICLE_GRAVITY;
-            particle->velocity.y = clampf(new_velocity_y, -MAX_VELOCITY, MAX_VELOCITY);
+            particle->velocity.y = clamp(new_velocity_y, -MAX_VELOCITY, MAX_VELOCITY);
             particle->velocity.x *= (1.0f - (PARTICLE_DRAG * FE_DT));
 
             // separate position as floating point to hold deltatime small values
@@ -144,7 +144,7 @@ void FE_UpdateParticles() // TODO - Optimise this
             FE_DT_RECT(particle->position, &particle->body);
 
             // kill particle if it's out of map bounds
-            if (particle->body.x < 0 || particle->body.x > FE_Map_Width ||  particle->body.y > (FE_Map_Height - particle->body.h)) {
+            if (particle->body.x < 0 || particle->body.x > PresentGame->MapConfig.MapWidth ||  particle->body.y > (PresentGame->MapConfig.MapHeight - particle->body.h)) {
                 particle->is_dead = true;
                 p->num_particles--;
             }

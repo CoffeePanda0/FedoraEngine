@@ -27,7 +27,7 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 	SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
-		if (FE_ConsoleVisible) {
+		if (PresentGame->ConsoleVisible) {
 			FE_HandleConsoleInput(&event, keyboard_state);
 		} else {
             switch (event.type) {
@@ -43,12 +43,12 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 
                 case SDL_KEYDOWN:
                     if (keyboard_state[SDL_SCANCODE_ESCAPE] && event.key.repeat == 0) {
-                        FE_GameState = GAME_STATE_PAUSE;
+                        PresentGame->GameState = GAME_STATE_PAUSE;
                         break;
                     }
                     if (keyboard_state[SDL_SCANCODE_GRAVE] && event.key.repeat == 0) {
                         SDL_StartTextInput();
-                        FE_StartedInput = true;
+                        PresentGame->StartedInput = true;
                         FE_ConsoleShow();
                         break;
                     }
@@ -62,8 +62,8 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                     
                     if (keyboard_state[SDL_SCANCODE_F] && event.key.repeat == 0) {
                         fullscreen = !fullscreen;
-                        SDL_SetWindowFullscreen(window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
-                        SDL_GetWindowSize(window, &screen_width, &screen_height); // recalculate window size
+                        SDL_SetWindowFullscreen(PresentGame->window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+                        SDL_GetWindowSize(PresentGame->window, &PresentGame->window_width, &PresentGame->window_height); // recalculate window size
                     }
                 break;
             }
@@ -71,7 +71,7 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
     }
 
     // Handle essential inputs here to prevent first click issue
-    if (!FE_ConsoleVisible) {
+    if (!PresentGame->ConsoleVisible) {
         if (keyboard_state[SDL_SCANCODE_A])
             FE_MovePlayer(player, camera, FE_NewVector(-player->movespeed, 0));
         if (keyboard_state[SDL_SCANCODE_D])

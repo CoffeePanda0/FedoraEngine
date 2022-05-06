@@ -30,13 +30,13 @@ static bool drag_delete = false;
 
 void FE_RenderEditor()
 {
-    SDL_RenderClear(renderer);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(PresentGame->renderer);
+	SDL_SetRenderDrawColor(PresentGame->renderer, 0, 0, 0, 0);
 
 	// render background
 	SDL_Rect bgrect = (SDL_Rect){-camera.x,-camera.y,0,0};
 	FE_QueryTexture(newmap.bg, &bgrect.w ,&bgrect.h);
-	SDL_RenderCopy(renderer, newmap.bg->Texture, NULL, &bgrect);
+	SDL_RenderCopy(PresentGame->renderer, newmap.bg->Texture, NULL, &bgrect);
 
 	// render all tiles
 	for (size_t i = 0; i < newmap.tilecount; i++) {
@@ -60,12 +60,12 @@ void FE_RenderEditor()
 	FE_RenderLightObjects(&camera);
 
 	// render grid on map with camera
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	for (int i = 0; i < 4096 + screen_width; i += newmap.tilesize) {
-		SDL_RenderDrawLine(renderer, i - camera.x, 0, i - camera.x, screen_height);
+	SDL_SetRenderDrawColor(PresentGame->renderer, 255, 255, 255, 255);
+	for (int i = 0; i < 4096 + PresentGame->window_width; i += newmap.tilesize) {
+		SDL_RenderDrawLine(PresentGame->renderer, i - camera.x, 0, i - camera.x, PresentGame->window_height);
 	}
-	for (int i = 0; i < 1024 + screen_height; i += newmap.tilesize) {
-		SDL_RenderDrawLine(renderer, 0, i - camera.y, screen_width, i - camera.y);
+	for (int i = 0; i < 1024 + PresentGame->window_height; i += newmap.tilesize) {
+		SDL_RenderDrawLine(PresentGame->renderer, 0, i - camera.y, PresentGame->window_width, i - camera.y);
 	}
 
 	FE_RenderUI();
@@ -75,7 +75,7 @@ void FE_RenderEditor()
 	else
 		FE_RenderCopy(editor_backgrounds[selectedbackground], NULL, &thumbnail);
 
-	SDL_RenderPresent(renderer);
+	SDL_RenderPresent(PresentGame->renderer);
 }
 
 static void GridSnap(int *x, int *y)
@@ -315,7 +315,7 @@ void FE_EventEditorHandler()
 
 
     while (SDL_PollEvent(&event)) {
-		if (FE_ConsoleVisible) {
+		if (PresentGame->ConsoleVisible) {
 			FE_HandleConsoleInput(&event, keyboard_state);
 		} else {
 			switch (event.type) {
@@ -472,7 +472,7 @@ static void CreateUI()
 	FE_CreateButton("<", 10, 7, BUTTON_TINY, &Exit, NULL);
 	FE_CreateButton("Clear", 60, 7, BUTTON_TINY, &Reset, NULL);
 	FE_CreateCheckbox("Tiles", 150, 7, mode, &ChangeMode, NULL);
-	FE_CreateUIObject(0, 0, 42, screen_width, "white.png");
+	FE_CreateUIObject(0, 0, 42, PresentGame->window_width, "white.png");
 
 	thumbnail = (SDL_Rect){475, 6, 32, 32};
 	coord = FE_CreateLabel("X: 0 Y: 0", 340, 6, COLOR_BLACK);
@@ -484,7 +484,7 @@ void FE_StartEditor() // cleans up from other game modes
 {
 	FE_CleanAll();
 
-    FE_GameState = GAME_STATE_EDITOR;
+    PresentGame->GameState = GAME_STATE_EDITOR;
 
 	if ((texturecount = Editor_LoadTextures()) == 0) {
 		warn("Unable to start map editor - No textures found");

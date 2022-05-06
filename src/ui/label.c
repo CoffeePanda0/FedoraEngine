@@ -6,14 +6,14 @@ void FE_RenderLabels()
 {
 	for (struct FE_List *o = FE_Labels; o; o = o->next) {
         FE_Label *l = o->data;
-        SDL_RenderCopy(renderer, l->text, NULL, &l->r);
+        SDL_RenderCopy(PresentGame->renderer, l->text, NULL, &l->r);
     }
 }
 
 SDL_Texture *FE_TextureFromText(char *text, SDL_Color color)
 {
-    SDL_Surface *s = TTF_RenderText_Solid(Sans, text, color);
-    SDL_Texture *t = SDL_CreateTextureFromSurface(renderer, s);
+    SDL_Surface *s = FE_RenderText(PresentGame->font, text, color);
+    SDL_Texture *t = SDL_CreateTextureFromSurface(PresentGame->renderer, s);
     SDL_FreeSurface(s);
     if (!t)
         warn("Could not create texture from text");
@@ -32,10 +32,10 @@ FE_Label *FE_CreateLabel(char *text, int x, int y, SDL_Color color) // Creates n
     FE_Label *newlabel = xmalloc(sizeof(FE_Label));
 
     // create texture from surface
-    SDL_Surface *text_surface = TTF_RenderText_Solid(Sans, ntext, color); 
+    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, ntext, color); 
     free(ntext);
 
-    newlabel->text = SDL_CreateTextureFromSurface(renderer, text_surface);
+    newlabel->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     SDL_QueryTexture(newlabel->text, NULL, NULL, &newlabel->r.w, &newlabel->r.h); // Get w and h for rect
@@ -54,8 +54,8 @@ int FE_UpdateLabel(FE_Label *l, char *text) // Updates a pre-existing label text
         if (tmp == l) { // when we reach the given one, free old textures first
             SDL_DestroyTexture(tmp->text);
             // regenerate textures, then query to change rect size
-            SDL_Surface *text_surface = TTF_RenderText_Solid(Sans, text, tmp->color); 
-            tmp->text = SDL_CreateTextureFromSurface(renderer, text_surface);
+            SDL_Surface *text_surface = FE_RenderText(PresentGame->font, text, tmp->color); 
+            tmp->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
             SDL_FreeSurface(text_surface);
 
 

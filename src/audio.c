@@ -5,9 +5,6 @@ static bool InitAudio = false;
 
 #define AUDIO_DIRECTORY "game/audio/"
 
-int FE_MusicVolume = 50;
-bool FE_MusicMuted = false;
-
 static Mix_Music *bgm = 0;
 
 void FE_PlayBGM() {
@@ -109,21 +106,21 @@ void FE_ChangeVolume(int volume)
         return;
     }
     
-    FE_MusicMuted = false;
+    PresentGame->AudioConfig.Muted = false;
 
-    FE_MusicVolume += volume;
-    FE_MusicVolume = clamp(FE_MusicVolume, 0, 100);
+    PresentGame->AudioConfig.Volume += volume;
+    PresentGame->AudioConfig.Volume = clamp(PresentGame->AudioConfig.Volume, 0, 100);
     
-    Mix_VolumeMusic(FE_MusicVolume);
+    Mix_VolumeMusic(PresentGame->AudioConfig.Volume);
 }
 
 void FE_MuteAudio()
 {
-    if (FE_MusicMuted) {
-        FE_MusicMuted = false;
-        Mix_VolumeMusic(FE_MusicVolume);
+    if (PresentGame->AudioConfig.Muted) {
+        PresentGame->AudioConfig.Muted = false;
+        Mix_VolumeMusic(PresentGame->AudioConfig.Volume);
     } else {
-        FE_MusicMuted = true;
+        PresentGame->AudioConfig.Muted = true;
         Mix_VolumeMusic(0);
     }
 }
