@@ -15,7 +15,7 @@
 #include "messagebox.h"
 #include "font.h"
 
-typedef enum {
+typedef enum FE_UI_CENTRE_TYPE {
     FE_UI_CENTRE_NONE,
     FE_UI_CENTRE_VERTICAL,
     FE_UI_CENTRE_HORIZONTAL,

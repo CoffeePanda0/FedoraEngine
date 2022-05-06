@@ -64,6 +64,25 @@ int FE_RenderCopyEx(FE_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double an
         return 0;
 }
 
+int FE_RenderRect(SDL_Rect *rect, SDL_Color color) // Renders a rect (filled) to the screen
+{
+    if (!rect) {
+        error("FE_RenderRect: NULL rect");
+        return -1;
+    }
+
+    Uint8 prev_r, prev_g, prev_b, prev_a;
+    SDL_GetRenderDrawColor(PresentGame->renderer, &prev_r, &prev_g, &prev_b, &prev_a);
+
+    SDL_SetRenderDrawColor(PresentGame->renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderDrawRect(PresentGame->renderer, rect);
+    SDL_RenderFillRect(PresentGame->renderer, rect);
+
+    SDL_SetRenderDrawColor(PresentGame->renderer, prev_r, prev_g, prev_b, prev_a);
+
+    return 1;
+}
+
 int FE_DestroyTexture(FE_Texture *texture)
 {
     if (!texture) {

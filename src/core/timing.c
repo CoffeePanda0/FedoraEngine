@@ -15,7 +15,7 @@ static void FE_FPSCounter()
     if (fps_timer > 1) {
         fps_timer = 0;
         char title[64];    
-        snprintf(title, 64, "FedoraEngine - FPS: %i", FE_FPS);
+        snprintf(title, 64, "%s - FPS: %i", PresentGame->config->window_title, FE_FPS);
         SDL_SetWindowTitle(PresentGame->window, title);
     }
 }

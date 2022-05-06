@@ -13,7 +13,7 @@ FE_InitConfig *FE_NewInitConfig()
 	config->window_height = 1080;
 	config->vsync = true;
 	config->show_fps = true;
-	config->default_font = "OpenSans.ttf";
+	config->default_font = "OpenSans";
 	return config;
 }
 
@@ -75,6 +75,7 @@ void FE_Init(FE_InitConfig *InitConfig)
 			PresentGame->renderer = SDL_CreateRenderer(PresentGame->window, -1, SDL_RENDERER_PRESENTVSYNC);
 		else
 			PresentGame->renderer = SDL_CreateRenderer(PresentGame->window, -1, SDL_RENDERER_ACCELERATED);
+		
 
 		if (PresentGame->renderer)
 			info("Renderer Created");

@@ -42,6 +42,11 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                 break;
 
                 case SDL_KEYDOWN:
+                    if (PresentGame->DialogueActive) {
+                        FE_DialogueInteract();
+                        return;
+                    }
+
                     if (keyboard_state[SDL_SCANCODE_ESCAPE] && event.key.repeat == 0) {
                         PresentGame->GameState = GAME_STATE_PAUSE;
                         break;
@@ -71,7 +76,7 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
     }
 
     // Handle essential inputs here to prevent first click issue
-    if (!PresentGame->ConsoleVisible) {
+    if (!PresentGame->ConsoleVisible && !PresentGame->DialogueActive) {
         if (keyboard_state[SDL_SCANCODE_A])
             FE_MovePlayer(player, camera, FE_NewVector(-player->movespeed, 0));
         if (keyboard_state[SDL_SCANCODE_D])

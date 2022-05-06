@@ -42,7 +42,7 @@ typedef struct FE_Game {
     
     SDL_Window *window;
     SDL_Renderer *renderer;
-
+    
     bool GameActive;
     FE_GAMESTATE GameState;
 

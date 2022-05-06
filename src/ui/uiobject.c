@@ -43,7 +43,7 @@ FE_UIObject *FE_CreateUIObject(int x, int y, int w, int h, char *texture_path)  
     tmp->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     xfree(path);
 
-    SDL_Rect r = {x, y, h, w};
+    SDL_Rect r = {x, y, w, h};
     tmp->r = r;
 
     FE_List_Add(&UIObjects, tmp);

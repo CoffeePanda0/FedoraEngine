@@ -42,7 +42,6 @@ void FE_StartGame(const char *mapname)
 	);
 
 	PresentGame->GameState = GAME_STATE_PLAY;
-
 }
 
 void FE_RenderGame()

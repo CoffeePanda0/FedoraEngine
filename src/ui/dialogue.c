@@ -2,7 +2,7 @@
 #include "../ext/tiny-json.h"
 
 #define DIALOGUEPATH "game/dialogue/"
-#define DIALOGUETEXT "game/dialogue.png"
+#define DIALOGUETEXT "dialogue.png"
 
 static FE_Label *title;
 static FE_Label *content;
@@ -13,9 +13,6 @@ static size_t max_index; // last index of the text
 
 static char **speakers; // array of speakers
 static char **contents; // array containing all content
-
-
-int FE_DialogueFromFile();
 
 int FE_FreeDialogue() // frees both speakers and content array
 {
@@ -51,9 +48,9 @@ int FE_PlayDialogue() // plays current dialogue
     }
     
     if (!PresentGame->DialogueActive) { // if elements have not been made yet
-        box = FE_CreateUIObject(0, 0, PresentGame->window_width, 120, DIALOGUETEXT);
-        title = FE_CreateLabel(speakers[cur_index-1], 10, 10, COLOR_WHITE);
-        content = FE_CreateLabel(contents[cur_index-1], 10, 50, COLOR_WHITE);
+        box = FE_CreateUIObject(0, 0, PresentGame->window_width, PresentGame->window_height / 6, DIALOGUETEXT);
+        title = FE_CreateLabel(NULL, speakers[cur_index-1], FE_NewVector(30, 10), COLOR_WHITE);
+        content = FE_CreateLabel(NULL, contents[cur_index-1], FE_NewVector(30, 50), COLOR_WHITE);
     } else {
         FE_UpdateLabel(title, speakers[cur_index-1]);
         FE_UpdateLabel(content, contents[cur_index-1]);

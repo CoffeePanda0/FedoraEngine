@@ -1,6 +1,6 @@
 #include "../include/game.h"
 
-#define CONSOLE_FONT "Inconsolata.ttf"
+#define CONSOLE_FONT "Inconsolata"
 #define CONSOLE_TEXTURE "game/ui/console.png"
 #define CONSOLE_FONT_SIZE 20
 

@@ -1,6 +1,7 @@
 #include "../include/game.h"
 
 #define FONT_DIR "game/fonts/"
+#define FONT_EXT ".ttf"
 
 static FE_List *fonts = 0;
 
@@ -15,8 +16,9 @@ FE_Font *FE_LoadFont(char *name, uint8_t size)
         }
     }
 
-    char *font_path = AddStr(FONT_DIR, name);
-
+    char *font_path = xmalloc(strlen(name) + strlen(FONT_DIR) + strlen(FONT_EXT) + 1);
+    sprintf(font_path, "%s%s%s", FONT_DIR, name, FONT_EXT);
+    
     // Open the font
     TTF_Font *font = TTF_OpenFont(font_path, size);
     if (!font) {

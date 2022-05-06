@@ -14,15 +14,14 @@ static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
     - pushable objects
     - can we tie walking animation speed to player movement speed?
     - sound emission
-    * fullscreen console
     - camera zoom
     - Make jump animation play once
     - Change button to middle of screen by default
     - Change map editor tiles to allow for negative Y values
     - stop segfaulting when loading invalid maps
-    - check dialogue
     - nicer event handling
-
+    - funky deltatime
+    - scaling game with res
 */
 
 void FE_Gravity() // Applies gravity to all objects

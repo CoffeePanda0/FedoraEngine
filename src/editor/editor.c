@@ -472,10 +472,10 @@ static void CreateUI()
 	FE_CreateButton("<", 10, 7, BUTTON_TINY, &Exit, NULL);
 	FE_CreateButton("Clear", 60, 7, BUTTON_TINY, &Reset, NULL);
 	FE_CreateCheckbox("Tiles", 150, 7, mode, &ChangeMode, NULL);
-	FE_CreateUIObject(0, 0, 42, PresentGame->window_width, "white.png");
+	FE_CreateUIObject(0, 0, PresentGame->window_width, 42, "white.png");
 
 	thumbnail = (SDL_Rect){475, 6, 32, 32};
-	coord = FE_CreateLabel("X: 0 Y: 0", 340, 6, COLOR_BLACK);
+	coord = FE_CreateLabel(NULL, "X: 0 Y: 0", FE_NewVector(340, 6), COLOR_BLACK);
 	spawntexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/spawn.png");
 	endtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 }

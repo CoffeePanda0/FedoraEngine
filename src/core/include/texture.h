@@ -51,6 +51,14 @@ int FE_RenderCopy(FE_Texture *texture, SDL_Rect *src, SDL_Rect *dst);
 int FE_RenderCopyEx(FE_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip);
 
 
+/** Renders an SDL_Rect to the screen with a filled colour
+ * \param r The rectangle to render
+ * \param color The color to fill the rectangle with
+ * \returns 1 on success, -1 on failure
+*/
+int FE_RenderRect(SDL_Rect *rect, SDL_Color color);
+
+
 /** Destroys a FedoraEngine texture (freeing all memory used
  * \param texture The texture to destroy
 */
