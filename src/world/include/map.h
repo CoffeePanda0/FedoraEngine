@@ -80,9 +80,6 @@ void FE_RenderMapBackground(FE_Camera *camera);
 void FE_CloseMap();
 
 
-/* Returns a Vector2D of the current map's spawn point */
-Vector2D FE_GetSpawn();
-
 /** Checks if a rect is colliding above the map tiles
  *\param r The rectangle to check for collision
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision

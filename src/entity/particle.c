@@ -83,7 +83,7 @@ FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emissio
     return p;
 }
 
-void FE_UpdateParticles() // TODO - Optimise this
+void FE_UpdateParticles()
 {
     if (!ParticleSystems)
         return;
@@ -163,10 +163,9 @@ void FE_RenderParticles(FE_Camera *camera)
                 continue;
 
             if (p->camera_locked) {
-                FE_RenderCopyEx(p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, SDL_FLIP_NONE);
+                FE_RenderCopyEx(camera, true, p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, SDL_FLIP_NONE);
             } else {
-                SDL_Rect render_rect = (SDL_Rect){p->particles[i].body.x - camera->x, p->particles[i].body.y - camera->y, p->particles[i].body.w, p->particles[i].body.h};
-                FE_RenderCopyEx(p->particles[i].texture, NULL, &render_rect, p->particles[i].rotation, SDL_FLIP_NONE);
+                FE_RenderCopyEx(camera, false, p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, SDL_FLIP_NONE);
             }
 
         }

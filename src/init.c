@@ -29,7 +29,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		0, 0,
 		false,
 		GAME_STATE_MENU,
-		(FE_MapConfig){0, 0, 0, 0, 0.0f},
+		(FE_MapConfig){0, 0, 0, VEC_EMPTY, 0.0f},
 		(FE_AudioConfig){50, false}
 	};
 	return Game;
@@ -81,6 +81,9 @@ void FE_Init(FE_InitConfig *InitConfig)
 			info("Renderer Created");
 		else
 			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
+
+		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
+			warn("Warning: Nearest texture filtering not enabled! SDL_Error: %s", SDL_GetError());
 
 		if (IMG_Init(IMG_INIT_PNG) == 0)
     		error("IMG Failed to initialize. SDL_Error: %s", IMG_GetError());

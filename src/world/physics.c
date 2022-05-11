@@ -1,28 +1,11 @@
 #include "../include/game.h"
 
-#ifdef _WIN32
+#ifndef _MATH_H
     #include <math.h>
 #endif
 
 static FE_List *FE_PhysObjects = 0; // Linked list of all physics objects
 
-/* TODO:
-    - nicer y movement on camera
-    - parallax
-    - create nice pause UI (background, buttons to go to menu etc)
-    - handle end of level
-    - pushable objects
-    - can we tie walking animation speed to player movement speed?
-    - sound emission
-    - camera zoom
-    - Make jump animation play once
-    - Change button to middle of screen by default
-    - Change map editor tiles to allow for negative Y values
-    - stop segfaulting when loading invalid maps
-    - nicer event handling
-    - funky deltatime
-    - scaling game with res
-*/
 
 void FE_Gravity() // Applies gravity to all objects
 {

@@ -9,11 +9,6 @@ static bool FE_MapLoaded = false;
 
 static FE_Texture *flagtexture;
 
-Vector2D FE_GetSpawn()
-{
-    return map.PlayerSpawn;
-}
-
 int FE_LoadMap(const char *name)
 {
     FE_MapLoaded = true;
@@ -23,7 +18,6 @@ int FE_LoadMap(const char *name)
     PresentGame->MapConfig.MapWidth = 0;
     PresentGame->MapConfig.MapHeight = 0;
     PresentGame->MapConfig.MinimumX = 0;
-    PresentGame->MapConfig.MaximumY = 0;
 
     // Combine map directory and map file path
     char *map_path = AddStr(MAP_DIRECTORY, name);
@@ -95,11 +89,12 @@ int FE_LoadMap(const char *name)
         if ((Uint16)map.tiles[i].position.y + map.tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = map.tiles[i].position.y + map.tilesize;
     }
 
-
     PresentGame->MapConfig.Gravity = map.gravity;
 
     // read player spawn
     if (fread(&map.PlayerSpawn, sizeof(Vector2D), 1, f) != 1) goto err;
+    PresentGame->MapConfig.PlayerSpawn = map.PlayerSpawn;
+    
     // read end flag
     if (fread(&map.EndFlag, sizeof(Vector2D), 1, f) != 1) goto err;
 
@@ -124,23 +119,24 @@ void FE_RenderMap(FE_Camera *camera)
 {
 	// render all tiles
 	for (size_t i = 0; i < map.tilecount; i++) {
-		SDL_Rect r = (SDL_Rect){map.tiles[i].position.x - camera->x, map.tiles[i].position.y - camera->y, map.tilesize, map.tilesize};
-		FE_RenderCopyEx(map.textures[map.tiles[i].texture_index], NULL, &r, map.tiles[i].rotation, SDL_FLIP_NONE);
+		SDL_Rect r = (SDL_Rect){map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
+		FE_RenderCopyEx(camera, false, map.textures[map.tiles[i].texture_index], NULL, &r, map.tiles[i].rotation, SDL_FLIP_NONE);
 	} 
 
     // render finish flag
-    SDL_Rect r = (SDL_Rect){map.EndFlag.x - camera->x, map.EndFlag.y - camera->y, map.tilesize, map.tilesize};
-    FE_RenderCopy(flagtexture, NULL, &r);
+    SDL_Rect r = (SDL_Rect){map.EndFlag.x, map.EndFlag.y, map.tilesize, map.tilesize};
+    FE_RenderCopy(camera, false, flagtexture, NULL, &r);
 
 }
 
 void FE_RenderMapBackground(FE_Camera *camera)
 {
-    // render background
-	SDL_Rect bgrect = (SDL_Rect){0,800,0,0};
-	FE_QueryTexture(map.bg, &bgrect.w ,&bgrect.h);
-	bgrect.x -= camera->x;
-	bgrect.y -= camera->y;
+	SDL_Rect bgrect = (SDL_Rect){0,900,5120,1220};
+	bgrect.w *= camera->zoom;
+	bgrect.h *= camera->zoom;
+	bgrect.x -= camera->x * camera->zoom;
+	bgrect.y *= camera->zoom;
+    bgrect.y -= camera->y * camera->zoom;
 	SDL_RenderCopy(PresentGame->renderer, map.bg->Texture, NULL, &bgrect);
 }
 
@@ -157,6 +153,7 @@ void FE_CloseMap()
         xfree(map.name);
     map.name = 0;
     
+    map.PlayerSpawn = VEC_NULL;
 
     if (map.textures) {
         for (size_t i = 0; i < map.texturecount; i++) {

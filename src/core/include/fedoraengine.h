@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../../ui/include/font.h"
+#include "vector2d.h"
 
 typedef enum FE_GAMESTATE {
     GAME_STATE_MENU,
@@ -13,7 +14,8 @@ typedef enum FE_GAMESTATE {
 } FE_GAMESTATE;
 
 typedef struct FE_MapConfig {
-    uint16_t MapWidth, MapHeight, MinimumX, MaximumY;
+    uint16_t MapWidth, MapHeight, MinimumX;
+    Vector2D PlayerSpawn;
     float Gravity;
 } FE_MapConfig;
 

@@ -26,6 +26,7 @@
 #include "../core/include/vector2d.h"
 #include "../core/include/linkedlist.h"
 #include "../core/include/timing.h"
+#include "../core/include/render.h"
 
 #include "../ui/include/ui.h"
 

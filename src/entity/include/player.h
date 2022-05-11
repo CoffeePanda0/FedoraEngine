@@ -27,8 +27,12 @@ typedef struct FE_Player {
 } FE_Player;
 
 
-/* Renders a player */
-void FE_RenderPlayer(FE_Player *player);
+/** Renders a player
+* \param player The player to render
+* \param camera The camera to render the player in
+*/
+void FE_RenderPlayer(FE_Player *player, FE_Camera *camera);
+
 
 /** Creates a new player
  *\param movespeed - The speed that the player accelerates by when moving
@@ -39,27 +43,19 @@ void FE_RenderPlayer(FE_Player *player);
 FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL_Rect body);
 
 
-/** Sets a player's position (teleports)
- *\param player - The player to move
- *\param camera - The current camera in use
- *\param position - The new coordinates of the player
-*/
-void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D position);
-
-
 /** Moves the player by a small amount (e.g walking, user input)
  *\param player - The player to move
  *\param camera - The current camera in use
  *\param position - The force to be applied in each direction to the player
 */
-void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement);
+void FE_MovePlayer(FE_Player *player, Vector2D movement);
 
 
 /** The main update loop needed to update the player's properties and for the camera to follow
  *\param player - The player to update
  *\param camera - The current camera in use
 */
-void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera);
+void FE_UpdatePlayer(FE_Player *player);
 
 
 /** Makes the player jump if they are on the ground

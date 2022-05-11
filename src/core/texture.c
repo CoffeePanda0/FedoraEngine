@@ -36,53 +36,6 @@ SDL_Texture* FE_TextureFromRGBA(SDL_Color color) // Returns a plain texture from
     return text;
 }
 
-int FE_RenderCopy(FE_Texture *texture, SDL_Rect *src, SDL_Rect *dst) // Renders a texture to the screen if in camera bounds
-{
-    if (!texture || !dst || !texture->Texture) {
-        error("FE_RenderCopy: NULL texture or dst");
-        return -1;
-    }
-
-    // Check if rect is in screen bounds
-    if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0,PresentGame->window_width, PresentGame->window_height}))
-        return SDL_RenderCopy(PresentGame->renderer, texture->Texture, src, dst);
-    else
-        return 0;
-}
-
-int FE_RenderCopyEx(FE_Texture *texture, SDL_Rect *src, SDL_Rect *dst, double angle, SDL_RendererFlip flip)
-{
-    if (!texture || !dst || !texture->Texture) {
-        error("FE_RenderCopyEx: NULL texture or dst");
-        return -1;
-    }
-
-    if (FE_Camera_Inbounds(dst, &(SDL_Rect){0,0, PresentGame->window_width, PresentGame->window_height})) {
-        const SDL_Point center = (SDL_Point){dst->w/2, dst->h/2};
-        return SDL_RenderCopyEx(PresentGame->renderer, texture->Texture, src, dst, angle, &center, flip);
-    } else
-        return 0;
-}
-
-int FE_RenderRect(SDL_Rect *rect, SDL_Color color) // Renders a rect (filled) to the screen
-{
-    if (!rect) {
-        error("FE_RenderRect: NULL rect");
-        return -1;
-    }
-
-    Uint8 prev_r, prev_g, prev_b, prev_a;
-    SDL_GetRenderDrawColor(PresentGame->renderer, &prev_r, &prev_g, &prev_b, &prev_a);
-
-    SDL_SetRenderDrawColor(PresentGame->renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDrawRect(PresentGame->renderer, rect);
-    SDL_RenderFillRect(PresentGame->renderer, rect);
-
-    SDL_SetRenderDrawColor(PresentGame->renderer, prev_r, prev_g, prev_b, prev_a);
-
-    return 1;
-}
-
 int FE_DestroyTexture(FE_Texture *texture)
 {
     if (!texture) {
@@ -105,14 +58,4 @@ int FE_QueryTexture(FE_Texture *t, int *w, int *h)
     if (!t) return -1;
 
     return SDL_QueryTexture(t->Texture, NULL, NULL, w, h);
-}
-
-SDL_Rect FE_RectCamera(SDL_Rect rect, SDL_Rect *camera)
-{
-    if (!camera) {
-        error("FE_ApplyCamera: NULL camera");
-        return (SDL_Rect){0,0,0,0};
-    }
-
-    return (SDL_Rect){rect.x - camera->x, rect.y - camera->y, rect.w, rect.h};
 }

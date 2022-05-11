@@ -5,16 +5,16 @@ static size_t texturecount;
 static size_t selectedtexture;
 
 FE_Texture **editor_backgrounds; // The background atlas (stores 10)
-static size_t bgcount;
-static size_t selectedbackground;
+static size_t bgcount; // amount of background textures loaded
+static size_t selectedbackground; // the index of the currently selected background
 
 static bool mode = true; // true = map, false = bg
-static uint16_t rotation = 0;
+static uint16_t rotation = 0; // persistent rotation when placing new tiles
 
 static char **texturepaths; // The texture paths used by tiles for exporting
-static FE_LoadedMap newmap; // for rendering
+static FE_LoadedMap newmap; // Current map for rendering from
 
-static SDL_Rect thumbnail;
+/* UI objects for layout */
 static FE_Camera camera;
 static FE_Label *coord;
 
@@ -26,54 +26,62 @@ static bool saving = false;
 static bool drag_place = false;
 static bool drag_delete = false;
 
-// TODO: loading previous maps, tile bg, change tilesize/gravity, nice UI
+static int map_max_width = 4096;
+static int map_max_height = 1024;
+
+// TODO: loading previous maps, tile bg, change tilesize/gravity, nice UI, click anywhere in tile to delete
 
 void FE_RenderEditor()
 {
     SDL_RenderClear(PresentGame->renderer);
 	SDL_SetRenderDrawColor(PresentGame->renderer, 0, 0, 0, 0);
 
-	// render background
-	SDL_Rect bgrect = (SDL_Rect){-camera.x,-camera.y,0,0};
+	/* render background, applying zoom */
+	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
 	FE_QueryTexture(newmap.bg, &bgrect.w ,&bgrect.h);
+	bgrect.w *= camera.zoom;
+	bgrect.h *= camera.zoom;
+	bgrect.x -= camera.x * camera.zoom;
+	bgrect.y -= camera.y * camera.zoom;
 	SDL_RenderCopy(PresentGame->renderer, newmap.bg->Texture, NULL, &bgrect);
 
 	// render all tiles
 	for (size_t i = 0; i < newmap.tilecount; i++) {
-		SDL_Rect r = (SDL_Rect){newmap.tiles[i].position.x - camera.x, newmap.tiles[i].position.y - camera.y, newmap.tilesize, newmap.tilesize};
-		FE_RenderCopyEx(newmap.textures[newmap.tiles[i].texture_index], NULL, &r, newmap.tiles[i].rotation, SDL_FLIP_NONE);
-
+		SDL_Rect r = (SDL_Rect){newmap.tiles[i].position.x, newmap.tiles[i].position.y, newmap.tilesize, newmap.tilesize};
+		FE_RenderCopyEx(&camera, false, newmap.textures[newmap.tiles[i].texture_index], NULL, &r, newmap.tiles[i].rotation, SDL_FLIP_NONE);
 	}
 
 	// render spawn
 	if (!FE_VecNULL(newmap.PlayerSpawn)) {
-		SDL_Rect spawnrect = (SDL_Rect){newmap.PlayerSpawn.x - camera.x, newmap.PlayerSpawn.y - camera.y, newmap.tilesize, newmap.tilesize};
-		FE_RenderCopy(spawntexture, NULL, &spawnrect);
+		SDL_Rect spawnrect = (SDL_Rect){newmap.PlayerSpawn.x, newmap.PlayerSpawn.y, newmap.tilesize, newmap.tilesize};
+		FE_RenderCopy(&camera, false, spawntexture, NULL, &spawnrect);
 	}
 
 	// render end flag
 	if (!(newmap.EndFlag.x == -1 && newmap.EndFlag.y == -1)) {
-		SDL_Rect endflagrect = (SDL_Rect){newmap.EndFlag.x - camera.x, newmap.EndFlag.y - camera.y, newmap.tilesize, newmap.tilesize};
-		FE_RenderCopy(endtexture, NULL, &endflagrect);
+		SDL_Rect endflagrect = (SDL_Rect){newmap.EndFlag.x, newmap.EndFlag.y, newmap.tilesize, newmap.tilesize};
+		FE_RenderCopy(&camera, false, endtexture, NULL, &endflagrect);
 	}
-
-	FE_RenderLightObjects(&camera);
 
 	// render grid on map with camera
-	SDL_SetRenderDrawColor(PresentGame->renderer, 255, 255, 255, 255);
-	for (int i = 0; i < 4096 + PresentGame->window_width; i += newmap.tilesize) {
-		SDL_RenderDrawLine(PresentGame->renderer, i - camera.x, 0, i - camera.x, PresentGame->window_height);
-	}
-	for (int i = 0; i < 1024 + PresentGame->window_height; i += newmap.tilesize) {
-		SDL_RenderDrawLine(PresentGame->renderer, 0, i - camera.y, PresentGame->window_width, i - camera.y);
-	}
+	for (int i = 0; i < map_max_width + PresentGame->window_width; i += newmap.tilesize)
+		FE_RenderDrawLine(&camera, i, 0, i, map_max_height + PresentGame->window_width, COLOR_WHITE);
+	for (int i = 0; i < map_max_height + PresentGame->window_height; i += newmap.tilesize)
+		FE_RenderDrawLine(&camera, 0, i, map_max_width + PresentGame->window_width, i, COLOR_WHITE);
 
+
+	// render panel for UI to go over
+	FE_RenderRect(&(SDL_Rect){0, 0, PresentGame->window_width, 42}, COLOR_WHITE);
 	FE_RenderUI();
 
+
+	// render thumbnail previewing currently selected texture
+	SDL_Rect thumbnail = {475, 6, 32, 32};
 	if (mode)
-		FE_RenderCopy(editor_textures[selectedtexture], NULL, &thumbnail);
+		SDL_RenderCopy(PresentGame->renderer, editor_textures[selectedtexture]->Texture, NULL, &thumbnail);
 	else
-		FE_RenderCopy(editor_backgrounds[selectedbackground], NULL, &thumbnail);
+		SDL_RenderCopy(PresentGame->renderer, editor_backgrounds[selectedtexture]->Texture, NULL, &thumbnail);
+
 
 	SDL_RenderPresent(PresentGame->renderer);
 }
@@ -381,6 +389,7 @@ void FE_EventEditorHandler()
 					}
 
 				break;
+
 			}
 		}
 	}
@@ -472,9 +481,7 @@ static void CreateUI()
 	FE_CreateButton("<", 10, 7, BUTTON_TINY, &Exit, NULL);
 	FE_CreateButton("Clear", 60, 7, BUTTON_TINY, &Reset, NULL);
 	FE_CreateCheckbox("Tiles", 150, 7, mode, &ChangeMode, NULL);
-	FE_CreateUIObject(0, 0, PresentGame->window_width, 42, "white.png");
 
-	thumbnail = (SDL_Rect){475, 6, 32, 32};
 	coord = FE_CreateLabel(NULL, "X: 0 Y: 0", FE_NewVector(340, 6), COLOR_BLACK);
 	spawntexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/spawn.png");
 	endtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
@@ -502,7 +509,10 @@ void FE_StartEditor() // cleans up from other game modes
 	newmap.bg = editor_backgrounds[0];
 	mode = true;
 
-	camera = (FE_Camera){0, 0, 0, 0, 4096, 1024, false};
+	camera = *FE_CreateCamera();
+	camera.x = 0; camera.y = 0;
+	camera.x_bound = map_max_width; camera.y_bound = map_max_height;
+
 
 	info("Editor: Started editor");
 

@@ -49,8 +49,8 @@ void FE_RenderLightObjects(FE_Camera *camera)
     {
         FE_LightObject *o = l->data;
 
-        FE_RenderCopy(o->effect_texture, 0, &(SDL_Rect){o->effect_rect.x - camera->x, o->effect_rect.y - camera->y, o->effect_rect.w, o->effect_rect.h});
-        FE_RenderCopy(o->obj_texture, 0, &(SDL_Rect){o->obj_rect.x - camera->x, o->obj_rect.y - camera->y, o->obj_rect.w, o->obj_rect.h});     
+        FE_RenderCopy(camera, false, o->effect_texture, 0, &o->effect_rect);
+        FE_RenderCopy(camera, false, o->obj_texture, 0, &o->obj_rect);     
         l = l->next;
     }
 }

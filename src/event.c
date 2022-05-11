@@ -62,6 +62,12 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                         break;
                     }
                     
+                    if (keyboard_state[SDL_SCANCODE_Z] && event.key.repeat == 0)
+                        FE_Camera_SmoothZoom(camera, 0.5, 250);
+                    if (keyboard_state[SDL_SCANCODE_X] && event.key.repeat == 0)
+                        FE_Camera_SmoothZoom(camera, -0.5, 250);
+                    
+
                     if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0)
                         positionlog = !positionlog;
                     
@@ -78,9 +84,9 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
     // Handle essential inputs here to prevent first click issue
     if (!PresentGame->ConsoleVisible && !PresentGame->DialogueActive) {
         if (keyboard_state[SDL_SCANCODE_A])
-            FE_MovePlayer(player, camera, FE_NewVector(-player->movespeed, 0));
+            FE_MovePlayer(player, FE_NewVector(-player->movespeed, 0));
         if (keyboard_state[SDL_SCANCODE_D])
-            FE_MovePlayer(player, camera, FE_NewVector(player->movespeed, 0));
+            FE_MovePlayer(player, FE_NewVector(player->movespeed, 0));
         if (keyboard_state[SDL_SCANCODE_SPACE]) {
             if (!player->jump_started) {
                 FE_StartPlayerJump(player);

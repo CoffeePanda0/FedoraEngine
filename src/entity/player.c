@@ -40,7 +40,7 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     return p;
 }
 
-void FE_RenderPlayer(FE_Player *player)
+void FE_RenderPlayer(FE_Player *player, FE_Camera *camera)
 {
     if (!player || PlayerCount == 0)
         return;
@@ -61,78 +61,27 @@ void FE_RenderPlayer(FE_Player *player)
 
     // render the player
     SDL_Rect player_srcrct = FE_GetAnimationFrame(current_animation);
-
-    FE_RenderCopyEx(current_animation->spritesheet, &player_srcrct, &player->render_rect, 0, flip);
+    const SDL_Point center = (SDL_Point){player->render_rect.w/2, player->render_rect.h/2};
+    SDL_RenderCopyEx(PresentGame->renderer,
+        current_animation->spritesheet->Texture,
+        &player_srcrct,
+        &(SDL_Rect){player->render_rect.x * camera->zoom, player->render_rect.y * camera->zoom, player->render_rect.w * camera->zoom, player->render_rect.h * camera->zoom},
+        0, &center, flip
+    );
 }
 
-static void PlayerCameraFollow(FE_Player *player, FE_Camera *camera)
-{
-    if (!player || !camera)
-        return;
-
-    // only move the camera if past half of the screen
-    if (player->PhysObj->velocity.x > 0) {
-        if (player->render_rect.x + player->render_rect.w > PresentGame->window_width / 2 && camera->x < camera->x_bound) {
-            FE_MoveCamera(player->PhysObj->velocity.x, 0, camera);
-        } else {
-            if (player->render_rect.x + player->render_rect.w + player->PhysObj->velocity.x >= PresentGame->window_width )
-                player->render_rect.x = PresentGame->window_width  - player->render_rect.w;
-            else
-                player->render_rect.x += player->PhysObj->velocity.x;
-        }
-    } else if (player->PhysObj->velocity.x < 0) {
-        if (player->render_rect.x  + player->render_rect.w < PresentGame->window_width  / 2 && camera->x > camera->x_min) {
-            FE_MoveCamera(player->PhysObj->velocity.x, 0, camera);
-        } else {
-            if (player->render_rect.x + player->PhysObj->velocity.x <= 0)
-                player->render_rect.x = 0;
-            else
-                player->render_rect.x += player->PhysObj->velocity.x;
-        }
-    }
-
-}  
-
-void FE_SetPlayerWorldPos(FE_Player *player, FE_Camera *camera, Vector2D position)
+void FE_MovePlayer(FE_Player *player, Vector2D movement)
 {
     if (!player)
-        return;
-    
-    player->PhysObj->position.x = position.x;
-    player->PhysObj->position.y = position.y;
-
-    // calculate position relative on screen for render rect
-    player->render_rect.x = player->PhysObj->body.x + player->render_rect.w - camera->x;
-    player->render_rect.y = player->render_rect.h - (PresentGame->window_height / 2); 
-
-    // centre camera on player
-    camera->x = clamp(player->PhysObj->body.x  - (PresentGame->window_width  / 2), camera->x_min, camera->x_bound);
-
-    //set camera y so that map height is always the same
-    camera->y = PresentGame->MapConfig.MapHeight - PresentGame->window_height;
-}
-
-void FE_MovePlayer(FE_Player *player, FE_Camera *camera, Vector2D movement)
-{
-    if (!player || !camera)
         return;
 
     Vector2D mov_vec = FE_NewVector(movement.x * FE_DT_MULTIPLIER, movement.y * FE_DT_MULTIPLIER);
     FE_ApplyForce(player->PhysObj, mov_vec);
-    PlayerCameraFollow(player, camera);
-
-    static float fps_timer = 0;
-    fps_timer += FE_DT;
-
 }
 
-void FE_UpdatePlayer(FE_Player *player, FE_Camera *camera)
+void FE_UpdatePlayer(FE_Player *player)
 {
-    player->render_rect = (SDL_Rect){player->PhysObj->body.x, player->PhysObj->body.y , player->PhysObj->body.w, player->PhysObj->body.h};
-    player->render_rect.x -= camera->x;
-    player->render_rect.y -= camera->y;
-
-    PlayerCameraFollow(player, camera);
+    player->render_rect = player->PhysObj->body;
     
     // update bool values
     if (player->PhysObj->velocity.y == 0)
