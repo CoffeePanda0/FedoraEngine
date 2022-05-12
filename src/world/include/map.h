@@ -1,7 +1,6 @@
 #ifndef H_MAP
 #define H_MAP
 
-#include <SDL.h>
 #include "../../core/include/vector2d.h"
 #include "../../core/include/texture.h"
 

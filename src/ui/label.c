@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/label.h"
 
 static FE_List *FE_Labels = 0;
 

@@ -1,8 +1,11 @@
 #include <SDL.h>
 #include "include/resourcemanager.h"
-#include "../ext/hashtbl.h"
 #include "include/utils.h"
 #include "include/mem.h"
+#include "include/texture.h"
+#include "../include/audio.h"
+#include "../ext/hashtbl.h"
+
 
 static hashtable Resources;
 static bool resource_init = false;
@@ -50,7 +53,6 @@ void FE_ResourceManager_Init()
 void FE_ResourceManager_Destroy()
 {
     htclear(&Resources);
-    FE_CleanFonts();
 }
 
 /* Loads the data depending on the type */

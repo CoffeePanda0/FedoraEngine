@@ -1,4 +1,7 @@
-#include "../include/game.h"
+#include <SDL.h>
+#include <SDL_image.h>
+#include <stdbool.h>
+#include "editor.h"
 
 #define TEXTURE_PATH "game/map/textures/"
 #define BG_PATH "game/map/backgrounds/"

@@ -1,7 +1,6 @@
 #ifndef H_LABEL
 #define H_LABEL
 
-#include <SDL.h>
 #include "font.h"
 
 typedef struct FE_Label {

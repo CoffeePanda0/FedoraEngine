@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "../world/include/camera.h"
 #include "include/light.h"
 
 #define EFFECT_TEXTURE_PATH "game/sprites/lightfx/"

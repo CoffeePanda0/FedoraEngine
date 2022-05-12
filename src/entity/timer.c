@@ -1,4 +1,7 @@
-#include "../include/game.h"
+#include <SDL.h>
+#include <stdbool.h>
+#include "include/timer.h"
+#include "../core/include/utils.h"
 
 static FE_Timer **timers; // basic list of timers
 static size_t list_size;
@@ -8,7 +11,7 @@ static unsigned long int FE_LastUpdate = 0;
 
 static int AddToList(FE_Timer *t)
 {
-    if (t == NULL) {
+    if (t == 0) {
         warn("Attempted to add a NULL timer to the list");
         return -1;
     }
@@ -23,7 +26,7 @@ static int AddToList(FE_Timer *t)
 
     // find the next free space to use if space is available in the middle of the list
     for (size_t i = 0; i < list_size; i++) {
-        if (timers[i] == NULL) {
+        if (timers[i] == 0) {
             timers[i] = t;
             timer_count++;
             return 1;
@@ -40,13 +43,13 @@ static int AddToList(FE_Timer *t)
 
 int FE_RemoveTimer(FE_Timer *t)
 {
-    if (t == NULL) {
+    if (t == 0) {
         warn("Attempted to remove a null timer");
         return -1;
     }
 
     if (list_size == 1) { // if the item is the only item in the list and at the start of the list
-        timers[0] = NULL;
+        timers[0] = 0;
         free(t);
         free(timers);
         timer_count--;
@@ -74,7 +77,7 @@ int FE_RemoveTimer(FE_Timer *t)
         timers = xrealloc(timers, sizeof(FE_Timer *) * (--list_size)); // shrink the list
     }
 
-    timers[index] = NULL;
+    timers[index] = 0;
     timer_count--;
 
     free(t);
@@ -84,7 +87,7 @@ int FE_RemoveTimer(FE_Timer *t)
 
 void FE_StartTimer(FE_Timer *timer)
 {
-    if (timer == NULL) {
+    if (timer == 0) {
         warn("Attempted to start a null timer");
         return;
     }
@@ -94,7 +97,7 @@ void FE_StartTimer(FE_Timer *timer)
 
 void FE_PauseTimer(FE_Timer *timer)
 {
-    if (timer == NULL) {
+    if (timer == 0) {
         warn("Attempted to stop a null timer");
         return;
     }
@@ -104,7 +107,7 @@ void FE_PauseTimer(FE_Timer *timer)
 
 void FE_RestartTimer(FE_Timer *timer)
 {
-    if (timer == NULL) {
+    if (timer == 0) {
         warn("Attempted to restart a null timer");
         return;
     }
@@ -117,7 +120,7 @@ FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, voi
 {
     if (!callback) {
         warn("Callback is null! (FE_CreateTimer)");
-        return NULL;
+        return 0;
     }
 
     FE_Timer *t = xmalloc(sizeof(FE_Timer));
@@ -138,7 +141,7 @@ void FE_UpdateTimers() // Updates all timers, checked if time elapsed
     unsigned long time_passed = SDL_GetTicks() - FE_LastUpdate; // calculate time passed since last update
 
     for (size_t i = 0; i < list_size; i++) {
-        if (timers[i] == NULL) { // if the timer is null, skip it
+        if (timers[i] == 0) { // if the timer is null, skip it
             continue;
         }
 
@@ -162,11 +165,11 @@ void FE_UpdateTimers() // Updates all timers, checked if time elapsed
 
 int FE_CleanTimers() // Removes all timers, frees memory
 {
-    if (timers == NULL)
+    if (timers == 0)
         return 0;
     
     for (size_t i = 0; i < list_size; i++) {
-        if (timers[i] == NULL) {
+        if (timers[i] == 0) {
             continue;
         }
 
@@ -174,7 +177,7 @@ int FE_CleanTimers() // Removes all timers, frees memory
     }
 
     free(timers);
-    timers = NULL;
+    timers = 0;
     timer_count = 0;
     list_size = 0;
     return 1;

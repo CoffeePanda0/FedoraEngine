@@ -1,4 +1,7 @@
-#include "include/game.h"
+#include <stdbool.h>
+#include "include/audio.h"
+#include "core/include/fedoraengine.h"
+#include "core/include/utils.h"
 
 static bool BGMPlaying = false;
 static bool InitAudio = false;
@@ -108,8 +111,12 @@ void FE_ChangeVolume(int volume)
     
     PresentGame->AudioConfig.Muted = false;
 
-    PresentGame->AudioConfig.Volume += volume;
-    PresentGame->AudioConfig.Volume = clamp(PresentGame->AudioConfig.Volume, 0, 100);
+    if (PresentGame->AudioConfig.Volume + volume > 100)
+        PresentGame->AudioConfig.Volume = 100;
+    else if (PresentGame->AudioConfig.Volume + volume < 0)
+        PresentGame->AudioConfig.Volume = 0;
+    else
+        PresentGame->AudioConfig.Volume += volume;
     
     Mix_VolumeMusic(PresentGame->AudioConfig.Volume);
 }

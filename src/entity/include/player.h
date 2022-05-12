@@ -1,7 +1,11 @@
 #ifndef H_PLAYER
 #define H_PLAYER
 
-#include "../../include/game.h"
+#include <SDL.h>
+#include <stdbool.h>
+#include "../../core/include/vector2d.h"
+#include "animation.h"
+#include "../../world/include/physics.h"
 
 typedef struct FE_Player {
     int id;

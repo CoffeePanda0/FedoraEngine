@@ -1,4 +1,6 @@
-#include "../include/game.h"
+#include <SDL.h>
+#include <stdbool.h>
+#include "include/vector2d.h"
 
 Vector2D FE_VecAdd(Vector2D v1, Vector2D v2)
 {

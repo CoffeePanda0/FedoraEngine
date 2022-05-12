@@ -1,6 +1,9 @@
 #ifndef H_TEXBOX
 #define H_TEXBOX
 
+#include "label.h"
+
+
 typedef struct FE_TextBox {
     SDL_Texture *text;
     SDL_Rect r;

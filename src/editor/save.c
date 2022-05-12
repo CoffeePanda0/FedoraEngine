@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "editor.h"
+#include "../ui/include/messagebox.h"
 
 #define MAP_DIRECTORY "game/map/maps/"
 

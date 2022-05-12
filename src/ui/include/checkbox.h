@@ -1,8 +1,6 @@
 #ifndef H_CHECKBOX
 #define H_CHECKBOX
 
-#include <SDL.h>
-
 typedef struct FE_Checkbox{ 
     SDL_Rect r; // rect containing the checkbox
     bool checked; // is the checkbox checked?

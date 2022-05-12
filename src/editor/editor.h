@@ -1,8 +1,12 @@
 #ifndef H_EDITOR
 #define H_EDITOR
 
+#include "../core/include/utils.h"
+#include "../world/include/camera.h"
+#include "../world/include/map.h"
+#include "../core/include/texture.h"
+#include "../core/include/resourcemanager.h"
 #include <stdlib.h>
-#include <SDL.h>
 
 /* Renders all map editor elements */
 void FE_RenderEditor();

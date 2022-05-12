@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/textbox.h"
 
 #define TEXTURE "game/ui/textbox.png"
 

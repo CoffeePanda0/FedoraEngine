@@ -2,7 +2,7 @@
 #define H_UTILS
 
 #include "mem.h"
-#include "../../include/game.h"
+#include <stdbool.h>
 
 enum dietypes {
 	DT_NONE,
@@ -32,10 +32,18 @@ void die (enum dietypes, const char *, ...);
 #define info(...) vlog(LT_INFO, __VA_ARGS__)
 #define warn(...) vlog(LT_WARN, __VA_ARGS__)
 
+
+/** Returns a malloc'd string from an int
+ * \param i The int to convert
+ * \return The malloc'd string
+ * \warning The caller is responsible for freeing the string
+*/
 char *IntToSTR (int i);
 
+#define clamp(value, min, max)\
+    (value < min ? min : (value > max ? max : value));
 
-/* Adds one string to the end of the other, handling memory allocation
+/** Adds one string to the end of the other, handling memory allocation
  * \param str String to add to
  * \param add String to add
  * \return Pointer to the destination string

@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/particle.h"
 
 #define AssetPath "game/sprites/particles/"
 

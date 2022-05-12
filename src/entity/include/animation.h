@@ -1,7 +1,7 @@
 #ifndef H_ANIMATION
 #define H_ANIMATION
 
-#include <SDL.h>
+#include "../../core/include/texture.h"
 
 typedef struct FE_Animation {
     FE_Texture *spritesheet; // The spritesheet
@@ -19,7 +19,7 @@ typedef struct FE_Animation {
 } FE_Animation;
 
 
-/** Creates an animation
+/** Creates an animations
  *\param spritesheet_name The name of the spritesheet
  *\param frame_count The number of frames in the spritesheet
  *\param frame_width The width of each frame

@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/checkbox.h"
 
 #define CHECKBOX_SIZE 32
 

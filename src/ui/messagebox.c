@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/messagebox.h"
 
 #define MB_WIDTH 400
 #define MB_HEIGHT 200

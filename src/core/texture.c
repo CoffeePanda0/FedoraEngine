@@ -1,4 +1,7 @@
-#include "../include/game.h"
+#include <SDL_image.h>
+#include "include/texture.h"
+#include "include/fedoraengine.h"
+#include "include/utils.h"
 
 SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a file
 {

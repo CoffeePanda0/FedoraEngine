@@ -1,5 +1,9 @@
 // basic gameobject functions
-#include "../include/game.h"
+#include "include/gameobject.h"
+#include "../core/include/linkedlist.h"
+#include "../core/include/fedoraengine.h"
+#include "../core/include/utils.h"
+#include "../world/include/physics.h"
 
 #define AssetPath "game/sprites/"
 

@@ -1,5 +1,6 @@
 // Contains all code for managing UI Objects (e.g HUD). Pretty much the same as GameObjects.
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/uiobject.h"
 
 #define AssetPath "game/ui/"
 

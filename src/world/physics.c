@@ -1,4 +1,10 @@
-#include "../include/game.h"
+#include "include/include.h"
+#include "../core/include/linkedlist.h"
+#include "../core/include/fedoraengine.h"
+#include "../core/include/timing.h"
+#include "../core/include/mem.h"
+#include "../core/include/utils.h"
+#include "../entity/include/particle.h"
 
 #ifndef _MATH_H
     #include <math.h>

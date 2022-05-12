@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "include/linkedlist.h"
+#include "include/utils.h"
 
 /* Adds a node to the end of the list in head */
 void FE_List_Add(FE_List **head, void *data)

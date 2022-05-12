@@ -1,8 +1,6 @@
 #ifndef H_BUTTON
 #define H_BUTTON
 
-#include <SDL.h>
-
 typedef struct FE_Button {
     SDL_Texture *text;
     SDL_Texture *hover_text;

@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include <SDL.h>
+#include "include/fedoraengine.h"
 
 float FE_DT = 0; // Time taken for each loop
 const float FE_DT_TARGET = 1.0f / 60;

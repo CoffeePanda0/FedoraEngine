@@ -1,8 +1,6 @@
 #ifndef H_UI_EVENT
 #define H_UI_EVENT
 
-#include <SDL.h>
-
 /** Handles a click event to determine if any UI (button, checkbox, textbox) was pressed
 * \param event The SDL_Event to handle
 * \return true if any UI was pressed, false otherwise

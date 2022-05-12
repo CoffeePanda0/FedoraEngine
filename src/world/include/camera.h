@@ -2,6 +2,7 @@
 #define H_CAMERA
 
 #include <SDL.h>
+#include <stdbool.h>
 
 typedef struct FE_Camera {
     int x, y;

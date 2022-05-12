@@ -1,4 +1,6 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/animation.h"
+#include "include/player.h"
 
 #define IDLE_ANIMATION "player_idle.png"
 #define WALK_ANIMATION "player_walk.png"

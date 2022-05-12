@@ -1,4 +1,10 @@
-#include "../include/game.h"
+#include "include/camera.h"
+#include "include/map.h"
+#include "../core/include/utils.h"
+#include "../core/include/fedoraengine.h"
+#include "../core/include/resourcemanager.h"
+#include "../core/include/render.h"
+#include "../ui/include/ui.h"
 
 #define TEXTURE_PATH "game/map/textures/"
 

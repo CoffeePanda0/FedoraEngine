@@ -1,7 +1,10 @@
 #ifndef H_PARTICLE
 #define H_PARTICLE
 
-#include "../../include/game.h"
+#include <SDL.h>
+#include <stdbool.h>
+
+#include "../../core/include/vector2d.h"
 
 typedef struct FE_Particle {
     Vector2D velocity; // Velocity of the particle
@@ -11,7 +14,7 @@ typedef struct FE_Particle {
     
     Uint16 rotation; // Rotation of the particle
 
-    FE_Texture *texture; // Texture of the particle
+    FE_Texture *texture; // Texture of the particle 
 
     bool expires; // If the particle expires with time
     Uint32 life; // in ms (only applicable if expires is true)

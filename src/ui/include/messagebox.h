@@ -1,7 +1,10 @@
 #ifndef H_MESSAGEBOX
 #define H_MESSAGEBOX
 
-#include "../../include/game.h"
+#include "font.h"
+#include "textbox.h"
+#include "button.h"
+#include "../../core/include/texture.h"
 
 enum FE_MBTYPE {
     MESSAGEBOX_TEXT,

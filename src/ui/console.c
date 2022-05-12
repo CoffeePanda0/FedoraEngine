@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/console.h"
 
 #define CONSOLE_FONT "Inconsolata"
 #define CONSOLE_TEXTURE "game/ui/console.png"

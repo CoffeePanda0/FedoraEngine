@@ -1,6 +1,8 @@
 #ifndef H_AUDIO
 #define H_AUDIO
 
+#include <SDL_mixer.h>
+
 /* Loads a wav for into memory and returns a pointer to i
     * \param path Filename of the wav to load
     * \return Pointer to the loaded wav

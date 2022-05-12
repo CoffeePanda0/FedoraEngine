@@ -1,4 +1,8 @@
-#include "../include/game.h"
+#include "../core/include/fedoraengine.h"
+#include "../core/include/texture.h"
+#include "../include/init.h"
+#include "../entity/include/timer.h"
+#include "include/ui.h"
 
 void FE_RenderUI()
 {

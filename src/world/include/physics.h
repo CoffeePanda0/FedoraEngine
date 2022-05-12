@@ -1,15 +1,11 @@
 #ifndef H_PHYSICS
 #define H_PHYSICS
 
-#include <SDL.h>
 #include "../../core/include/vector2d.h"
 
 #define DRAG 1.2f
 #define FRICTION 0.3f
 #define BOUNCE 0.3f
-
-#define clamp(value, min, max)\
-    (value < min ? min : (value > max ? max : value))
 
 typedef struct FE_PhysObj {
     Uint16 mass;

@@ -1,4 +1,9 @@
-#include "../include/game.h"
+#include <stdbool.h>
+#include "include/animation.h"
+#include "../core/include/linkedlist.h"
+#include "../core/include/resourcemanager.h"
+#include "../core/include/timing.h"
+#include "../core/include/utils.h"
 
 #define ANIMATION_PATH "game/sprites/animations/"
 

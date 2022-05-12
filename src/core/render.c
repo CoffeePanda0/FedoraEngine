@@ -1,4 +1,8 @@
-#include "../include/game.h"
+#include <SDL.h>
+#include "include/texture.h"
+#include "include/utils.h"
+#include "include/fedoraengine.h"
+#include "../world/include/camera.h"
 
 #ifndef _MATH_H
     #include <math.h>

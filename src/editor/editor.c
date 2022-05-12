@@ -1,4 +1,7 @@
-#include "../include/game.h"
+#include "editor.h"
+#include "../ui/include/ui.h"
+#include "../core/include/include.h"
+#include "../include/init.h"
 
 FE_Texture **editor_textures; // The texture atlas (stores 10)
 static size_t texturecount;

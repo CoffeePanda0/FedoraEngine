@@ -1,4 +1,5 @@
-#include "../include/game.h"
+#include "../core/include/include.h"
+#include "include/button.h"
 
 #define BUTTON_TEXTURE "game/ui/button.png"
 #define ACTIVE_TEXTURE "game/ui/button_active.png"

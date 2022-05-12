@@ -1,4 +1,5 @@
 #include "include/game.h"
+#include <SDL_image.h>
 
 /* Contains functions for initializing and exiting the game */
 
@@ -132,7 +133,7 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		FE_DestroyConsole();
 		SDL_DestroyRenderer(PresentGame->renderer);
 		SDL_DestroyWindow(PresentGame->window);
-		FE_DestroyFont(PresentGame->font);
+		FE_CleanFonts();
 		free(PresentGame->config);
 		free(PresentGame);
 	}

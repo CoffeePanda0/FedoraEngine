@@ -1,8 +1,15 @@
-#include "../include/game.h"
+#include "include/camera.h"
+#include "../ext/yclist.h"
+#include "../core/include/fedoraengine.h"
+#include "../core/include/utils.h"
+#include "../core/include/timing.h"
 
 static bool zooming = false;
 static float newzoom;
 static float zoom_rate;
+
+// keeps track of cameras for freeing if we want to later on
+static yList(FE_Camera*) cameras;
 
 bool FE_Camera_Inbounds(SDL_Rect *r, SDL_Rect *dsrct)
 {
@@ -43,6 +50,8 @@ FE_Camera *FE_CreateCamera()
     c->y_bound = PresentGame->MapConfig.MapHeight;
     c->movement_locked = false;
     c->follow = 0;
+
+    y_listpush(cameras, c);
     return c;
 } 
 

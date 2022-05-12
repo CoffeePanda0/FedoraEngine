@@ -6,7 +6,9 @@
 #include <errno.h>
 #include <SDL.h>
 #include "include/utils.h"
-#include "../include/game.h"
+#include "include/fedoraengine.h"
+#include "../include/init.h"
+#include "../ui/include/console.h"
 
 static FILE* f;
 

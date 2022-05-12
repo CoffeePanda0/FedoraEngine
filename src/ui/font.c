@@ -1,5 +1,6 @@
-#include "../include/game.h"
-
+#include "include/font.h"
+#include "../core/include/utils.h"
+#include "../core/include/linkedlist.h"
 #define FONT_DIR "game/fonts/"
 #define FONT_EXT ".ttf"
 
@@ -62,6 +63,7 @@ void FE_CleanFonts()
 {
     for (struct FE_List *l = fonts; l; l = l->next) {
         FE_Font *f = l->data;
+        if (!f->font) continue;
         TTF_CloseFont(f->font);
         free(f->name);
         free(f);
