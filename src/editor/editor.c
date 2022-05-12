@@ -18,7 +18,7 @@ static char **texturepaths; // The texture paths used by tiles for exporting
 static FE_LoadedMap newmap; // Current map for rendering from
 
 /* UI objects for layout */
-static FE_Camera camera;
+static FE_Camera *camera;
 static FE_Label *coord;
 
 static FE_Texture *spawntexture;
@@ -42,35 +42,35 @@ void FE_RenderEditor()
 	/* render background, applying zoom */
 	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
 	FE_QueryTexture(newmap.bg, &bgrect.w ,&bgrect.h);
-	bgrect.w *= camera.zoom;
-	bgrect.h *= camera.zoom;
-	bgrect.x -= camera.x * camera.zoom;
-	bgrect.y -= camera.y * camera.zoom;
+	bgrect.w *= camera->zoom;
+	bgrect.h *= camera->zoom;
+	bgrect.x -= camera->x * camera->zoom;
+	bgrect.y -= camera->y * camera->zoom;
 	SDL_RenderCopy(PresentGame->renderer, newmap.bg->Texture, NULL, &bgrect);
 
 	// render all tiles
 	for (size_t i = 0; i < newmap.tilecount; i++) {
 		SDL_Rect r = (SDL_Rect){newmap.tiles[i].position.x, newmap.tiles[i].position.y, newmap.tilesize, newmap.tilesize};
-		FE_RenderCopyEx(&camera, false, newmap.textures[newmap.tiles[i].texture_index], NULL, &r, newmap.tiles[i].rotation, SDL_FLIP_NONE);
+		FE_RenderCopyEx(camera, false, newmap.textures[newmap.tiles[i].texture_index], NULL, &r, newmap.tiles[i].rotation, SDL_FLIP_NONE);
 	}
 
 	// render spawn
 	if (!FE_VecNULL(newmap.PlayerSpawn)) {
 		SDL_Rect spawnrect = (SDL_Rect){newmap.PlayerSpawn.x, newmap.PlayerSpawn.y, newmap.tilesize, newmap.tilesize};
-		FE_RenderCopy(&camera, false, spawntexture, NULL, &spawnrect);
+		FE_RenderCopy(camera, false, spawntexture, NULL, &spawnrect);
 	}
 
 	// render end flag
 	if (!(newmap.EndFlag.x == -1 && newmap.EndFlag.y == -1)) {
 		SDL_Rect endflagrect = (SDL_Rect){newmap.EndFlag.x, newmap.EndFlag.y, newmap.tilesize, newmap.tilesize};
-		FE_RenderCopy(&camera, false, endtexture, NULL, &endflagrect);
+		FE_RenderCopy(camera, false, endtexture, NULL, &endflagrect);
 	}
 
 	// render grid on map with camera
 	for (int i = 0; i < map_max_width + PresentGame->window_width; i += newmap.tilesize)
-		FE_RenderDrawLine(&camera, i, 0, i, map_max_height + PresentGame->window_width, COLOR_WHITE);
+		FE_RenderDrawLine(camera, i, 0, i, map_max_height + PresentGame->window_width, COLOR_WHITE);
 	for (int i = 0; i < map_max_height + PresentGame->window_height; i += newmap.tilesize)
-		FE_RenderDrawLine(&camera, 0, i, map_max_width + PresentGame->window_width, i, COLOR_WHITE);
+		FE_RenderDrawLine(camera, 0, i, map_max_width + PresentGame->window_width, i, COLOR_WHITE);
 
 
 	// render panel for UI to go over
@@ -98,7 +98,7 @@ static void GridSnap(int *x, int *y)
 static void UpdateCoordinates() // updates the label position on screen
 {
 	char buffer[64];
-	sprintf(buffer, "X: %d, Y: %d", camera.x, camera.y);
+	sprintf(buffer, "X: %d, Y: %d", camera->x, camera->y);
 	FE_UpdateLabel(coord, buffer);
 }
 
@@ -315,13 +315,13 @@ void FE_EventEditorHandler()
 		int mouse_x, mouse_y;
 		SDL_GetMouseState(&mouse_x, &mouse_y);
 		if (mode)
-			AddTile(mouse_x + camera.x, mouse_y + camera.y);
+			AddTile(mouse_x + camera->x, mouse_y + camera->y);
 		else
 			newmap.bg = editor_backgrounds[selectedbackground];
 	} else if (drag_delete) {
 		int mouse_x, mouse_y;
 		SDL_GetMouseState(&mouse_x, &mouse_y);
-		DeleteTile(mouse_x + camera.x, mouse_y + camera.y);
+		DeleteTile(mouse_x + camera->x, mouse_y + camera->y);
 	}
 
 
@@ -379,16 +379,16 @@ void FE_EventEditorHandler()
 					if (keyboard_state[SDL_SCANCODE_Q]) {
 						int mouse_x, mouse_y;
 						SDL_GetMouseState(&mouse_x, &mouse_y);
-						SetSpawn(mouse_x + camera.x, mouse_y + camera.y);
+						SetSpawn(mouse_x + camera->x, mouse_y + camera->y);
 					}
 					else if (keyboard_state[SDL_SCANCODE_E]) {
 						int mouse_x, mouse_y;
 						SDL_GetMouseState(&mouse_x, &mouse_y);
-						SetEnd(mouse_x + camera.x, mouse_y + camera.y);
+						SetEnd(mouse_x + camera->x, mouse_y + camera->y);
 					} else if (keyboard_state[SDL_SCANCODE_R]) {
 						int mouse_x, mouse_y;
 						SDL_GetMouseState(&mouse_x, &mouse_y);
-						RotateTile(mouse_x + camera.x, mouse_y + camera.y);
+						RotateTile(mouse_x + camera->x, mouse_y + camera->y);
 					}
 
 				break;
@@ -398,16 +398,16 @@ void FE_EventEditorHandler()
 	}
 	// moving camera (outside of loop so movement is smooth)
 	if (keyboard_state[SDL_SCANCODE_W]) {
-		FE_MoveCamera(0, -10, &camera);
+		FE_MoveCamera(0, -10, camera);
 		UpdateCoordinates();
 	} else if (keyboard_state[SDL_SCANCODE_A]) {
-		FE_MoveCamera(-10, 0, &camera);
+		FE_MoveCamera(-10, 0, camera);
 		UpdateCoordinates();
 	} else if (keyboard_state[SDL_SCANCODE_S]) {
-		FE_MoveCamera(0, 10, &camera);
+		FE_MoveCamera(0, 10, camera);
 		UpdateCoordinates();
 	} else if (keyboard_state[SDL_SCANCODE_D]) {
-		FE_MoveCamera(10, 0, &camera);
+		FE_MoveCamera(10, 0, camera);
 		UpdateCoordinates();
 	}
 }
@@ -512,9 +512,9 @@ void FE_StartEditor() // cleans up from other game modes
 	newmap.bg = editor_backgrounds[0];
 	mode = true;
 
-	camera = *FE_CreateCamera();
-	camera.x = 0; camera.y = 0;
-	camera.x_bound = map_max_width; camera.y_bound = map_max_height;
+	camera = FE_CreateCamera();
+	camera->x = 0; camera->y = 0;
+	camera->x_bound = map_max_width; camera->y_bound = map_max_height;
 
 
 	info("Editor: Started editor");

@@ -1,7 +1,7 @@
 //Core game loops and functions for game operation
 #include "include/game.h"
 
-static FE_Camera GameCamera;
+static FE_Camera *GameCamera;
 static FE_Player *GamePlayer;
 
 static FE_ParticleSystem *SnowParticles;
@@ -16,13 +16,13 @@ void FE_StartGame(const char *mapname)
 	}
 
 	// camera setup
-	GameCamera = *FE_CreateCamera();
-	GameCamera.maxzoom = 2.0f;
-	GameCamera.minzoom = 1.0f;
+	GameCamera = FE_CreateCamera();
+	GameCamera->maxzoom = 2.0f;
+	GameCamera->minzoom = 1.0f;
 
 	// player setup
-	GamePlayer = FE_CreatePlayer(1, 8, 4, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
-	GameCamera.follow = &GamePlayer->render_rect;
+	GamePlayer = FE_CreatePlayer(1, 8, 40, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
+	GameCamera->follow = &GamePlayer->render_rect;
 
 
 	// test particle system
@@ -44,12 +44,12 @@ void FE_StartGame(const char *mapname)
 void FE_RenderGame()
 {	
 	SDL_RenderClear(PresentGame->renderer);
-	FE_RenderMapBackground(&GameCamera);
-	FE_RenderParticles(&GameCamera);
-	FE_RenderMap(&GameCamera);
-	FE_RenderGameObjects(&GameCamera);
-	FE_RenderLightObjects(&GameCamera);
-	FE_RenderPlayer(GamePlayer, &GameCamera);
+	FE_RenderMapBackground(GameCamera);
+	FE_RenderParticles(GameCamera);
+	FE_RenderMap(GameCamera);
+	FE_RenderGameObjects(GameCamera);
+	FE_RenderLightObjects(GameCamera);
+	FE_RenderPlayer(GamePlayer, GameCamera);
 	FE_RenderUI();
 	SDL_RenderPresent(PresentGame->renderer);
 }
@@ -62,12 +62,12 @@ void FE_GameLoop()
 		return;
 	}
 	
-	FE_GameEventHandler(&GameCamera, GamePlayer);
+	FE_GameEventHandler(GameCamera, GamePlayer);
 	FE_UpdateTimers();
 	FE_RunPhysics();
 	FE_UpdateParticles();
 	FE_UpdatePlayer(GamePlayer);
 	FE_UpdateAnimations();
-	FE_UpdateCamera(&GameCamera);
+	FE_UpdateCamera(GameCamera);
 	FE_RenderGame();
 }

@@ -54,6 +54,12 @@ void FE_Camera_Follow(FE_Camera *camera, SDL_Rect *rect);
 FE_Camera *FE_CreateCamera();
 
 
+/** Safely destroys a camera
+ * \param camera The camera to destroy
+*/
+void FE_FreeCamera(FE_Camera *camera);
+
+
 /* Destroys all cameras that have been loaded into the game so far */
 void FE_CleanCameras();
 

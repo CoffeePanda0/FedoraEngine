@@ -45,6 +45,24 @@ void FE_CleanCameras()
             free(cameras[i]);
     }
     y_listfree(cameras);
+    cameras = 0;
+}
+
+void FE_FreeCamera(FE_Camera *camera)
+{
+    if (!camera) {
+        warn("Passing NULL to FE_FreeCamera");
+        return;
+    }
+
+    for (size_t i = 0; i < y_listlen(cameras); i++) {
+        if (cameras[i] == camera) {
+            y_listerase(cameras, i);
+            return;
+        }
+    }
+
+    warn("Camera not found in list");
 }
 
 FE_Camera *FE_CreateCamera()
