@@ -112,6 +112,7 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_FreeUI();
 	FE_FreeDialogue();
 	FE_CleanEditor();
+	FE_CleanCameras();
 	FE_CleanGameObjects();
 	FE_DestroyMessageBox();
 	FE_CleanAudio();

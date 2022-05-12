@@ -1,7 +1,6 @@
 # FedoraEngine TODO list  
 In order of rough completion plans
 
-- Fix camera memory not freed on game exit  
 - Vsync can break physics dirt particles  
 - Using a texture atlas for maps  
 - Fix invalid maps causing segfaults  

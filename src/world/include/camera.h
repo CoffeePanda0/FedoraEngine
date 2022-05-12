@@ -53,4 +53,8 @@ void FE_Camera_Follow(FE_Camera *camera, SDL_Rect *rect);
 /* Creates and returns a new camera */
 FE_Camera *FE_CreateCamera();
 
+
+/* Destroys all cameras that have been loaded into the game so far */
+void FE_CleanCameras();
+
 #endif

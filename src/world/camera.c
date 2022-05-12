@@ -9,7 +9,7 @@ static float newzoom;
 static float zoom_rate;
 
 // keeps track of cameras for freeing if we want to later on
-static yList(FE_Camera*) cameras;
+static yList(FE_Camera*) cameras = 0;
 
 bool FE_Camera_Inbounds(SDL_Rect *r, SDL_Rect *dsrct)
 {
@@ -33,6 +33,18 @@ void FE_Camera_SetZoom(FE_Camera *camera, float zoom) // Sets the zoom of the ca
 
     float newzoom = clamp(zoom, 0.5f, 10.0f);
     camera->zoom = newzoom;
+}
+
+void FE_CleanCameras()
+{
+    if (!cameras || y_listlen(cameras) == 0)
+        return;
+
+    for (size_t i = 0; i < y_listlen(cameras); i++) {
+        if (cameras[i])
+            free(cameras[i]);
+    }
+    y_listfree(cameras);
 }
 
 FE_Camera *FE_CreateCamera()
