@@ -13,7 +13,7 @@ typedef struct FE_Player {
     float movespeed;
 
     float jumpforce;
-    size_t jump_elapsed;
+    float jump_elapsed;
     bool jump_started;
     
     bool on_ground;
