@@ -23,6 +23,10 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     // physics object
     p->PhysObj = FE_CreatePhysObj(PLAYER_MASS, maxspeed, body, true);
 
+    // light
+    SDL_Rect l_r = {body.x, body.y, 256, 256};
+    p->Light = FE_CreateLight(l_r, "light.png");
+
     // bool values
     p->on_ground = false;
     p->moving = false;
@@ -111,6 +115,9 @@ void FE_UpdatePlayer(FE_Player *player)
     player->render_rect = player->PhysObj->body;
     player->on_ground = OnGround(player);
 
+    // Update the light position, keeping player centered
+    player->Light->Rect.x = player->PhysObj->body.x + player->PhysObj->body.w/2 - player->Light->Rect.w/2;
+    player->Light->Rect.y = player->PhysObj->body.y + player->PhysObj->body.h/2 - player->Light->Rect.h/2;
     
     if (player->PhysObj->velocity.x < 0.15 && player->PhysObj->velocity.x > -0.15) // don't animate small amounts
         player->moving = false;

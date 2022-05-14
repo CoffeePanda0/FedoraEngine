@@ -68,6 +68,16 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                         FE_Camera_SmoothZoom(camera, -0.5, 250);
                     
 
+                    if (keyboard_state[SDL_SCANCODE_M]) {
+                        if (PresentGame->MapConfig.AmbientLight < 255) {
+                            PresentGame->MapConfig.AmbientLight += 3;
+                        }
+                    }
+                    if (keyboard_state[SDL_SCANCODE_N]) {
+                        if (PresentGame->MapConfig.AmbientLight > 0) {
+                            PresentGame->MapConfig.AmbientLight -= 3;
+                        }
+                    }
                     if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0)
                         positionlog = !positionlog;
                     

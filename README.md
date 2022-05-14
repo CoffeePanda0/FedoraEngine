@@ -8,8 +8,8 @@ written in pure c
 # Current features
 FedoraEngine is still very much in development. Current groundbreaking features are:
 - Resource Manager  
+- Fully featured lighting system
 - Custom UI (Labels, Textboxes, Buttons, Checkboxes, MessageBoxes, HUD objects)  
-- Linked list system  
 - Game Objects and sprites  
 - Custom physics engine    
 - Timers  

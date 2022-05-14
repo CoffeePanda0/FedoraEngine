@@ -62,3 +62,19 @@ int FE_QueryTexture(FE_Texture *t, int *w, int *h)
 
     return SDL_QueryTexture(t->Texture, NULL, NULL, w, h);
 }
+
+void FE_FillTexture(SDL_Texture *texture, int r, int g, int b, int a)
+{
+    SDL_SetRenderTarget(PresentGame->renderer, texture);
+    SDL_SetRenderDrawBlendMode(PresentGame->renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(PresentGame->renderer, r, g, b, a);
+    SDL_RenderFillRect(PresentGame->renderer, NULL);
+}
+
+SDL_Texture *FE_CreateRenderTexture(int w, int h)
+{
+    SDL_Texture *t = SDL_CreateTexture(PresentGame->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    FE_FillTexture(t, 0, 0, 0, 0);
+    SDL_SetRenderTarget(PresentGame->renderer, NULL);
+    return t;
+}

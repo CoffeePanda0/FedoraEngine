@@ -4,5 +4,6 @@
 #include "camera.h"
 #include "map.h"
 #include "physics.h"
+#include "lighting.h"
 
 #endif

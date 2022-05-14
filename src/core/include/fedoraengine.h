@@ -17,6 +17,7 @@ typedef struct FE_MapConfig {
     uint16_t MapWidth, MapHeight, MinimumX;
     Vector2D PlayerSpawn;
     float Gravity;
+    Uint8 AmbientLight;
 } FE_MapConfig;
 
 typedef struct FE_AudioConfig {

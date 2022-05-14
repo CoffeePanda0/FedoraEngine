@@ -30,7 +30,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		0, 0,
 		false,
 		GAME_STATE_MENU,
-		(FE_MapConfig){0, 0, 0, VEC_EMPTY, 0.0f},
+		(FE_MapConfig){0, 0, 0, VEC_EMPTY, 0.0f, 150},
 		(FE_AudioConfig){50, false}
 	};
 	return Game;
@@ -93,7 +93,9 @@ void FE_Init(FE_InitConfig *InitConfig)
 			error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
 
 		PresentGame->font = FE_LoadFont(InitConfig->default_font, 24);
+		
 		FE_ConsoleInit();
+		FE_InitLighting();
 
 		info("FedoraEngine started successfully");
 
@@ -117,7 +119,7 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_DestroyMessageBox();
 	FE_CleanAudio();
 	FE_CleanTimers();
-	FE_CleanLightObjects();
+	FE_CleanLighting();
 	FE_CleanAnimations();
 	FE_CleanParticles();
 }

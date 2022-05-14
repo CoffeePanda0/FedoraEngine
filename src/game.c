@@ -5,6 +5,8 @@ static FE_Camera *GameCamera;
 static FE_Player *GamePlayer;
 
 static FE_ParticleSystem *SnowParticles;
+SDL_Texture *world;
+
 
 /* Starts the main game */
 void FE_StartGame(const char *mapname)
@@ -21,7 +23,7 @@ void FE_StartGame(const char *mapname)
 	GameCamera->minzoom = 1.0f;
 
 	// player setup
-	GamePlayer = FE_CreatePlayer(1, 8, 40, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
+	GamePlayer = FE_CreatePlayer(1, 8, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
 	GameCamera->follow = &GamePlayer->render_rect;
 
 
@@ -38,20 +40,31 @@ void FE_StartGame(const char *mapname)
 		false
 	);
 
+	world = FE_CreateRenderTexture(PresentGame->window_width, PresentGame->window_height);
+
 	PresentGame->GameState = GAME_STATE_PLAY;
 }
 
 void FE_RenderGame()
-{	
+{
 	SDL_RenderClear(PresentGame->renderer);
+
+	SDL_SetRenderTarget(PresentGame->renderer, world);
+	SDL_RenderClear(PresentGame->renderer);
+
+	// Render the game to the world texture
 	FE_RenderMapBackground(GameCamera);
 	FE_RenderParticles(GameCamera);
 	FE_RenderMap(GameCamera);
 	FE_RenderGameObjects(GameCamera);
-	FE_RenderLightObjects(GameCamera);
 	FE_RenderPlayer(GamePlayer, GameCamera);
+
+	FE_RenderLighting(GameCamera, world);
+
 	FE_RenderUI();
+
 	SDL_RenderPresent(PresentGame->renderer);
+	
 }
 
 void FE_GameLoop()

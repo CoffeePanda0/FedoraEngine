@@ -43,6 +43,20 @@ int FE_DestroyTexture(FE_Texture *texture);
 int FE_QueryTexture(FE_Texture *t, int *w, int *h);
 
 
+/** Fills a texture with a color (NOTE: TextureAccess must be set to TARGET)
+ * \param texture The texture to fill
+ * \param r The red value to fill with
+ * \param g The green value to fill with
+ * \param b The blue value to fill with
+ * \param a The alpha value to fill with
+*/
+void FE_FillTexture(SDL_Texture *texture, int r, int g, int b, int a);
+
+
+/* Returns an accessable texture with the screen dimensions */
+SDL_Texture *FE_CreateRenderTexture(int w, int h);
+
+
 /* Cleanly exits the texture manager */
 void FE_CloseTextureManager();
 

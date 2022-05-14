@@ -9,7 +9,6 @@
 
 #include "../entity/include/gameobject.h"
 #include "../entity/include/timer.h"
-#include "../entity/include/light.h"
 #include "../entity/include/animation.h"
 #include "../entity/include/player.h"
 #include "../entity/include/particle.h"

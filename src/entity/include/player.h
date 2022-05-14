@@ -6,6 +6,7 @@
 #include "../../core/include/vector2d.h"
 #include "animation.h"
 #include "../../world/include/physics.h"
+#include "../../world/include/lighting.h"
 
 typedef struct FE_Player {
     int id;
@@ -23,6 +24,7 @@ typedef struct FE_Player {
     FE_PhysObj *PhysObj;
 
     SDL_Rect render_rect; // the location displayed on the screen
+    FE_Light *Light;
     
     FE_Animation *idle_animation;
     FE_Animation *walk_animation;
