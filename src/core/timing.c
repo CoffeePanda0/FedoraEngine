@@ -1,6 +1,10 @@
 #include <SDL.h>
 #include "include/fedoraengine.h"
 
+#ifndef _MATH_H
+    #include <math.h>
+#endif
+
 float FE_DT = 0; // Time taken for each loop
 const float FE_DT_TARGET = 1.0f / 60;
 float FE_DT_MULTIPLIER = 1.0f; // The value that we need to multiply by to reach target FPS logic

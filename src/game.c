@@ -47,14 +47,17 @@ void FE_StartGame(const char *mapname)
 
 void FE_RenderGame()
 {
-	SDL_SetRenderTarget(PresentGame->renderer, world);
+	if (PresentGame->DebugConfig.LightingEnabled)
+		SDL_SetRenderTarget(PresentGame->renderer, world);
 	SDL_RenderClear(PresentGame->renderer);
 	FE_RenderMapBackground(GameCamera);
 	FE_RenderParticles(GameCamera);
 	FE_RenderMap(GameCamera);
 	FE_RenderGameObjects(GameCamera);
 	FE_RenderPlayer(GamePlayer, GameCamera);
-	FE_RenderLighting(GameCamera, world);
+	if (PresentGame->DebugConfig.LightingEnabled)
+		FE_RenderLighting(GameCamera, world);
+	FE_RenderUI();
 	SDL_RenderPresent(PresentGame->renderer);
 }
 
@@ -63,21 +66,22 @@ void FE_GameLoop()
 	if (FE_FPS == 0) {
 		return;
 	}
+	FE_DebugUI_Update(GamePlayer);
 	
-	long double event_time = SDL_GetPerformanceCounter();
+	PresentGame->Timing.EventTime = SDL_GetPerformanceCounter();
 	FE_GameEventHandler(GameCamera, GamePlayer);
-	event_time = ((SDL_GetPerformanceCounter() - event_time) / SDL_GetPerformanceFrequency()) * 1000;
+	PresentGame->Timing.EventTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.EventTime) / SDL_GetPerformanceFrequency()) * 1000;
 
-	long double update_time = SDL_GetPerformanceCounter();
+	PresentGame->Timing.UpdateTime = SDL_GetPerformanceCounter();
 	FE_UpdateTimers();
 	FE_RunPhysics();
 	FE_UpdateParticles();
 	FE_UpdatePlayer(GamePlayer);
 	FE_UpdateAnimations();
 	FE_UpdateCamera(GameCamera);
-	update_time = ((SDL_GetPerformanceCounter() - update_time) / SDL_GetPerformanceFrequency()) * 1000;
+	PresentGame->Timing.UpdateTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.UpdateTime) / SDL_GetPerformanceFrequency()) * 1000;
 
-	long double render_time = SDL_GetPerformanceCounter();
+	PresentGame->Timing.RenderTime = SDL_GetPerformanceCounter();
 	FE_RenderGame();
-	render_time = ((SDL_GetPerformanceCounter() - render_time) / SDL_GetPerformanceFrequency()) * 1000;
+	PresentGame->Timing.RenderTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.RenderTime) / SDL_GetPerformanceFrequency()) * 1000;
 }

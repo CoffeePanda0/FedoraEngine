@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "../../core/include/vector2d.h"
 #include "animation.h"
+#include "../../world/include/camera.h"
 #include "../../world/include/physics.h"
 #include "../../world/include/lighting.h"
 

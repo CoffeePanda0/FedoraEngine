@@ -93,11 +93,15 @@ int FE_RenderRect(SDL_Rect *rect, SDL_Color color) // Renders a rect (filled) to
     Uint8 prev_r, prev_g, prev_b, prev_a;
     SDL_GetRenderDrawColor(PresentGame->renderer, &prev_r, &prev_g, &prev_b, &prev_a);
 
+    SDL_BlendMode b;
+    SDL_GetRenderDrawBlendMode(PresentGame->renderer, &b);
+
+    SDL_SetRenderDrawBlendMode(PresentGame->renderer, SDL_BLENDMODE_NONE);
     SDL_SetRenderDrawColor(PresentGame->renderer, color.r, color.g, color.b, color.a);
     SDL_RenderDrawRect(PresentGame->renderer, rect);
     SDL_RenderFillRect(PresentGame->renderer, rect);
 
     SDL_SetRenderDrawColor(PresentGame->renderer, prev_r, prev_g, prev_b, prev_a);
-
+    SDL_SetRenderDrawBlendMode(PresentGame->renderer, b);
     return 1;
 }

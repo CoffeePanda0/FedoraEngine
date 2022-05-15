@@ -4,7 +4,6 @@ In order of rough completion plans
 - Extra high velocities can cause clipping
 - Add jump animation and falling animation logic  
 - Tie movement speed to walking animaiton speed  
-- Add debuginfo option to presentgame  
 - Parallax backgrounds  
 - Add zooming to editor  
 - New UI lib creation

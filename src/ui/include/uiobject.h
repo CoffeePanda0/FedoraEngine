@@ -1,6 +1,8 @@
 #ifndef H_UIOBJECT
 #define H_UIOBJECT
 
+#include "../../core/include/texture.h"
+
 typedef struct FE_UIObject {
     SDL_Rect r;
     FE_Texture *texture;

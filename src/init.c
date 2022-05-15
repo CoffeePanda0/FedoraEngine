@@ -31,7 +31,9 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		false,
 		GAME_STATE_MENU,
 		(FE_MapConfig){0, 0, 0, VEC_EMPTY, 0.0f, 150},
-		(FE_AudioConfig){50, false}
+		(FE_AudioConfig){50, false},
+		(FE_Timing){0,0,0},
+		(FE_DebugConfig){false, true}
 	};
 	return Game;
 }

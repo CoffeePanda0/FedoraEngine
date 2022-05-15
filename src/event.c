@@ -7,21 +7,10 @@
     4- User input
 */
 
-static bool positionlog = false; // used for testing, probably removed later
-static size_t lastlogtime = 0;
-
 static bool fullscreen = false;
 
 void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 {
-    if (positionlog) {
-        lastlogtime += 1;
-        if (lastlogtime >= (10 / FE_DT_MULTIPLIER)) { // only log every 10 frames to save cpu use
-            lastlogtime = 0;
-            printf("PLAYER X: %i | PLAYER Y: %i| VELOCITY: %f,%f | DT: %f\n", player->PhysObj->body.x, player->PhysObj->body.y + camera->y, player->PhysObj->velocity.x, player->PhysObj->velocity.y, FE_DT);
-        }
-    }
-
     const Uint8* keyboard_state = SDL_GetKeyboardState(NULL);
 	SDL_PumpEvents();
 	SDL_Event event;
@@ -78,8 +67,8 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                             PresentGame->MapConfig.AmbientLight -= 3;
                         }
                     }
-                    if (keyboard_state[SDL_SCANCODE_P] && event.key.repeat == 0)
-                        positionlog = !positionlog;
+                    if (keyboard_state[SDL_SCANCODE_I] && event.key.repeat == 0)
+                        PresentGame->DebugConfig.ShowTiming = !PresentGame->DebugConfig.ShowTiming;
                     
                     if (keyboard_state[SDL_SCANCODE_F] && event.key.repeat == 0) {
                         fullscreen = !fullscreen;

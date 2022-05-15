@@ -34,6 +34,8 @@ void FE_MenuEventHandle();
 /* Renders all UI elements */
 void FE_RenderUI();
 
+/* Updates the debug info UI */
+void FE_DebugUI_Update();
 
 /** Centres a rect inside the screen 
  * \param type The type of centering to perform

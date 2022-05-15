@@ -36,6 +36,12 @@ void FE_RenderLighting(FE_Camera *camera, SDL_Texture *world)
 {
 	Uint8 brightness = PresentGame->MapConfig.AmbientLight;
 
+    if (brightness == 255) {
+        SDL_SetRenderTarget(PresentGame->renderer, NULL);
+        SDL_RenderCopy(PresentGame->renderer, world, NULL, NULL);
+        return;
+    }
+
     // Create an layer to render the lighting to
 	SDL_SetRenderTarget(PresentGame->renderer, light_layer);
 	SDL_SetTextureBlendMode(light_layer, SDL_BLENDMODE_MOD);
