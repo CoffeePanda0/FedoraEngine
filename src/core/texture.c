@@ -1,7 +1,11 @@
 #include <SDL_image.h>
-#include "include/texture.h"
-#include "include/fedoraengine.h"
-#include "include/utils.h"
+#include "include/include.h"
+
+#ifndef _MATH_H
+    #include <math.h>
+#endif
+
+#define ATLAS_PATH "game/map/textures/"
 
 SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a file
 {
@@ -77,4 +81,48 @@ SDL_Texture *FE_CreateRenderTexture(int w, int h)
     FE_FillTexture(t, 0, 0, 0, 0);
     SDL_SetRenderTarget(PresentGame->renderer, NULL);
     return t;
+}
+
+SDL_Rect FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
+{
+    if (!atlas) {
+        warn("NULL atlas being passed (FE_GetTexturePoisition)");
+        return (SDL_Rect){0,0,0,0};
+    }
+
+    if (atlas->height < atlas->texturesize || atlas->width < atlas->texturesize || atlas->texturesize == 0)
+        return (SDL_Rect){0,0,0,0};
+
+    if (index == 0) {
+        return (SDL_Rect){0,0,atlas->texturesize,atlas->texturesize};
+    }
+
+    size_t atlas_cols = atlas->width / atlas->texturesize;
+
+    // Calculate the X and Y coordinates on the atlas
+    int row = ceil(index / atlas_cols);
+    int col = (index % atlas_cols);
+    if (col == 0)
+        col = atlas_cols;
+
+    return (SDL_Rect){col * atlas->texturesize, row * atlas->texturesize, atlas->texturesize, atlas->texturesize};
+}
+
+FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)
+{
+	if (!name || strlen(name) == 0) {
+		warn("Editor_LoadAtlas: Passing NULL to path");
+		return 0;
+	}
+
+	FE_TextureAtlas *atlas = xmalloc(sizeof(FE_TextureAtlas));
+
+	char *path = AddStr(ATLAS_PATH, name);
+	atlas->atlas = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
+	xfree(path);
+
+	FE_QueryTexture(atlas->atlas, &atlas->width, &atlas->height);
+	atlas->texturesize = 64;
+
+	return atlas;
 }

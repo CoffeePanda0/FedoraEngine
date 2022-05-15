@@ -142,7 +142,7 @@ void FE_Camera_SmoothZoom(FE_Camera *camera, float amount, uint16_t time)
     } 
 }
 
-void FE_MoveCamera(int x, int y, FE_Camera *c)
+void FE_MoveCamera(float x, float y, FE_Camera *c)
 {
     if (!c)
         return;

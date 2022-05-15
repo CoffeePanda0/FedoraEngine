@@ -13,4 +13,13 @@ extern uint32_t FE_FPS; // Game FPS
 int FE_CalculateDT();
 
 
+/** Times how long a function takes to complete
+ * \param callback The function pointer to time
+ * \param params The parameters to pass to the function
+ * \returns How long the function took to complete
+*/
+float FE_TimeFunction(void (*callback)(), void *params);
+
+void FE_ResetDT();
+
 #endif

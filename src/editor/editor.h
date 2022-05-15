@@ -27,7 +27,6 @@ size_t Editor_LoadTextures();
 bool Editor_CallSave(FE_Map *save);
 
 /* Editor variables - not to be used other than locally in editor.c */
-extern FE_Texture **editor_textures; // The texture atlas (stores 10)
 extern FE_Texture **editor_backgrounds; // The background atlas (stores 10)
 
 #endif

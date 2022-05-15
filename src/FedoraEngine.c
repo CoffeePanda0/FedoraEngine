@@ -46,6 +46,8 @@ int main(int argc, char* argv[])
 	
 	while (PresentGame->GameActive) {
 		// main game loop - calls functions based on game state
+		FE_CalculateDT();
+
 		switch (PresentGame->GameState) {
 			case GAME_STATE_MENU:
 				FE_RenderMenu();

@@ -109,6 +109,11 @@ int FE_DestroyResource(char *filepath)
     if (!resource_init) {
         error("ResourceManager has not yet been initalised");
     }
+
+    if (!filepath) {
+        warn("Invalid filepath");
+        return -1;
+    }
     
     FE_Resource *res = (FE_Resource *)htget(&Resources, filepath);
     if (!res) {

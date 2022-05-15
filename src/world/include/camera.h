@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 typedef struct FE_Camera {
-    int x, y;
+    float x, y;
     float zoom, maxzoom, minzoom;
     
     int x_min, y_min;
@@ -16,7 +16,7 @@ typedef struct FE_Camera {
 } FE_Camera;
 
 // Moves camera taking clamps into account
-void FE_MoveCamera(int x, int y, FE_Camera *c);
+void FE_MoveCamera(float x, float y, FE_Camera *c);
 
 // Returns false if r is not inside dsrct
 bool FE_Camera_Inbounds(SDL_Rect *r, SDL_Rect *dsrct);

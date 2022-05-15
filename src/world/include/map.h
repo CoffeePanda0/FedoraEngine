@@ -16,8 +16,8 @@ typedef struct FE_Map {
 
     float gravity;
 
-    Uint16 texturecount;
-    char **texturepaths;
+    char *atlaspath;
+    Uint16 atlas_tilesize;
 
     char *bg_texturepath;
 
@@ -36,9 +36,7 @@ typedef struct FE_LoadedMap {
 
     float gravity;
 
-    Uint16 texturecount;
-    FE_Texture **textures;
-
+    FE_TextureAtlas *atlas;
     FE_Texture *bg;
 
     Uint16 tilecount;

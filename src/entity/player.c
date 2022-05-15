@@ -116,8 +116,10 @@ void FE_UpdatePlayer(FE_Player *player)
     player->on_ground = OnGround(player);
 
     // Update the light position, keeping player centered
-    player->Light->Rect.x = player->PhysObj->body.x + player->PhysObj->body.w/2 - player->Light->Rect.w/2;
-    player->Light->Rect.y = player->PhysObj->body.y + player->PhysObj->body.h/2 - player->Light->Rect.h/2;
+    if (player->Light) {
+        player->Light->Rect.x = player->PhysObj->body.x + player->PhysObj->body.w/2 - player->Light->Rect.w/2;
+        player->Light->Rect.y = player->PhysObj->body.y + player->PhysObj->body.h/2 - player->Light->Rect.h/2;
+    }
     
     if (player->PhysObj->velocity.x < 0.15 && player->PhysObj->velocity.x > -0.15) // don't animate small amounts
         player->moving = false;

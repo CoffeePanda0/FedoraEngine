@@ -134,7 +134,7 @@ void FE_UpdateParticles()
             }
 
             // apply gravity and friction to all particles
-            float new_velocity_y = particle->velocity.y += PARTICLE_GRAVITY;
+            float new_velocity_y = particle->velocity.y += (PARTICLE_GRAVITY * FE_DT_MULTIPLIER);
             particle->velocity.y = clamp(new_velocity_y, -MAX_VELOCITY, MAX_VELOCITY);
             particle->velocity.x *= (1.0f - (PARTICLE_DRAG * FE_DT));
 

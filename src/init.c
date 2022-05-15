@@ -119,7 +119,6 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_DestroyMessageBox();
 	FE_CleanAudio();
 	FE_CleanTimers();
-	FE_CleanLighting();
 	FE_CleanAnimations();
 	FE_CleanParticles();
 }
@@ -134,6 +133,7 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		IMG_Quit();
 		FE_CleanAll();
 		FE_DestroyConsole();
+		FE_CleanLighting();
 		SDL_DestroyRenderer(PresentGame->renderer);
 		SDL_DestroyWindow(PresentGame->window);
 		FE_CleanFonts();

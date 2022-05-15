@@ -60,4 +60,25 @@ SDL_Texture *FE_CreateRenderTexture(int w, int h);
 /* Cleanly exits the texture manager */
 void FE_CloseTextureManager();
 
+typedef struct FE_TextureAtlas {
+    FE_Texture *atlas;
+    int width, height;
+    uint16_t texturesize;
+} FE_TextureAtlas;
+
+
+/** Returns the SDL_Rect of a texture in the atlas
+ * \param atlas The atlas to search
+ * \param index The index of the texture to search for
+ * \returns The SDL_Rect of the texture
+*/
+SDL_Rect FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index);
+
+
+/** Returns a texture atlas
+ * \param name The name of the atlas
+ * \returns A pointer to the atlas
+*/
+FE_TextureAtlas *FE_LoadTextureAtlas(const char *name);
+
 #endif

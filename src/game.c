@@ -7,7 +7,6 @@ static FE_Player *GamePlayer;
 static FE_ParticleSystem *SnowParticles;
 SDL_Texture *world;
 
-
 /* Starts the main game */
 void FE_StartGame(const char *mapname)
 {
@@ -43,44 +42,42 @@ void FE_StartGame(const char *mapname)
 	world = FE_CreateRenderTexture(PresentGame->window_width, PresentGame->window_height);
 
 	PresentGame->GameState = GAME_STATE_PLAY;
+	FE_ResetDT();
 }
 
 void FE_RenderGame()
 {
-	SDL_RenderClear(PresentGame->renderer);
-
 	SDL_SetRenderTarget(PresentGame->renderer, world);
 	SDL_RenderClear(PresentGame->renderer);
-
-	// Render the game to the world texture
 	FE_RenderMapBackground(GameCamera);
 	FE_RenderParticles(GameCamera);
 	FE_RenderMap(GameCamera);
 	FE_RenderGameObjects(GameCamera);
 	FE_RenderPlayer(GamePlayer, GameCamera);
-
 	FE_RenderLighting(GameCamera, world);
-
-	FE_RenderUI();
-
 	SDL_RenderPresent(PresentGame->renderer);
-	
 }
 
 void FE_GameLoop()
 {
-	FE_CalculateDT();
-
 	if (FE_FPS == 0) {
 		return;
 	}
 	
+	long double event_time = SDL_GetPerformanceCounter();
 	FE_GameEventHandler(GameCamera, GamePlayer);
+	event_time = ((SDL_GetPerformanceCounter() - event_time) / SDL_GetPerformanceFrequency()) * 1000;
+
+	long double update_time = SDL_GetPerformanceCounter();
 	FE_UpdateTimers();
 	FE_RunPhysics();
 	FE_UpdateParticles();
 	FE_UpdatePlayer(GamePlayer);
 	FE_UpdateAnimations();
 	FE_UpdateCamera(GameCamera);
+	update_time = ((SDL_GetPerformanceCounter() - update_time) / SDL_GetPerformanceFrequency()) * 1000;
+
+	long double render_time = SDL_GetPerformanceCounter();
 	FE_RenderGame();
+	render_time = ((SDL_GetPerformanceCounter() - render_time) / SDL_GetPerformanceFrequency()) * 1000;
 }

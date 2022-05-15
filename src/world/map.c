@@ -1,9 +1,5 @@
-#include "include/camera.h"
-#include "include/map.h"
-#include "../core/include/utils.h"
-#include "../core/include/fedoraengine.h"
-#include "../core/include/resourcemanager.h"
-#include "../core/include/render.h"
+#include "../core/include/include.h"
+#include "include/include.h"
 #include "../ui/include/ui.h"
 
 #define TEXTURE_PATH "game/map/textures/"
@@ -42,25 +38,16 @@ int FE_LoadMap(const char *name)
     
     // read gravity
     if (fread(&map.gravity, sizeof(float), 1, f) != 1) goto err;
-
-    // Read map texture paths
-    if (fread(&map.texturecount, sizeof(Uint16), 1, f) != 1) goto err;
-
-    char **texturepaths = xmalloc(sizeof(char*) * map.texturecount);
-    for (int i = 0; i < map.texturecount; i++) {
-        if (!(texturepaths[i] = ReadStr(f))) goto err;
-    }
     
-    // load texture from path to textures array
-    map.textures = xmalloc(sizeof(FE_Texture*) * map.texturecount);
-    for (int i = 0; i < map.texturecount; i++) {
-        map.textures[i] = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, texturepaths[i]);
-    }
+    // load texture atlas
+    char *atlas_path = 0;
+    if (!(atlas_path = ReadStr(f))) goto err;
+    map.atlas = FE_LoadTextureAtlas(atlas_path);
+    xfree(atlas_path);
 
-    // free texturepaths array
-    for (int i = 0; i < map.texturecount; i++) 
-        free(texturepaths[i]);
-    free(texturepaths);
+
+    if (fread(&map.atlas->texturesize, sizeof(Uint16), 1, f) != 1) goto err;
+    FE_QueryTexture(map.atlas->atlas, &map.atlas->width, &map.atlas->height);
 
     // load background image
     char *bg_path = 0;
@@ -105,10 +92,9 @@ int FE_LoadMap(const char *name)
     if (fread(&map.EndFlag, sizeof(Vector2D), 1, f) != 1) goto err;
 
     fclose(f);
-
+    
     info("Loaded map '%s'", map.name);
 
-    FE_FreeUI();
     PresentGame->GameState = GAME_STATE_PLAY;
     return 1;
     
@@ -125,8 +111,9 @@ void FE_RenderMap(FE_Camera *camera)
 {
 	// render all tiles
 	for (size_t i = 0; i < map.tilecount; i++) {
-		SDL_Rect r = (SDL_Rect){map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
-		FE_RenderCopyEx(camera, false, map.textures[map.tiles[i].texture_index], NULL, &r, map.tiles[i].rotation, SDL_FLIP_NONE);
+		SDL_Rect r = {map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
+        SDL_Rect src = FE_GetTexturePosition(map.atlas, map.tiles[i].texture_index);
+		FE_RenderCopyEx(camera, false, map.atlas->atlas, &src, &r, map.tiles[i].rotation, SDL_FLIP_NONE);
 	} 
 
     // render finish flag
@@ -161,15 +148,11 @@ void FE_CloseMap()
     
     map.PlayerSpawn = VEC_NULL;
 
-    if (map.textures) {
-        for (size_t i = 0; i < map.texturecount; i++) {
-            if (map.textures[i])
-                FE_DestroyResource(map.textures[i]->path);
-        }
-        xfree(map.textures);
-        map.textures = 0;
+    if (map.atlas) {
+        FE_DestroyResource(map.atlas->atlas->path);
+        free(map.atlas);
     }
-    map.texturecount = 0;
+    map.atlas = 0;
     
     if (map.bg)
         FE_DestroyResource(map.bg->path);

@@ -2,11 +2,8 @@
 In order of rough completion plans
 
 - Extra high velocities can cause clipping
-- Using a texture atlas for maps  
-- Fix invalid maps causing segfaults  
 - Add jump animation and falling animation logic  
 - Tie movement speed to walking animaiton speed  
-- Deltatime anomilies can cause physics issues (particles)
 - Add debuginfo option to presentgame  
 - Parallax backgrounds  
 - Add zooming to editor  
