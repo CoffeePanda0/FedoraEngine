@@ -75,7 +75,7 @@ FE_TextBox *FE_CreateTextBox(int x, int y, int w, int h, char *value) // Makes a
     // make box label
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, value, COLOR_WHITE); 
     temp->label = xmalloc(sizeof(FE_Label));
-    temp->label->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
+    temp->label->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
 
     SDL_QueryTexture(temp->label->text, NULL, NULL, &temp->label->r.w, &temp->label->r.h); // Get w and h for rect
     SDL_FreeSurface(text_surface);
@@ -109,7 +109,7 @@ int FE_SetContent(FE_TextBox *t, char *value) // Sets the content of a textbox
     SDL_DestroyTexture(t->label->text);
     
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, t->content, COLOR_WHITE); 
-    t->label->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
+    t->label->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     SDL_QueryTexture(t->label->text, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
@@ -159,7 +159,7 @@ int FE_UpdateTextBox(char c) // Adds or subtracts a character from the text of a
     SDL_DestroyTexture(t->label->text);
     
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, t->content, COLOR_WHITE); 
-    t->label->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
+    t->label->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     SDL_QueryTexture(t->label->text, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
@@ -201,7 +201,7 @@ void FE_RenderTextBox()
 {
     for (FE_List *l = FE_Textboxes; l; l = l->next) {
         FE_TextBox *t = l->data;
-        SDL_RenderCopy(PresentGame->renderer, t->text, NULL, &t->r);
-        SDL_RenderCopy(PresentGame->renderer, t->label->text, NULL, &t->label->r);
+        SDL_RenderCopy(PresentGame->Renderer, t->text, NULL, &t->r);
+        SDL_RenderCopy(PresentGame->Renderer, t->label->text, NULL, &t->label->r);
     }
 }

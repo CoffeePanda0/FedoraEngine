@@ -56,7 +56,7 @@ FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t
 
     // create label from text
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, text, COLOR_BLUE); 
-    b->label = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
+    b->label = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
 
@@ -144,11 +144,11 @@ void FE_RenderButtons() // Renders all buttons and their labels
     for (struct FE_List *l = FE_Buttons; l; l = l->next) {
         struct FE_Button *t = l->data;
         if (t->hover) {
-            SDL_RenderCopy(PresentGame->renderer, t->hover_text, NULL, &t->r);
+            SDL_RenderCopy(PresentGame->Renderer, t->hover_text, NULL, &t->r);
         } else {
-            SDL_RenderCopy(PresentGame->renderer, t->text, NULL, &t->r);
+            SDL_RenderCopy(PresentGame->Renderer, t->text, NULL, &t->r);
         }
-        SDL_RenderCopy(PresentGame->renderer, t->label, NULL, &t->label_rect);
+        SDL_RenderCopy(PresentGame->Renderer, t->label, NULL, &t->label_rect);
     }
 }
 

@@ -17,7 +17,7 @@ SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a fi
     SDL_Surface* s = IMG_Load(path); // we have this to check the image is valid
     if (s) {
         SDL_Surface* tmpSurface = IMG_Load(path); 
-        SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->renderer, tmpSurface);
+        SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Renderer, tmpSurface);
         SDL_FreeSurface(tmpSurface);
         SDL_FreeSurface(s);
         return text;
@@ -32,7 +32,7 @@ SDL_Texture* FE_TextureFromRGBA(SDL_Color color) // Returns a plain texture from
 {
     SDL_Surface* s = SDL_CreateRGBSurface(0,1,1,32,0,0,0,0);
     SDL_FillRect(s, NULL, SDL_MapRGBA(s->format, color.r, color.g, color.b, color.a));
-    SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->renderer, s);
+    SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
     SDL_FreeSurface(s);
 
     if (!text) {
@@ -69,32 +69,32 @@ int FE_QueryTexture(FE_Texture *t, int *w, int *h)
 
 void FE_FillTexture(SDL_Texture *texture, int r, int g, int b, int a)
 {
-    SDL_SetRenderTarget(PresentGame->renderer, texture);
-    SDL_SetRenderDrawBlendMode(PresentGame->renderer, SDL_BLENDMODE_NONE);
-    SDL_SetRenderDrawColor(PresentGame->renderer, r, g, b, a);
-    SDL_RenderFillRect(PresentGame->renderer, NULL);
+    SDL_SetRenderTarget(PresentGame->Renderer, texture);
+    SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(PresentGame->Renderer, r, g, b, a);
+    SDL_RenderFillRect(PresentGame->Renderer, NULL);
 }
 
 SDL_Texture *FE_CreateRenderTexture(int w, int h)
 {
-    SDL_Texture *t = SDL_CreateTexture(PresentGame->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    SDL_Texture *t = SDL_CreateTexture(PresentGame->Renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
     FE_FillTexture(t, 0, 0, 0, 0);
-    SDL_SetRenderTarget(PresentGame->renderer, NULL);
+    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
     return t;
 }
 
-SDL_Rect FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
+Vector2D FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
 {
     if (!atlas) {
         warn("NULL atlas being passed (FE_GetTexturePoisition)");
-        return (SDL_Rect){0,0,0,0};
+        return VEC_EMPTY;
     }
 
     if (atlas->height < atlas->texturesize || atlas->width < atlas->texturesize || atlas->texturesize == 0)
-        return (SDL_Rect){0,0,0,0};
+        return VEC_EMPTY;
 
     if (index == 0) {
-        return (SDL_Rect){0,0,atlas->texturesize,atlas->texturesize};
+        return VEC_EMPTY;
     }
 
     size_t atlas_cols = atlas->width / atlas->texturesize;
@@ -105,7 +105,7 @@ SDL_Rect FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
     if (col == 0)
         col = atlas_cols;
 
-    return (SDL_Rect){col * atlas->texturesize, row * atlas->texturesize, atlas->texturesize, atlas->texturesize};
+    return FE_NewVector(col * atlas->texturesize, row * atlas->texturesize);
 }
 
 FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)

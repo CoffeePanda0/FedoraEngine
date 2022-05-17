@@ -5,7 +5,8 @@
 
 #define ATLAS "tileset.png"
 
-static size_t selectedtexture;
+static size_t selectedtexture; // The currently selected texture
+static Vector2D selectedtexture_position; // the position of the selected texture in the atlas
 
 FE_Texture **editor_backgrounds; // The background atlas (stores 10)
 static size_t bgcount; // amount of background textures loaded
@@ -35,8 +36,8 @@ static int map_max_height = 1024;
 
 void FE_RenderEditor()
 {
-    SDL_RenderClear(PresentGame->renderer);
-	SDL_SetRenderDrawColor(PresentGame->renderer, 0, 0, 0, 0);
+    SDL_RenderClear(PresentGame->Renderer);
+	SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 0);
 
 	/* render background, applying zoom */
 	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
@@ -45,12 +46,12 @@ void FE_RenderEditor()
 	bgrect.h *= camera->zoom;
 	bgrect.x -= camera->x * camera->zoom;
 	bgrect.y -= camera->y * camera->zoom;
-	SDL_RenderCopy(PresentGame->renderer, newmap.bg->Texture, NULL, &bgrect);
+	SDL_RenderCopy(PresentGame->Renderer, newmap.bg->Texture, NULL, &bgrect);
 
 	// render all tiles
 	for (size_t i = 0; i < newmap.tilecount; i++) {
 		SDL_Rect r = (SDL_Rect){newmap.tiles[i].position.x, newmap.tiles[i].position.y, newmap.tilesize, newmap.tilesize};
-		SDL_Rect src = FE_GetTexturePosition(newmap.atlas, newmap.tiles[i].texture_index);
+        SDL_Rect src = {newmap.tiles[i].texture_x, newmap.tiles[i].texture_y, newmap.atlas->texturesize, newmap.atlas->texturesize};
 		FE_RenderCopyEx(camera, false, newmap.atlas->atlas, &src, &r, newmap.tiles[i].rotation, SDL_FLIP_NONE);
 	}
 
@@ -67,27 +68,27 @@ void FE_RenderEditor()
 	}
 
 	// render grid on map with camera
-	for (int i = 0; i < map_max_width + PresentGame->window_width; i += newmap.tilesize)
-		FE_RenderDrawLine(camera, i, 0, i, map_max_height + PresentGame->window_width, COLOR_WHITE);
-	for (int i = 0; i < map_max_height + PresentGame->window_height; i += newmap.tilesize)
-		FE_RenderDrawLine(camera, 0, i, map_max_width + PresentGame->window_width, i, COLOR_WHITE);
+	for (int i = 0; i < map_max_width + PresentGame->Window_width; i += newmap.tilesize)
+		FE_RenderDrawLine(camera, i, 0, i, map_max_height + PresentGame->Window_width, COLOR_WHITE);
+	for (int i = 0; i < map_max_height + PresentGame->Window_height; i += newmap.tilesize)
+		FE_RenderDrawLine(camera, 0, i, map_max_width + PresentGame->Window_width, i, COLOR_WHITE);
 
 
 	// render panel for UI to go over
-	FE_RenderRect(&(SDL_Rect){0, 0, PresentGame->window_width, 42}, COLOR_WHITE);
+	FE_RenderRect(&(SDL_Rect){0, 0, PresentGame->Window_width, 42}, COLOR_WHITE);
 	FE_RenderUI();
 
 
 	// render thumbnail previewing currently selected texture
 	SDL_Rect thumbnail = {475, 6, 32, 32};
 	if (mode) {
-		SDL_Rect src = FE_GetTexturePosition(newmap.atlas, selectedtexture);
-		SDL_RenderCopy(PresentGame->renderer, newmap.atlas->atlas->Texture, &src, &thumbnail);
+		SDL_Rect src = {selectedtexture_position.x, selectedtexture_position.y, newmap.atlas->texturesize, newmap.atlas->texturesize};
+		SDL_RenderCopy(PresentGame->Renderer, newmap.atlas->atlas->Texture, &src, &thumbnail);
 	} else
-		SDL_RenderCopy(PresentGame->renderer, editor_backgrounds[selectedtexture]->Texture, NULL, &thumbnail);
+		SDL_RenderCopy(PresentGame->Renderer, editor_backgrounds[selectedtexture]->Texture, NULL, &thumbnail);
 
 
-	SDL_RenderPresent(PresentGame->renderer);
+	SDL_RenderPresent(PresentGame->Renderer);
 }
 
 static void GridSnap(int *x, int *y)
@@ -155,10 +156,8 @@ static void AddTile(int x, int y)
 		newmap.tiles = xmalloc(sizeof(FE_Map_Tile));
 	else
 		newmap.tiles = xrealloc(newmap.tiles, sizeof(FE_Map_Tile) * (newmap.tilecount + 1));
-	newmap.tiles[newmap.tilecount++] = (FE_Map_Tile){selectedtexture, 0, FE_NewVector(x, y)};
+	newmap.tiles[newmap.tilecount++] = (FE_Map_Tile){selectedtexture_position.x, selectedtexture_position.y, rotation, FE_NewVector(x, y)};
 
-	// Apply persistent rotation
-	newmap.tiles[newmap.tilecount-1].rotation = rotation;
 }
 
 static void SetSpawn(int x, int y)
@@ -225,6 +224,7 @@ static void ChangeSelection(size_t sel)
 	rotation = 0;
 	if (mode) { // change selected tile
 		selectedtexture = sel;
+		selectedtexture_position = FE_GetTexturePosition(newmap.atlas, selectedtexture);
 	} else { // change selected bg
 		if (bgcount -1 < sel)
 			return;

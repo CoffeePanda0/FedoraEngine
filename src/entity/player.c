@@ -70,7 +70,7 @@ void FE_RenderPlayer(FE_Player *player, FE_Camera *camera)
 
     SDL_Rect player_srcrct = FE_GetAnimationFrame(current_animation);
     const SDL_Point center = (SDL_Point){player->render_rect.w/2, player->render_rect.h/2};
-    SDL_RenderCopyEx(PresentGame->renderer,
+    SDL_RenderCopyEx(PresentGame->Renderer,
         current_animation->spritesheet->Texture,
         &player_srcrct,
         &(SDL_Rect){player->render_rect.x * camera->zoom, player->render_rect.y * camera->zoom, player->render_rect.w * camera->zoom, player->render_rect.h * camera->zoom},
@@ -115,10 +115,14 @@ void FE_UpdatePlayer(FE_Player *player)
     player->render_rect = player->PhysObj->body;
     player->on_ground = OnGround(player);
 
+    static Vector2D last_position = VEC_NULL;
+
     // Update the light position, keeping player centered
-    if (player->Light) {
-        player->Light->Rect.x = player->PhysObj->body.x + player->PhysObj->body.w/2 - player->Light->Rect.w/2;
-        player->Light->Rect.y = player->PhysObj->body.y + player->PhysObj->body.h/2 - player->Light->Rect.h/2;
+    if (last_position.x != player->PhysObj->body.x || last_position.y != player->PhysObj->body.y) {
+        if (player->Light) {
+            FE_MoveLight(player->Light, player->PhysObj->body.x + player->PhysObj->body.w/2 - player->Light->Rect.w/2, player->PhysObj->body.y + player->PhysObj->body.h/2 - player->Light->Rect.h/2);
+            last_position = FE_NewVector(player->PhysObj->body.x, player->PhysObj->body.y);
+        }
     }
     
     if (player->PhysObj->velocity.x < 0.15 && player->PhysObj->velocity.x > -0.15) // don't animate small amounts

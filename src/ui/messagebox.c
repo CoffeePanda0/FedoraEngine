@@ -33,8 +33,8 @@ int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick), void *o
 
     // calculate display rect
     MB->displayrect = (SDL_Rect){
-        (PresentGame->window_width / 2) - (MB_WIDTH / 2),
-        (PresentGame->window_height / 2) - (MB_HEIGHT / 2),
+        (PresentGame->Window_width / 2) - (MB_WIDTH / 2),
+        (PresentGame->Window_height / 2) - (MB_HEIGHT / 2),
         MB_WIDTH,
         MB_HEIGHT
     };
@@ -42,14 +42,14 @@ int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick), void *o
     // title texture
     MB->title_texture = FE_TextureFromText(title, COLOR_WHITE);
     SDL_QueryTexture(MB->title_texture, NULL, NULL, &MB->title_rect.w, &MB->title_rect.h);
-    MB->title_rect.x = (PresentGame->window_width - MB->title_rect.w) / 2;
+    MB->title_rect.x = (PresentGame->Window_width - MB->title_rect.w) / 2;
     MB->title_rect.y = MB->displayrect.y + 10;
 
     // dialogue texture (allow multi line)
     MB->dialogue_texture = FE_TextureFromText(dialogue, COLOR_WHITE);
     SDL_QueryTexture(MB->dialogue_texture, NULL, NULL, &MB->dialogue_rect.w, &MB->dialogue_rect.h);
-    MB->dialogue_rect.x = ((PresentGame->window_width - MB->dialogue_rect.w) / 2);
-    MB->dialogue_rect.y = ((PresentGame->window_height - MB->dialogue_rect.h) / 2) - 30;
+    MB->dialogue_rect.x = ((PresentGame->Window_width - MB->dialogue_rect.w) / 2);
+    MB->dialogue_rect.y = ((PresentGame->Window_height - MB->dialogue_rect.h) / 2) - 30;
 
     // create textbox
     MB->textbox = FE_CreateTextBox(MB->displayrect.x + 40, MB->displayrect.y + MB->displayrect.h - 100, MB->displayrect.w - 80, 30, "");
@@ -95,8 +95,8 @@ int FE_ShowMessageBox(char *title, char *body)
 
     // calculate display rect
     MB->displayrect = (SDL_Rect){
-        (PresentGame->window_width / 2) - (MB_WIDTH / 2),
-        (PresentGame->window_height / 2) - (MB_HEIGHT / 2),
+        (PresentGame->Window_width / 2) - (MB_WIDTH / 2),
+        (PresentGame->Window_height / 2) - (MB_HEIGHT / 2),
         MB_WIDTH,
         MB_HEIGHT
     };
@@ -104,20 +104,20 @@ int FE_ShowMessageBox(char *title, char *body)
     // title texture
     MB->title_texture = FE_TextureFromText(title, COLOR_WHITE);
     SDL_QueryTexture(MB->title_texture, NULL, NULL, &MB->title_rect.w, &MB->title_rect.h);
-    MB->title_rect.x = (PresentGame->window_width - MB->title_rect.w) / 2;
+    MB->title_rect.x = (PresentGame->Window_width - MB->title_rect.w) / 2;
     MB->title_rect.y = MB->displayrect.y + 10;
 
     // dialogue texture (allow multi line)
     MB->dialogue_texture = FE_TextureFromText(body, COLOR_WHITE);
     SDL_QueryTexture(MB->dialogue_texture, NULL, NULL, &MB->dialogue_rect.w, &MB->dialogue_rect.h);
-    MB->dialogue_rect.x = ((PresentGame->window_width - MB->dialogue_rect.w) / 2);
-    MB->dialogue_rect.y = ((PresentGame->window_height - MB->dialogue_rect.h) / 2) - 30;
+    MB->dialogue_rect.x = ((PresentGame->Window_width - MB->dialogue_rect.w) / 2);
+    MB->dialogue_rect.y = ((PresentGame->Window_height - MB->dialogue_rect.h) / 2) - 30;
 
     // create button
     MB->button = FE_CreateButton("OK", MB->displayrect.x + (MB->dialogue_rect.w / 2) + 16, MB->displayrect.y + MB->displayrect.h - 60, BUTTON_SMALL, &HandleCallBack, NULL);
 
     // center the button
-    MB->button->r.x = (PresentGame->window_width - MB->button->r.w) / 2;
+    MB->button->r.x = (PresentGame->Window_width - MB->button->r.w) / 2;
     MB->button->label_rect.x = MB->button->r.x + (MB->button->r.w / 2) - (MB->button->label_rect.w / 2);
     PresentGame->MBShown = true;
     return 1;
@@ -136,22 +136,22 @@ void FE_RenderMessageBox()
     if (!PresentGame->MBShown)
         return;
 
-    SDL_RenderCopy(PresentGame->renderer, MB->texture->Texture, NULL, &MB->displayrect);
-    SDL_RenderCopy(PresentGame->renderer, MB->title_texture, NULL, &MB->title_rect);
-    SDL_RenderCopy(PresentGame->renderer, MB->dialogue_texture, NULL, &MB->dialogue_rect);
+    SDL_RenderCopy(PresentGame->Renderer, MB->texture->Texture, NULL, &MB->displayrect);
+    SDL_RenderCopy(PresentGame->Renderer, MB->title_texture, NULL, &MB->title_rect);
+    SDL_RenderCopy(PresentGame->Renderer, MB->dialogue_texture, NULL, &MB->dialogue_rect);
     
     if (MB->type == MESSAGEBOX_TEXTBOX) { // render again to bring textbox to front
-        SDL_RenderCopy(PresentGame->renderer, MB->textbox->text, NULL, &MB->textbox->r); 
-        SDL_RenderCopy(PresentGame->renderer, MB->textbox->label->text, NULL, &MB->textbox->label->r); 
+        SDL_RenderCopy(PresentGame->Renderer, MB->textbox->text, NULL, &MB->textbox->r); 
+        SDL_RenderCopy(PresentGame->Renderer, MB->textbox->label->text, NULL, &MB->textbox->label->r); 
     }
 
     // render button again
     if (MB->button->hover) {
-            SDL_RenderCopy(PresentGame->renderer, MB->button->hover_text, NULL, &MB->button->r);
+            SDL_RenderCopy(PresentGame->Renderer, MB->button->hover_text, NULL, &MB->button->r);
     } else {
-        SDL_RenderCopy(PresentGame->renderer, MB->button->text, NULL, &MB->button->r);
+        SDL_RenderCopy(PresentGame->Renderer, MB->button->text, NULL, &MB->button->r);
     }
-     SDL_RenderCopy(PresentGame->renderer, MB->button->label, NULL, &MB->button->label_rect);
+     SDL_RenderCopy(PresentGame->Renderer, MB->button->label, NULL, &MB->button->label_rect);
 }   
 
 void FE_DestroyMessageBox()

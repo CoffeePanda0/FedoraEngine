@@ -3,17 +3,16 @@
 #include "../ui/include/ui.h"
 
 #define TEXTURE_PATH "game/map/textures/"
-
+#define BG_PATH "game/map/backgrounds/"
 #define MAP_DIRECTORY "game/map/maps/"
 
 static FE_LoadedMap map;
-static bool FE_MapLoaded = false;
 
 static FE_Texture *flagtexture;
 
 int FE_LoadMap(const char *name)
 {
-    FE_MapLoaded = true;
+    PresentGame->MapConfig.Loaded  = true;
     if (!flagtexture)
         flagtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 
@@ -64,13 +63,14 @@ int FE_LoadMap(const char *name)
 
     map.tiles = xmalloc(sizeof(FE_Map_Tile) * map.tilecount);
     for (int i = 0; i < map.tilecount; i++) {
-        if (fread(&map.tiles[i].texture_index, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fread(&map.tiles[i].texture_x, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fread(&map.tiles[i].texture_y, sizeof(Uint16), 1, f) != 1) goto err;
         if (fread(&map.tiles[i].rotation, sizeof(Uint16), 1, f) != 1) goto err;
         if (fread(&map.tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
 
         // calculate map height and width
         if ((Uint16)map.tiles[i].position.x + map.tilesize > PresentGame->MapConfig.MapWidth) PresentGame->MapConfig.MapWidth = map.tiles[i].position.x + map.tilesize;
-        if ((Uint16)map.tiles[i].position.y - PresentGame->window_height + map.tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = map.tiles[i].position.y + map.tilesize - PresentGame->MapConfig.MapHeight;
+        if ((Uint16)map.tiles[i].position.y - PresentGame->Window_height + map.tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = map.tiles[i].position.y + map.tilesize - PresentGame->MapConfig.MapHeight;
     
         // calculate minimum x point and minimum y point for camera bounds
         if ((Uint16)map.tiles[i].position.x < PresentGame->MapConfig.MinimumX || !setminX) {
@@ -95,7 +95,6 @@ int FE_LoadMap(const char *name)
     
     info("Loaded map '%s'", map.name);
 
-    PresentGame->GameState = GAME_STATE_PLAY;
     return 1;
     
 err:
@@ -109,10 +108,13 @@ err:
 
 void FE_RenderMap(FE_Camera *camera)
 {
+    if (!PresentGame->MapConfig.Loaded )
+        return;
+
 	// render all tiles
-	for (size_t i = 0; i < map.tilecount; i++) {
+    for (size_t i = 0; i < map.tilecount; i++) {
 		SDL_Rect r = {map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
-        SDL_Rect src = FE_GetTexturePosition(map.atlas, map.tiles[i].texture_index);
+        SDL_Rect src = {map.tiles[i].texture_x, map.tiles[i].texture_y, map.atlas->texturesize, map.atlas->texturesize};
 		FE_RenderCopyEx(camera, false, map.atlas->atlas, &src, &r, map.tiles[i].rotation, SDL_FLIP_NONE);
 	} 
 
@@ -122,20 +124,13 @@ void FE_RenderMap(FE_Camera *camera)
 
 }
 
-void FE_RenderMapBackground(FE_Camera *camera)
-{
-	SDL_Rect bgrect = (SDL_Rect){0,900,5120,1220};
-	bgrect.w *= camera->zoom;
-	bgrect.h *= camera->zoom;
-	bgrect.x -= camera->x * camera->zoom;
-	bgrect.y *= camera->zoom;
-    bgrect.y -= camera->y * camera->zoom;
-	SDL_RenderCopy(PresentGame->renderer, map.bg->Texture, NULL, &bgrect);
+void FE_RenderMapBackground(FE_Camera *camera) {
+    FE_RenderMapBG(camera, &map);
 }
 
 void FE_CloseMap()
 {
-    if (!FE_MapLoaded)
+    if (!PresentGame->MapConfig.Loaded )
         return;
 
     if (flagtexture)
@@ -164,12 +159,15 @@ void FE_CloseMap()
     }
     map.tilecount = 0;
 
-    FE_MapLoaded = false;
+    PresentGame->MapConfig.Loaded  = false;
     return;
 }
 
 static bool InBounds(SDL_Rect *r)// checks if rect is in map bounds
 {
+    if (!PresentGame->MapConfig.Loaded )
+        return false;
+
      if (!r)
         return false;
 
@@ -312,6 +310,8 @@ Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
     size_t left_tile = LeftTileRange(r);
     size_t right_tile = RightTileRange(left_tile, r);
 
+    Vector2D position = VEC_NULL;
+
     // check if each tile is colliding from above with the rect
     for (size_t i = left_tile; i < right_tile; i++) {
         SDL_Rect tilerect = (SDL_Rect){map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
@@ -323,11 +323,13 @@ Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
         if (r->x + r->w < tilerect.x || r->x > tilerect.x + tilerect.w || collrect.h > map.tilesize)
             continue;
 
-        if (collrect.h > 0 && (r->y + r->h < tilerect.y + (tilerect.h / 2)))
-            return map.tiles[i].position;
+        if (collrect.h > 0) {
+            if (map.tiles[i].position.y > position.y)
+                position = map.tiles[i].position;
+        }
 
     }
-    return VEC_NULL;
+    return position;
 }
 
 Vector2D FE_CheckMapCollisionBelow(SDL_Rect *r)
@@ -336,6 +338,7 @@ Vector2D FE_CheckMapCollisionBelow(SDL_Rect *r)
 
     size_t left_tile = LeftTileRange(r);
     size_t right_tile = RightTileRange(left_tile, r);
+
 
     // check if each tile is colliding from below with the rect
     for (size_t i = left_tile; i < right_tile; i++) {

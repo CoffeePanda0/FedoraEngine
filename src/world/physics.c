@@ -81,9 +81,7 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                 if (obj->velocity.y > 0) { // if player is falling
                     Vector2D GroundCollision = FE_CheckMapCollisionAbove(&check_rect);
                     if (!FE_VecNULL(GroundCollision)) { // If we collide with the ground
-                        
                         obj->position.y = GroundCollision.y - obj->body.h + 1;
-
                         if (obj->velocity.y > 8) {
                             // emit ground particles for high velocity bounce effect
                             float force = obj->mass * obj->velocity.y;
@@ -100,11 +98,10 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                                     false
                                 );
                             }
-
                             obj->velocity.y = obj->velocity.y * -BOUNCE;
-                        } else { // or come to rest if velocity not enough
+                        } else // or come to rest if velocity not enough
                             obj->velocity.y = 0;
-                        }
+                        
                     }
                 } else { // If player is going up
                     Vector2D CeilingCollision = FE_CheckMapCollisionBelow(&check_rect);

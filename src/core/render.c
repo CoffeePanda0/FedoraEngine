@@ -34,12 +34,15 @@ int FE_RenderCopy(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rect 
         return -1;
     }
 
-    SDL_Rect RenderRect = ApplyZoom(dst, camera, locked);
+    SDL_Rect RenderRect = *dst;
+    if (camera->zoom != 0)
+        RenderRect = ApplyZoom(dst, camera, locked);
+    else
+        RenderRect = (SDL_Rect){RenderRect.x - camera->x, RenderRect.y - camera->y, RenderRect.w, RenderRect.h};
 
     // Check if rect is in screen bounds
-    if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0,PresentGame->window_width, PresentGame->window_height})) {
-
-        return SDL_RenderCopy(PresentGame->renderer, texture->Texture, src, &RenderRect);
+    if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0,PresentGame->Window_width, PresentGame->Window_height})) {
+        return SDL_RenderCopy(PresentGame->Renderer, texture->Texture, src, &RenderRect);
     } else
         return 0;
 }
@@ -51,11 +54,15 @@ int FE_RenderCopyEx(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rec
         return -1;
     }
 
-    SDL_Rect RenderRect = ApplyZoom(dst, camera, locked);
+    SDL_Rect RenderRect = *dst;
+    if (camera->zoom != 0)
+        RenderRect = ApplyZoom(dst, camera, locked);
+    else
+        RenderRect = (SDL_Rect){RenderRect.x - camera->x, RenderRect.y - camera->y, RenderRect.w, RenderRect.h};
 
-    if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0, PresentGame->window_width, PresentGame->window_height})) {
+    if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0, PresentGame->Window_width, PresentGame->Window_height})) {
         const SDL_Point center = (SDL_Point){RenderRect.w/2, RenderRect.h/2};
-        return SDL_RenderCopyEx(PresentGame->renderer, texture->Texture, src, &RenderRect, angle, &center, flip);
+        return SDL_RenderCopyEx(PresentGame->Renderer, texture->Texture, src, &RenderRect, angle, &center, flip);
     } else
         return 0;
 }
@@ -67,19 +74,23 @@ int FE_RenderDrawLine(FE_Camera *camera, int x1, int y1, int x2, int y2, SDL_Col
         return -1;
     }
 
+    // return if line is out of bounds
+    if (x1 + camera->x < 0 || x1 > PresentGame->Window_width + camera->x || y1 + camera->y < 0 || y1 > PresentGame->Window_height + camera->y)
+        return 0;
+
     // change the color of the renderer and restore it after drawing the line
     Uint8 prev_r, prev_g, prev_b, prev_a;
-    SDL_GetRenderDrawColor(PresentGame->renderer, &prev_r, &prev_g, &prev_b, &prev_a);
-    SDL_SetRenderDrawColor(PresentGame->renderer, color.r, color.g, color.b, color.a);
+    SDL_GetRenderDrawColor(PresentGame->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);
+    SDL_SetRenderDrawColor(PresentGame->Renderer, color.r, color.g, color.b, color.a);
 
-    int d = SDL_RenderDrawLine(PresentGame->renderer,
+    int d = SDL_RenderDrawLine(PresentGame->Renderer,
         (x1 - camera->x) * camera->zoom,
         (y1 - camera->y) * camera->zoom,
         (x2 - camera->x) * camera->zoom,
         (y2 - camera->y) * camera->zoom
     );
 
-    SDL_SetRenderDrawColor(PresentGame->renderer, prev_r, prev_g, prev_b, prev_a);
+    SDL_SetRenderDrawColor(PresentGame->Renderer, prev_r, prev_g, prev_b, prev_a);
     return d;
 }
 
@@ -91,17 +102,17 @@ int FE_RenderRect(SDL_Rect *rect, SDL_Color color) // Renders a rect (filled) to
     }
 
     Uint8 prev_r, prev_g, prev_b, prev_a;
-    SDL_GetRenderDrawColor(PresentGame->renderer, &prev_r, &prev_g, &prev_b, &prev_a);
+    SDL_GetRenderDrawColor(PresentGame->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);
 
     SDL_BlendMode b;
-    SDL_GetRenderDrawBlendMode(PresentGame->renderer, &b);
+    SDL_GetRenderDrawBlendMode(PresentGame->Renderer, &b);
 
-    SDL_SetRenderDrawBlendMode(PresentGame->renderer, SDL_BLENDMODE_NONE);
-    SDL_SetRenderDrawColor(PresentGame->renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDrawRect(PresentGame->renderer, rect);
-    SDL_RenderFillRect(PresentGame->renderer, rect);
+    SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(PresentGame->Renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderDrawRect(PresentGame->Renderer, rect);
+    SDL_RenderFillRect(PresentGame->Renderer, rect);
 
-    SDL_SetRenderDrawColor(PresentGame->renderer, prev_r, prev_g, prev_b, prev_a);
-    SDL_SetRenderDrawBlendMode(PresentGame->renderer, b);
+    SDL_SetRenderDrawColor(PresentGame->Renderer, prev_r, prev_g, prev_b, prev_a);
+    SDL_SetRenderDrawBlendMode(PresentGame->Renderer, b);
     return 1;
 }

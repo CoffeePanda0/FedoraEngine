@@ -25,6 +25,7 @@ typedef struct FE_Timing {
 } FE_Timing;
 
 typedef struct FE_MapConfig {
+    bool Loaded;
     uint16_t MapWidth, MapHeight, MinimumX;
     Vector2D PlayerSpawn;
     float Gravity;
@@ -44,9 +45,9 @@ typedef struct FE_InitConfig {
 } FE_InitConfig;
 
 typedef struct FE_Game {
-    FE_Font *font;
     FE_InitConfig *config;
-    int window_height, window_width;
+    FE_Font *font;
+    int Window_height, Window_width;
 
     bool ConsoleVisible;
     bool DialogueActive;
@@ -54,8 +55,8 @@ typedef struct FE_Game {
     bool StartedInput;
     bool MBShown;
     
-    SDL_Window *window;
-    SDL_Renderer *renderer;
+    SDL_Window *Window;
+    SDL_Renderer *Renderer;
     
     bool GameActive;
     FE_GAMESTATE GameState;

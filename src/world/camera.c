@@ -69,8 +69,8 @@ FE_Camera *FE_CreateCamera()
 {
     FE_Camera *c = xmalloc(sizeof(FE_Camera));
 
-    c->x = (PresentGame->window_width / 2);
-    c->y = (PresentGame->window_height / 2);
+    c->x = (PresentGame->Window_width / 2);
+    c->y = (PresentGame->Window_height / 2);
     c->zoom = 1;
     c->maxzoom = 5.0f;
     c->minzoom = 0.5f;
@@ -104,8 +104,8 @@ void FE_UpdateCamera(FE_Camera *camera)
     
     int initial_x = r->x;
     int initial_y = r->y;
-    int win_height = (PresentGame->window_height / camera->zoom);
-    int win_width = (PresentGame->window_width / camera->zoom);
+    int win_height = (PresentGame->Window_height / camera->zoom);
+    int win_width = (PresentGame->Window_width / camera->zoom);
     
     // Centre the player X on the screen (accounting for zoom)
     r->x = (win_width / 2) - r->w;
@@ -152,8 +152,8 @@ void FE_MoveCamera(float x, float y, FE_Camera *c)
 
     // check if in x bounds
     if (x != 0) {
-        if (c->x + x > c->x_bound - PresentGame->window_width)
-            c->x = c->x_bound - PresentGame->window_width;
+        if (c->x + x > c->x_bound - PresentGame->Window_width)
+            c->x = c->x_bound - PresentGame->Window_width;
         else if (c->x + x < c->x_min)
             c->x = c->x_min;
         else

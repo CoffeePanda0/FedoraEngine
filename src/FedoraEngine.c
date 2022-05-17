@@ -38,6 +38,7 @@ int main(int argc, char* argv[])
 	/* Initialise FedoraEngine systems first */
 	
 	FE_InitConfig *IC = FE_NewInitConfig();
+	IC->vsync = false;
 	FE_Init(IC);
 
 	/* Check launch args */

@@ -11,14 +11,14 @@ static void FE_RenderDrawCircle(FE_Circle *circle)
 
     while (x >= y)
     {
-        SDL_RenderDrawPoint(PresentGame->renderer, circle->x + x, circle->y + y);
-        SDL_RenderDrawPoint(PresentGame->renderer, circle->x + y, circle->y + x);
-        SDL_RenderDrawPoint(PresentGame->renderer, circle->x - y, circle->y + x);
-        SDL_RenderDrawPoint(PresentGame->renderer, circle->x - x, circle->y + y);
-        SDL_RenderDrawPoint(PresentGame->renderer, circle->x - x, circle->y - y);
-        SDL_RenderDrawPoint(PresentGame->renderer, circle->x - y, circle->y - x);
-        SDL_RenderDrawPoint(PresentGame->renderer, circle->x + y, circle->y - x);
-        SDL_RenderDrawPoint(PresentGame->renderer, circle->x + x, circle->y - y);
+        SDL_RenderDrawPoint(PresentGame->Renderer, circle->x + x, circle->y + y);
+        SDL_RenderDrawPoint(PresentGame->Renderer, circle->x + y, circle->y + x);
+        SDL_RenderDrawPoint(PresentGame->Renderer, circle->x - y, circle->y + x);
+        SDL_RenderDrawPoint(PresentGame->Renderer, circle->x - x, circle->y + y);
+        SDL_RenderDrawPoint(PresentGame->Renderer, circle->x - x, circle->y - y);
+        SDL_RenderDrawPoint(PresentGame->Renderer, circle->x - y, circle->y - x);
+        SDL_RenderDrawPoint(PresentGame->Renderer, circle->x + y, circle->y - x);
+        SDL_RenderDrawPoint(PresentGame->Renderer, circle->x + x, circle->y - y);
 
         y++;
         err += 1 + 2 * y;
@@ -40,10 +40,10 @@ static void FE_RenderFillCircle(FE_Circle *circle)
 
     while (x >= y)
     {
-        SDL_RenderDrawLine(PresentGame->renderer, circle->x - x, circle->y + y, circle->x + x, circle->y + y);
-        SDL_RenderDrawLine(PresentGame->renderer, circle->x - x, circle->y - y, circle->x + x, circle->y - y);
-        SDL_RenderDrawLine(PresentGame->renderer, circle->x - y, circle->y + x, circle->x + y, circle->y + x);
-        SDL_RenderDrawLine(PresentGame->renderer, circle->x - y, circle->y - x, circle->x + y, circle->y - x);
+        SDL_RenderDrawLine(PresentGame->Renderer, circle->x - x, circle->y + y, circle->x + x, circle->y + y);
+        SDL_RenderDrawLine(PresentGame->Renderer, circle->x - x, circle->y - y, circle->x + x, circle->y - y);
+        SDL_RenderDrawLine(PresentGame->Renderer, circle->x - y, circle->y + x, circle->x + y, circle->y + x);
+        SDL_RenderDrawLine(PresentGame->Renderer, circle->x - y, circle->y - x, circle->x + y, circle->y - x);
 
         y++;
         err += 1 + 2 * y;
@@ -59,11 +59,11 @@ void FE_RenderCircle(FE_Circle *circle)
 {
     // get original render draw color
     SDL_Color color;
-    SDL_GetRenderDrawColor(PresentGame->renderer, &color.r, &color.g, &color.b, &color.a);
+    SDL_GetRenderDrawColor(PresentGame->Renderer, &color.r, &color.g, &color.b, &color.a);
 
     // set new color to draw
-    SDL_SetRenderDrawBlendMode(PresentGame->renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(PresentGame->renderer, circle->color.r, circle->color.g, circle->color.b, circle->color.a);
+    SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(PresentGame->Renderer, circle->color.r, circle->color.g, circle->color.b, circle->color.a);
 
     // draw circle
     FE_RenderDrawCircle(circle);
@@ -71,5 +71,5 @@ void FE_RenderCircle(FE_Circle *circle)
         FE_RenderFillCircle(circle);
     
     // go back to original draw color
-    SDL_SetRenderDrawColor(PresentGame->renderer, color.r, color.g, color.b, color.a);
+    SDL_SetRenderDrawColor(PresentGame->Renderer, color.r, color.g, color.b, color.a);
 }

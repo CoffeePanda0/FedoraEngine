@@ -10,8 +10,8 @@ FE_InitConfig *FE_NewInitConfig()
 	/* Fills default values */
 	FE_InitConfig *config = xmalloc(sizeof(FE_InitConfig));
 	config->window_title = "FedoraEngine";
-	config->window_width = 1920;
-	config->window_height = 1080;
+	config->window_width = 1280;
+	config->window_height = 720;
 	config->vsync = true;
 	config->show_fps = true;
 	config->default_font = "OpenSans";
@@ -21,19 +21,26 @@ FE_InitConfig *FE_NewInitConfig()
 
 static FE_Game *NewGame(FE_InitConfig *ic)
 {
+	if (!ic)
+		error("Could not start FedoraEngine - NULL config");
+
 	/* Sets default values */
 	FE_Game *Game = xmalloc(sizeof(FE_Game));
 	*Game = (FE_Game){
-		0, ic,
-		0, 0,
-		false, false, false, false, false,
-		0, 0,
-		false,
-		GAME_STATE_MENU,
-		(FE_MapConfig){0, 0, 0, VEC_EMPTY, 0.0f, 150},
-		(FE_AudioConfig){50, false},
-		(FE_Timing){0,0,0},
-		(FE_DebugConfig){false, true}
+		.config = ic,
+		.font = NULL,
+		.ConsoleVisible = false,
+		.DialogueActive = false,
+		.InText = false,
+		.StartedInput = false,
+		.Window = NULL,
+		.Renderer = NULL,
+		.GameActive = false,
+		.GameState = GAME_STATE_MENU,
+		.MapConfig = {false, 0, 0, 0, VEC_EMPTY, 0.0f, 150},
+		.AudioConfig = {50, false},
+		.Timing = {0,0,0},
+		.DebugConfig = {false, true}
 	};
 	return Game;
 }
@@ -59,34 +66,37 @@ void FE_Init(FE_InitConfig *InitConfig)
 		FE_ResourceManager_Init();
 		
 		// Check that everything has loaded in correctly
-		PresentGame->window = SDL_CreateWindow(
+		PresentGame->Window = SDL_CreateWindow(
 			InitConfig->window_title,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			InitConfig->window_width, InitConfig->window_height,
 			SDL_WINDOW_ALLOW_HIGHDPI
 		);
 		
-		PresentGame->window_height = InitConfig->window_height;
-		PresentGame->window_width = InitConfig->window_width;
+		PresentGame->Window_height = InitConfig->window_height;
+		PresentGame->Window_width = InitConfig->window_width;
 
-		if (PresentGame->window) {
+		if (PresentGame->Window) {
 			info("Window Created");
 		} else 
 			error("Window could not be created! SDL_Error: %s", SDL_GetError());
 		
 		if (InitConfig->vsync)
-			PresentGame->renderer = SDL_CreateRenderer(PresentGame->window, -1, SDL_RENDERER_PRESENTVSYNC);
+			PresentGame->Renderer = SDL_CreateRenderer(PresentGame->Window, -1, SDL_RENDERER_PRESENTVSYNC);
 		else
-			PresentGame->renderer = SDL_CreateRenderer(PresentGame->window, -1, SDL_RENDERER_ACCELERATED);
+			PresentGame->Renderer = SDL_CreateRenderer(PresentGame->Window, -1, SDL_RENDERER_ACCELERATED);
 		
 
-		if (PresentGame->renderer)
+		if (PresentGame->Renderer)
 			info("Renderer Created");
 		else
 			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
 
 		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-			warn("Warning: Nearest texture filtering not enabled! SDL_Error: %s", SDL_GetError());
+			warn("Nearest texture filtering not enabled! SDL_Error: %s", SDL_GetError());
+
+		if (!SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1"))
+			warn("Texture batching could not be enabled! SDL_Error: %s", SDL_GetError());
 
 		if (IMG_Init(IMG_INIT_PNG) == 0)
     		error("IMG Failed to initialize. SDL_Error: %s", IMG_GetError());
@@ -136,8 +146,8 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		FE_CleanAll();
 		FE_DestroyConsole();
 		FE_CleanLighting();
-		SDL_DestroyRenderer(PresentGame->renderer);
-		SDL_DestroyWindow(PresentGame->window);
+		SDL_DestroyRenderer(PresentGame->Renderer);
+		SDL_DestroyWindow(PresentGame->Window);
 		FE_CleanFonts();
 		free(PresentGame->config);
 		free(PresentGame);

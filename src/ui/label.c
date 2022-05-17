@@ -9,14 +9,14 @@ void FE_RenderLabels()
         FE_Label *l = o->data;
         if (l->showbackground)
             FE_RenderRect(&l->r, l->backcolor);
-        SDL_RenderCopy(PresentGame->renderer, l->text, NULL, &l->r);
+        SDL_RenderCopy(PresentGame->Renderer, l->text, NULL, &l->r);
     }
 }
 
 SDL_Texture *FE_TextureFromText(char *text, SDL_Color color)
 {
     SDL_Surface *s = FE_RenderText(PresentGame->font, text, color);
-    SDL_Texture *t = SDL_CreateTextureFromSurface(PresentGame->renderer, s);
+    SDL_Texture *t = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
     SDL_FreeSurface(s);
     if (!t)
         warn("Could not create texture from text");
@@ -48,7 +48,7 @@ FE_Label *FE_CreateLabel(FE_Font *font, char *text, Vector2D position, SDL_Color
     SDL_Surface *text_surface = FE_RenderText(newlabel->font, ntext, color); 
     free(ntext);
 
-    newlabel->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
+    newlabel->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     SDL_QueryTexture(newlabel->text, NULL, NULL, &newlabel->r.w, &newlabel->r.h); // Get w and h for rect
@@ -76,7 +76,7 @@ int FE_UpdateLabel(FE_Label *l, char *text) // Updates a pre-existing label text
             SDL_DestroyTexture(tmp->text);
             // regenerate textures, then query to change rect size
             SDL_Surface *text_surface = FE_RenderText(PresentGame->font, text, tmp->color); 
-            tmp->text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
+            tmp->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
             SDL_FreeSurface(text_surface);
 
 

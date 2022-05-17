@@ -35,4 +35,12 @@ void FE_InitLighting();
 /* Destroys the lighting system */
 void FE_CleanLighting();
 
+
+/** Moves a light to a new location. Use this instead of modifiying the light directly.
+ * \param light The light to move
+ * \param x The new x location
+ * \param y The new y location
+*/
+void FE_MoveLight(FE_Light *light, int x, int y);
+
 #endif

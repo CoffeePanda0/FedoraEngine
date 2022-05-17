@@ -72,8 +72,8 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                     
                     if (keyboard_state[SDL_SCANCODE_F] && event.key.repeat == 0) {
                         fullscreen = !fullscreen;
-                        SDL_SetWindowFullscreen(PresentGame->window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
-                        SDL_GetWindowSize(PresentGame->window, &PresentGame->window_width, &PresentGame->window_height); // recalculate window size
+                        SDL_SetWindowFullscreen(PresentGame->Window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
+                        SDL_GetWindowSize(PresentGame->Window, &PresentGame->Window_width, &PresentGame->Window_height); // recalculate window size
                     }
                 break;
             }

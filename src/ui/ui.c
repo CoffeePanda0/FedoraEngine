@@ -12,7 +12,6 @@ void FE_RenderUI()
 	FE_RenderLabels();
 	FE_RenderButtons();
 	FE_RenderConsole();
-	FE_UpdateTimers();
 	FE_RenderMessageBox();
 }
 
@@ -62,14 +61,14 @@ void FE_CentreRect(FE_UI_CENTRE_TYPE type, SDL_Rect *r)
 		case FE_UI_CENTRE_NONE:
 			break;
 		case FE_UI_CENTRE_HORIZONTAL:
-			r->x = (PresentGame->window_width - r->w) / 2;
+			r->x = (PresentGame->Window_width - r->w) / 2;
 			break;
 		case FE_UI_CENTRE_VERTICAL:
-			r->y = (PresentGame->window_height - r->h) / 2;
+			r->y = (PresentGame->Window_height - r->h) / 2;
 			break;
 		case FE_UI_CENTRE_ALL:
-			r->x = (PresentGame->window_width - r->w) / 2;
-			r->y = (PresentGame->window_height - r->h) / 2;
+			r->x = (PresentGame->Window_width - r->w) / 2;
+			r->y = (PresentGame->Window_height - r->h) / 2;
 		break;
 	}
 }
@@ -87,8 +86,8 @@ void FE_FreeUI() // Destroys all UI objects and dialogue
 
 void FE_RenderMenu()
 {
-    SDL_RenderClear(PresentGame->renderer);
-	SDL_SetRenderDrawColor(PresentGame->renderer, 0, 255, 255, 0);
+    SDL_RenderClear(PresentGame->Renderer);
+	SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 255, 255, 0);
 	FE_RenderUI();
-	SDL_RenderPresent(PresentGame->renderer);
+	SDL_RenderPresent(PresentGame->Renderer);
 }

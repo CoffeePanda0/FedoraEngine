@@ -39,7 +39,7 @@ int FE_ConsoleInit()
     console_output = strdup("");
     console_input = strdup("");
 
-    Console.console_rect = (SDL_Rect){0, PresentGame->window_height - CONSOLE_HEIGHT, PresentGame->window_width, CONSOLE_HEIGHT};
+    Console.console_rect = (SDL_Rect){0, PresentGame->Window_height - CONSOLE_HEIGHT, PresentGame->Window_width, CONSOLE_HEIGHT};
 
     PresentGame->ConsoleVisible = false;
     info("Initialised Console");
@@ -57,11 +57,11 @@ static void GenerateConsoleLabel()
         SDL_DestroyTexture(Console.output_label_text);
 
     SDL_Surface *text_surface = FE_RenderText(Font, console_output, COLOR_WHITE); 
-    Console.output_label_text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
+    Console.output_label_text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     Console.output_label_rect.x = 0;
-    Console.output_label_rect.y = (PresentGame->window_height - CONSOLE_HEIGHT) + 10;
+    Console.output_label_rect.y = (PresentGame->Window_height - CONSOLE_HEIGHT) + 10;
     SDL_QueryTexture(Console.output_label_text, NULL, NULL, &Console.output_label_rect.w, &Console.output_label_rect.h);
 }
 
@@ -71,11 +71,11 @@ static void GenerateInputLabel()
         SDL_DestroyTexture(Console.input_label_text);
     
     SDL_Surface *text_surface = FE_RenderText(Font, console_input, COLOR_WHITE); 
-    Console.input_label_text = SDL_CreateTextureFromSurface(PresentGame->renderer, text_surface);
+    Console.input_label_text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     Console.input_label_rect.x = 0;
-    Console.input_label_rect.y = (PresentGame->window_height - CONSOLE_HEIGHT) + CONSOLE_HEIGHT -40;
+    Console.input_label_rect.y = (PresentGame->Window_height - CONSOLE_HEIGHT) + CONSOLE_HEIGHT -40;
     SDL_QueryTexture(Console.input_label_text, NULL, NULL, &Console.input_label_rect.w, &Console.input_label_rect.h);
 }
 
@@ -164,8 +164,8 @@ void FE_DestroyConsole()
 void FE_RenderConsole()
 {
     if (PresentGame->ConsoleVisible) {
-        SDL_RenderCopy(PresentGame->renderer, Console.console_texture, NULL, &Console.console_rect); // console texture
-        SDL_RenderCopy(PresentGame->renderer, Console.output_label_text, NULL, &Console.output_label_rect); // output label
-        SDL_RenderCopy(PresentGame->renderer, Console.input_label_text, NULL, &Console.input_label_rect); // input label
+        SDL_RenderCopy(PresentGame->Renderer, Console.console_texture, NULL, &Console.console_rect); // console texture
+        SDL_RenderCopy(PresentGame->Renderer, Console.output_label_text, NULL, &Console.output_label_rect); // output label
+        SDL_RenderCopy(PresentGame->Renderer, Console.input_label_text, NULL, &Console.input_label_rect); // input label
     }
 }
