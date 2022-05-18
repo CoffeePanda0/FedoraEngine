@@ -63,4 +63,11 @@ void FE_FreeCamera(FE_Camera *camera);
 /* Destroys all cameras that have been loaded into the game so far */
 void FE_CleanCameras();
 
+
+/** Returns a rect for the current area of the camera
+ * \param camera The camera to get the rect for
+ * \return A rect for the current area of the camera
+*/
+SDL_Rect SCREEN_RECT(FE_Camera *camera);
+
 #endif

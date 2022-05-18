@@ -4,6 +4,7 @@
 typedef struct FE_Light {
     SDL_Rect Rect;
     FE_Texture *Texture;
+    bool enabled;
 } FE_Light;
 
 
@@ -42,5 +43,11 @@ void FE_CleanLighting();
  * \param y The new y location
 */
 void FE_MoveLight(FE_Light *light, int x, int y);
+
+
+/** Toggles a light on or off
+ * \param light The light to toggle
+*/
+void FE_ToggleLight(FE_Light *light);
 
 #endif

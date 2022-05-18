@@ -142,6 +142,11 @@ void FE_Camera_SmoothZoom(FE_Camera *camera, float amount, uint16_t time)
     } 
 }
 
+SDL_Rect SCREEN_RECT(FE_Camera *camera)
+{
+    return (SDL_Rect){0, 0, PresentGame->Window_width / camera->zoom, PresentGame->Window_height / camera->zoom};
+}
+
 void FE_MoveCamera(float x, float y, FE_Camera *c)
 {
     if (!c)

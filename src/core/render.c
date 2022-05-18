@@ -40,9 +40,15 @@ int FE_RenderCopy(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rect 
     else
         RenderRect = (SDL_Rect){RenderRect.x - camera->x, RenderRect.y - camera->y, RenderRect.w, RenderRect.h};
 
+    SDL_Rect s;
+    if (!src)
+        s = SCREEN_RECT(camera);
+    else
+        s = *src;
+
     // Check if rect is in screen bounds
     if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0,PresentGame->Window_width, PresentGame->Window_height})) {
-        return SDL_RenderCopy(PresentGame->Renderer, texture->Texture, src, &RenderRect);
+        return SDL_RenderCopy(PresentGame->Renderer, texture->Texture, &s, &RenderRect);
     } else
         return 0;
 }
@@ -60,9 +66,15 @@ int FE_RenderCopyEx(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rec
     else
         RenderRect = (SDL_Rect){RenderRect.x - camera->x, RenderRect.y - camera->y, RenderRect.w, RenderRect.h};
 
+    SDL_Rect s;
+    if (!src)
+        s = SCREEN_RECT(camera);
+    else
+        s = *src;
+
     if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0, PresentGame->Window_width, PresentGame->Window_height})) {
         const SDL_Point center = (SDL_Point){RenderRect.w/2, RenderRect.h/2};
-        return SDL_RenderCopyEx(PresentGame->Renderer, texture->Texture, src, &RenderRect, angle, &center, flip);
+        return SDL_RenderCopyEx(PresentGame->Renderer, texture->Texture, &s, &RenderRect, angle, &center, flip);
     } else
         return 0;
 }

@@ -69,7 +69,10 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                     }
                     if (keyboard_state[SDL_SCANCODE_I] && event.key.repeat == 0)
                         PresentGame->DebugConfig.ShowTiming = !PresentGame->DebugConfig.ShowTiming;
-                    
+
+                    if (keyboard_state[SDL_SCANCODE_L] && event.key.repeat == 0)
+                        FE_ToggleLight(player->Light);
+
                     if (keyboard_state[SDL_SCANCODE_F] && event.key.repeat == 0) {
                         fullscreen = !fullscreen;
                         SDL_SetWindowFullscreen(PresentGame->Window, fullscreen ? SDL_WINDOW_FULLSCREEN : 0);

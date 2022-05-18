@@ -93,10 +93,10 @@ int FE_DestroyCheckbox(FE_CheckBox *c) // Destroys the checkbox and removes from
     }
 
     SDL_DestroyTexture(c->label);
+    int a = FE_List_Remove(&FE_Checkboxes, c);
     free(c);
-    return FE_List_Remove(&FE_Checkboxes, c);
-
-}
+    return a;
+} 
 
 int FE_CleanCheckBoxes() // Destroys all checkboxes and the loaded texture
 {

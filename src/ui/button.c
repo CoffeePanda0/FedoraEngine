@@ -89,9 +89,8 @@ int FE_DestroyButton(FE_Button *b) // Destroys the button and removes from linke
     SDL_DestroyTexture(b->text);
     SDL_DestroyTexture(b->hover_text);
     SDL_DestroyTexture(b->label);
-    free(b);
-
     FE_List_Remove(&FE_Buttons, b);
+    free(b);
 
     return 1;
 }
