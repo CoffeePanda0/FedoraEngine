@@ -107,7 +107,6 @@ void FE_Init(FE_InitConfig *InitConfig)
 		PresentGame->font = FE_LoadFont(InitConfig->default_font, 24);
 		
 		FE_ConsoleInit();
-		FE_InitLighting();
 
 		info("FedoraEngine started successfully");
 

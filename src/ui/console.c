@@ -154,10 +154,10 @@ void FE_DestroyConsole()
         FE_DestroyFont(Font);
 
     if (console_output)
-        xfree(console_output);
+        free(console_output);
     console_output = 0;
     if (console_input)
-        xfree(console_input);
+        free(console_input);
     console_input = 0;
 }
 

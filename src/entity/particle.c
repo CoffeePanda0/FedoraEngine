@@ -65,7 +65,7 @@ FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emissio
 
     char *path = AddStr(AssetPath, texture);
     p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
-    xfree(path);
+    free(path);
 
     p->particles = xmalloc(sizeof(FE_Particle) * max_particles);
     for (size_t i = 0; i < max_particles; i++) {
@@ -180,7 +180,7 @@ bool FE_DestroyParticleSystem(FE_ParticleSystem *p)
         return false;
     }
 
-    xfree(p->particles);
+    free(p->particles);
     FE_DestroyResource(p->texture->path);
 
     FE_List_Remove(&ParticleSystems, p);
@@ -196,9 +196,9 @@ void FE_CleanParticles()
 
     for (FE_List *l = ParticleSystems; l; l = l->next) {
         FE_ParticleSystem *p = l->data;
-        xfree(p->particles);
+        free(p->particles);
         FE_DestroyResource(p->texture->path);
-        xfree(p);
+        free(p);
     }
 
     FE_List_Destroy(&ParticleSystems);

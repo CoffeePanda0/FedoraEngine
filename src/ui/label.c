@@ -9,7 +9,7 @@ void FE_RenderLabels()
         FE_Label *l = o->data;
         if (l->showbackground)
             FE_RenderRect(&l->r, l->backcolor);
-        SDL_RenderCopy(PresentGame->Renderer, l->text, NULL, &l->r);
+        SDL_RenderCopy(PresentGame->Renderer, l->texture, NULL, &l->r);
     }
 }
 
@@ -32,7 +32,9 @@ FE_Label *FE_CreateLabel(FE_Font *font, char *text, Vector2D position, SDL_Color
         ntext = strdup(text);
     }
 
+
     FE_Label *newlabel = xmalloc(sizeof(FE_Label));
+    newlabel->text = ntext;
 
     if (!font)
         newlabel->font = PresentGame->font;
@@ -46,12 +48,11 @@ FE_Label *FE_CreateLabel(FE_Font *font, char *text, Vector2D position, SDL_Color
 
     // create texture from surface
     SDL_Surface *text_surface = FE_RenderText(newlabel->font, ntext, color); 
-    free(ntext);
 
-    newlabel->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    newlabel->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
-    SDL_QueryTexture(newlabel->text, NULL, NULL, &newlabel->r.w, &newlabel->r.h); // Get w and h for rect
+    SDL_QueryTexture(newlabel->texture, NULL, NULL, &newlabel->r.w, &newlabel->r.h); // Get w and h for rect
     newlabel->r.x = position.x;
     newlabel->r.y = position.y;
     newlabel->color = color;
@@ -70,17 +71,23 @@ FE_Label *FE_CreateLabel(FE_Font *font, char *text, Vector2D position, SDL_Color
 
 int FE_UpdateLabel(FE_Label *l, char *text) // Updates a pre-existing label text
 {
+    // Don't bother updating label if new text is the same
+    if (strcmp(l->text, text) == 0) {
+        return 0;
+    }
+    
     for (FE_List *f = FE_Labels; f; f = f->next) {
         FE_Label *tmp = f->data;
         if (tmp == l) { // when we reach the given one, free old textures first
-            SDL_DestroyTexture(tmp->text);
+            SDL_DestroyTexture(tmp->texture);
             // regenerate textures, then query to change rect size
             SDL_Surface *text_surface = FE_RenderText(PresentGame->font, text, tmp->color); 
-            tmp->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+            tmp->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
             SDL_FreeSurface(text_surface);
+            SDL_QueryTexture(tmp->texture, NULL, NULL, &tmp->r.w, &tmp->r.h); // Get w and h for rect
 
-
-            SDL_QueryTexture(tmp->text, NULL, NULL, &tmp->r.w, &tmp->r.h); // Get w and h for rect
+            free(l->text);
+            l->text = strdup(text);
             return 0;
         }
     }
@@ -95,7 +102,9 @@ int FE_DestroyLabel(FE_Label *l)
         return -1;
     }
 
-    SDL_DestroyTexture(l->text);
+    SDL_DestroyTexture(l->texture);
+    if (l->text)
+        free(l->text);
     FE_List_Remove(&FE_Labels, l);
     free(l);
     
@@ -110,7 +119,8 @@ int FE_CleanLabels() // Destroys all labels and free'd
 
     for (struct FE_List *l = FE_Labels; l; l = l->next) {
         struct FE_Label *tmp = l->data;
-        SDL_DestroyTexture(tmp->text);
+        SDL_DestroyTexture(tmp->texture);
+        free(tmp->text);
         free(tmp);
     }
 

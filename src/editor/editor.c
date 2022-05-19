@@ -131,9 +131,9 @@ static void DeleteTile(int x, int y)
 		newmap.tiles = xmalloc(sizeof(FE_Map_Tile) * (--newmap.tilecount));
 		memcpy(newmap.tiles, temp, sizeof(FE_Map_Tile) * index);
 		memcpy(newmap.tiles + index, temp + index + 1, sizeof(FE_Map_Tile) * (newmap.tilecount - index));
-		xfree(temp);
+		free(temp);
 	} else {
-		xfree(newmap.tiles);
+		free(newmap.tiles);
 		newmap.tiles = 0;
 	}
 
@@ -347,7 +347,7 @@ void FE_CleanEditor()
 	// free editor backgrounds
 		for (size_t i = 0; i < bgcount; i++)
 			FE_DestroyResource(editor_backgrounds[i]->path);
-		xfree(editor_backgrounds);
+		free(editor_backgrounds);
 
 		bgcount = 0;
 		selectedbackground = 0;
@@ -366,12 +366,12 @@ void FE_CleanEditor()
 	// free texturepaths
 	if (newmap.atlas) {
 		FE_DestroyResource(newmap.atlas->atlas->path);
-		xfree(newmap.atlas);
+		free(newmap.atlas);
 	}
 	newmap.atlas = 0;
 
 	if (newmap.tiles) {
-		xfree(newmap.tiles);
+		free(newmap.tiles);
 		newmap.tilecount = 0;
 	}
 	newmap.tiles = 0;

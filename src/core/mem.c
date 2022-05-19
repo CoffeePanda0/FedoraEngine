@@ -36,10 +36,3 @@ void *xcalloc(size_t num, size_t size)
 	
 	return pt;
 }
-
-void xfree(void *pt)
-{
-	if (!pt)
-		error("Trying to free NULL");
-	free(pt);
-}

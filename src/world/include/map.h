@@ -4,11 +4,6 @@
 #include "../../core/include/vector2d.h"
 #include "../../core/include/texture.h"
 
-typedef struct FE_Map_Parallax {
-    float scale;
-    FE_Texture *texture;
-} FE_Map_Parallax;
-
 typedef struct FE_Map_Tile {
     uint16_t texture_x;
     uint16_t texture_y;
@@ -111,11 +106,5 @@ Vector2D FE_CheckMapCollisionRight(SDL_Rect *r);
 */
 Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r);
 
-
-/** Renders the background of a map
- * \param camera The camera to render the map from
- * \param map The map to render
- */
-void FE_RenderMapBG(FE_Camera *camera, FE_LoadedMap *map);
 
 #endif

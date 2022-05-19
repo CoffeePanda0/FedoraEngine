@@ -2,9 +2,9 @@
 In order of rough completion plans
 
 - Extra high velocities can cause clipping
+- Zooming is kinda scuffed  
 - Add jump animation and falling animation logic  
 - Tie movement speed to walking animaiton speed  
-- Parallax backgrounds  
 - Add zooming to editor  
 - New UI lib creation
 - Nicer event handling  

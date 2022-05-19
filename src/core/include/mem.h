@@ -23,10 +23,4 @@ void *xrealloc(void *pt, size_t size);
 */
 void *xcalloc(size_t num, size_t size);
 
-
-/** Frees memory, sets pointer to 0
-*\param pt Pointer to memory to free
-*/
-void xfree(void *pt);
-
 #endif

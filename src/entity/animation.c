@@ -30,7 +30,7 @@ FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint
 
     char *temp_path = AddStr(ANIMATION_PATH, spritesheet_name);
     anim->spritesheet = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, temp_path);
-    xfree(temp_path);
+    free(temp_path);
 
     anim->frame_count = frame_count;
     anim->frame_width = frame_width;
@@ -73,7 +73,7 @@ int FE_DestroyAnimation(FE_Animation *anim)
     }
     FE_DestroyResource(anim->spritesheet->path);
     FE_List_Remove(&animation_list, anim);
-    xfree(anim);
+    free(anim);
 
     return 1;
 }
@@ -86,7 +86,7 @@ int FE_CleanAnimations()
     for (FE_List *l = animation_list; l; l = l->next) {
         FE_Animation *anim = (FE_Animation *)l->data;
         FE_DestroyResource(anim->spritesheet->path);
-        xfree(anim);
+        free(anim);
     }
 
     FE_List_Destroy(&animation_list);

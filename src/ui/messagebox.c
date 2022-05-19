@@ -142,7 +142,7 @@ void FE_RenderMessageBox()
     
     if (MB->type == MESSAGEBOX_TEXTBOX) { // render again to bring textbox to front
         SDL_RenderCopy(PresentGame->Renderer, MB->textbox->text, NULL, &MB->textbox->r); 
-        SDL_RenderCopy(PresentGame->Renderer, MB->textbox->label->text, NULL, &MB->textbox->label->r); 
+        SDL_RenderCopy(PresentGame->Renderer, MB->textbox->label->texture, NULL, &MB->textbox->label->r); 
     }
 
     // render button again

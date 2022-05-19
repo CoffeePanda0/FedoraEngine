@@ -6,8 +6,10 @@
 typedef struct FE_Label {
     FE_Font *font;
 
-    SDL_Texture *text;
+    SDL_Texture *texture;
     SDL_Color color;
+
+    char *text;
 
     SDL_Rect r;
     SDL_Color backcolor;

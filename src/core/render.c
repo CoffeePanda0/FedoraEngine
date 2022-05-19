@@ -8,14 +8,14 @@
     #include <math.h>
 #endif
 
-static SDL_Rect ApplyZoom(SDL_Rect *r, FE_Camera *camera, bool locked)
+SDL_Rect FE_ApplyZoom(SDL_Rect *r, FE_Camera *camera, bool locked)
 {
     // use ceil to prevent floating point rounding causing anomyous pixels
 
     SDL_Rect RenderRect = *r;
     if (!locked) {
-        RenderRect.y -= camera->y;
         RenderRect.x -= camera->x;
+        RenderRect.y -= camera->y;
 
         RenderRect.x = ceil(camera->zoom * RenderRect.x);
         RenderRect.y = ceil(camera->zoom * RenderRect.y);
@@ -36,7 +36,7 @@ int FE_RenderCopy(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rect 
 
     SDL_Rect RenderRect = *dst;
     if (camera->zoom != 0)
-        RenderRect = ApplyZoom(dst, camera, locked);
+        RenderRect = FE_ApplyZoom(dst, camera, locked);
     else
         RenderRect = (SDL_Rect){RenderRect.x - camera->x, RenderRect.y - camera->y, RenderRect.w, RenderRect.h};
 
@@ -62,7 +62,7 @@ int FE_RenderCopyEx(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rec
 
     SDL_Rect RenderRect = *dst;
     if (camera->zoom != 0)
-        RenderRect = ApplyZoom(dst, camera, locked);
+        RenderRect = FE_ApplyZoom(dst, camera, locked);
     else
         RenderRect = (SDL_Rect){RenderRect.x - camera->x, RenderRect.y - camera->y, RenderRect.w, RenderRect.h};
 

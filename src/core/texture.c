@@ -53,9 +53,9 @@ int FE_DestroyTexture(FE_Texture *texture)
     if (texture->Texture)
         SDL_DestroyTexture(texture->Texture);
     if (texture->path)
-        xfree(texture->path);
+        free(texture->path);
     
-    xfree(texture);
+    free(texture);
 
     return 1;
 }
@@ -119,7 +119,7 @@ FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)
 
 	char *path = AddStr(ATLAS_PATH, name);
 	atlas->atlas = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
-	xfree(path);
+	free(path);
 
 	FE_QueryTexture(atlas->atlas, &atlas->width, &atlas->height);
 	atlas->texturesize = 64;

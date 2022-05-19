@@ -5,5 +5,6 @@
 #include "map.h"
 #include "physics.h"
 #include "lighting.h"
+#include "mapbg.h"
 
 #endif

@@ -37,11 +37,11 @@ static void DestroyData(char *key, void *val)
         return;
     }
     
-    xfree(key);
+    free(key);
 
     FE_Resource *resource = (FE_Resource *)val;
     DestroyResource(resource);
-    xfree(resource);
+    free(resource);
 }
 
 void FE_ResourceManager_Init()

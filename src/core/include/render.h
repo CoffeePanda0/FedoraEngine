@@ -49,4 +49,12 @@ int FE_RenderRect(SDL_Rect *rect, SDL_Color color);
 int FE_RenderDrawLine(FE_Camera *camera, int x1, int y1, int x2, int y2, SDL_Color color);
 
 
+/** Applies camera zoom and position to a rect
+ * \param rect The rect to apply the zoom to
+ * \param camera The camera to apply the zoom from
+ * \param locked Whether or not the camera is locked
+ * \returns The zoomed rect
+*/
+SDL_Rect FE_ApplyZoom(SDL_Rect *r, FE_Camera *camera, bool locked);
+
 #endif

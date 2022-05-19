@@ -33,7 +33,7 @@
 #endif
 
 #ifndef Y_LIST_FREE
-	#define Y_LIST_FREE xfree
+	#define Y_LIST_FREE free
 #endif
 
 /* Must be >= 2. */

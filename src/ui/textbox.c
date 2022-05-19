@@ -59,7 +59,7 @@ static void FreeTextbox(FE_TextBox *t) // frees memory held by textbox
     }
 
     SDL_DestroyTexture(t->text);
-    SDL_DestroyTexture(t->label->text);
+    SDL_DestroyTexture(t->label->texture);
     free(t->label);
     free(t->content);
 
@@ -75,9 +75,9 @@ FE_TextBox *FE_CreateTextBox(int x, int y, int w, int h, char *value) // Makes a
     // make box label
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, value, COLOR_WHITE); 
     temp->label = xmalloc(sizeof(FE_Label));
-    temp->label->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    temp->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
 
-    SDL_QueryTexture(temp->label->text, NULL, NULL, &temp->label->r.w, &temp->label->r.h); // Get w and h for rect
+    SDL_QueryTexture(temp->label->texture, NULL, NULL, &temp->label->r.w, &temp->label->r.h); // Get w and h for rect
     SDL_FreeSurface(text_surface);
     temp->label->r.x = x;
     temp->label->r.y = y;
@@ -106,13 +106,13 @@ int FE_SetContent(FE_TextBox *t, char *value) // Sets the content of a textbox
     t->content = strdup(value);
 
     // redo label texture
-    SDL_DestroyTexture(t->label->text);
+    SDL_DestroyTexture(t->label->texture);
     
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, t->content, COLOR_WHITE); 
-    t->label->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    t->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
-    SDL_QueryTexture(t->label->text, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
+    SDL_QueryTexture(t->label->texture, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
 
     return 1;
 }
@@ -137,7 +137,7 @@ int FE_UpdateTextBox(char c) // Adds or subtracts a character from the text of a
         if (t->content && strlen(t->content) > 0) { // if content already exists, realloc
             // check if textbox is full, and work out average char width to prevent overflow
             int w, h;
-            SDL_QueryTexture(t->label->text, NULL, NULL, &w, &h);
+            SDL_QueryTexture(t->label->texture, NULL, NULL, &w, &h);
             float avgchar = (w / strlen(t->content));
             if (w >= t->r.w - avgchar - 5) {
                 return 0;
@@ -149,20 +149,20 @@ int FE_UpdateTextBox(char c) // Adds or subtracts a character from the text of a
             t->content[len+1] = '\0';
         } else { // else calloc and add new char
             if (t->content)
-                xfree(t->content);
+                free(t->content);
             t->content = xcalloc(2,1);
             t->content[0] = c;
         }
     }
     
     // redo label textures
-    SDL_DestroyTexture(t->label->text);
+    SDL_DestroyTexture(t->label->texture);
     
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, t->content, COLOR_WHITE); 
-    t->label->text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    t->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
-    SDL_QueryTexture(t->label->text, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
+    SDL_QueryTexture(t->label->texture, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
     return 1;
 }
 
@@ -202,6 +202,6 @@ void FE_RenderTextBox()
     for (FE_List *l = FE_Textboxes; l; l = l->next) {
         FE_TextBox *t = l->data;
         SDL_RenderCopy(PresentGame->Renderer, t->text, NULL, &t->r);
-        SDL_RenderCopy(PresentGame->Renderer, t->label->text, NULL, &t->label->r);
+        SDL_RenderCopy(PresentGame->Renderer, t->label->texture, NULL, &t->label->r);
     }
 }

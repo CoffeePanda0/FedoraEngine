@@ -139,7 +139,7 @@ void FE_Camera_SmoothZoom(FE_Camera *camera, float amount, uint16_t time)
         zooming = true;
         newzoom = clamp(camera->zoom + amount, camera->minzoom, camera->maxzoom);
         zoom_rate = amount / (time / 1000.0f);
-    } 
+    }
 }
 
 SDL_Rect SCREEN_RECT(FE_Camera *camera)

@@ -6,7 +6,6 @@ static FE_Player *GamePlayer;
 
 static FE_ParticleSystem *SnowParticles;
 SDL_Texture *world;
-FE_GameObject *fire;
 
 /* Starts the main game */
 void FE_StartGame(const char *mapname)
@@ -14,6 +13,7 @@ void FE_StartGame(const char *mapname)
 	char *map = strdup(mapname);
 	FE_CleanAll();
 
+	// Map setup
 	if (FE_LoadMap(map) == -1) {
 		warn("Failed to start game");
 		FE_Menu_MainMenu();
@@ -21,6 +21,12 @@ void FE_StartGame(const char *mapname)
 		return;
 	}
 	free(map);
+
+	FE_Parallax_Add("0.png", 0.2);
+	FE_Parallax_Add("1.png", 0.5);
+	FE_Parallax_Add("2.png", 0.8);
+	FE_Parallax_Add("3.png", 1.5);
+	FE_Parallax_SetSpeed(0.5);
 
 	// camera setup
 	GameCamera = FE_CreateCamera();

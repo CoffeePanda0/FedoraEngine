@@ -27,10 +27,10 @@ int FE_LoadMap(const char *name)
     if (f == NULL) {
         warn("Failed to open map file: %s", name);
         FE_Menu_MainMenu(); // return to main menu when we can't open map
-        xfree(map_path);
+        free(map_path);
         return -1;
     }
-    xfree(map_path);
+    free(map_path);
 
     // Read map name
     if (!(map.name = ReadStr(f))) goto err;
@@ -42,7 +42,7 @@ int FE_LoadMap(const char *name)
     char *atlas_path = 0;
     if (!(atlas_path = ReadStr(f))) goto err;
     map.atlas = FE_LoadTextureAtlas(atlas_path);
-    xfree(atlas_path);
+    free(atlas_path);
 
 
     if (fread(&map.atlas->texturesize, sizeof(Uint16), 1, f) != 1) goto err;
@@ -53,7 +53,7 @@ int FE_LoadMap(const char *name)
     if (!(bg_path = ReadStr(f))) goto err;
 
     map.bg = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, bg_path);
-    xfree(bg_path);
+    free(bg_path);
 
     // Read Map tiles and sizes
     if (fread(&map.tilecount, sizeof(Uint16), 1, f) != 1) goto err;
@@ -108,11 +108,13 @@ err:
 
 void FE_RenderMap(FE_Camera *camera)
 {
-    if (!PresentGame->MapConfig.Loaded )
+    if (!PresentGame->MapConfig.Loaded)
         return;
 
 	// render all tiles
     for (size_t i = 0; i < map.tilecount; i++) {
+        if (map.tiles[i].position.x + map.tilesize - camera->x < 0 || map.tiles[i].position.x - camera->x > PresentGame->Window_width)
+            continue;
 		SDL_Rect r = {map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
         SDL_Rect src = {map.tiles[i].texture_x, map.tiles[i].texture_y, map.atlas->texturesize, map.atlas->texturesize};
 		FE_RenderCopyEx(camera, false, map.atlas->atlas, &src, &r, map.tiles[i].rotation, SDL_FLIP_NONE);
@@ -138,7 +140,7 @@ void FE_CloseMap()
     flagtexture = 0;
 
     if (map.name)
-        xfree(map.name);
+        free(map.name);
     map.name = 0;
     
     map.PlayerSpawn = VEC_NULL;

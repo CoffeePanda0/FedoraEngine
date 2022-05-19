@@ -65,7 +65,7 @@ bool Editor_CallSave(FE_Map *save) // used to call the save function as a callba
 	return true;
 
 fail:
-	xfree(save->name);
+	free(save->name);
 	return false;
 }
 

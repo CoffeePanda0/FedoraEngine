@@ -29,10 +29,6 @@ FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture);
 void FE_DestroyLight(FE_Light *light);
 
 
-/* Initialises the lighting system. */
-void FE_InitLighting();
-
-
 /* Destroys the lighting system */
 void FE_CleanLighting();
 

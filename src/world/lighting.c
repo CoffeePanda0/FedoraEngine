@@ -6,11 +6,7 @@
 static SDL_Texture *light_layer;
 static bool light_layer_dirty = true;
 
-static SDL_Texture *result_layer;
-
 static FE_List *lights;
-
-static bool initialised = false;
 
 void FE_MoveLight(FE_Light *light, int x, int y)
 {
@@ -35,9 +31,8 @@ void FE_ToggleLight(FE_Light *light)
 
 FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture)
 {
-    if (!initialised) {
-        warn("Trying to add world light before initialising");
-        return NULL;
+    if (!light_layer) {
+        light_layer = FE_CreateRenderTexture(PresentGame->Window_width, PresentGame->Window_height);
     }
 
     // Create new light object
@@ -58,13 +53,15 @@ FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture)
     return light;
 }
 
-static void CheckIfLightDirty()
+static void CheckIfLightDirty(FE_Camera *camera)
 {
     static Uint8 last_brightness = 0;
+    static float last_zoom = 1.0f;
 
     /* Check if brightness or camera zoom has changed */
-    if (last_brightness != PresentGame->MapConfig.AmbientLight) {
+    if (last_brightness != PresentGame->MapConfig.AmbientLight || last_zoom != camera->zoom) {
         last_brightness = PresentGame->MapConfig.AmbientLight;
+        last_zoom = camera->zoom;
         light_layer_dirty = true;
         return;
     }
@@ -72,8 +69,6 @@ static void CheckIfLightDirty()
 
 void FE_RenderLighting(FE_Camera *camera, SDL_Texture *world)
 {
-    /* NOTE: This function is not very well optimised and will use a lot of SDL_Render time. */
-
 	Uint8 brightness = PresentGame->MapConfig.AmbientLight;
     SDL_Rect vis_rect = SCREEN_RECT(camera);
 
@@ -85,7 +80,7 @@ void FE_RenderLighting(FE_Camera *camera, SDL_Texture *world)
         return;
     }
 
-    CheckIfLightDirty();
+    CheckIfLightDirty(camera);
 
     /* Create an layer to render the lighting to. Only re-render if lighting has changed. */
     if (light_layer_dirty) {
@@ -118,19 +113,12 @@ void FE_DestroyLight(FE_Light *light)
     light_layer_dirty = true;
 }
 
-void FE_InitLighting()
-{
-    light_layer = FE_CreateRenderTexture(PresentGame->Window_width, PresentGame->Window_height);
-    result_layer = FE_CreateRenderTexture(PresentGame->Window_width, PresentGame->Window_height);
-    initialised = true;
-}
-
 void FE_CleanLighting()
 {
-    if (!initialised) return;
-    
-    SDL_DestroyTexture(light_layer);
-    SDL_DestroyTexture(result_layer);
-    FE_List_Destroy(&lights);
-    initialised = false;
+    if (light_layer)    
+        SDL_DestroyTexture(light_layer);
+    light_layer = 0;
+    if (lights)
+        FE_List_Destroy(&lights);
+    lights = 0;
 }
