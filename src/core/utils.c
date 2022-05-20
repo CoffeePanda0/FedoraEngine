@@ -130,29 +130,14 @@ char *IntToSTR (int i) {
 
 char *AddStr(const char *str, const char *add)
 {
+	if (!str) {
+		warn("Passing NULL str to AddStr");
+		return 0;
+	}
 	char *newstr = xmalloc(strlen(str) + strlen(add) + 1);
 	strcpy(newstr, str);
 	strcat(newstr, add);
 	return newstr;
-}
-
-char *ReadStr(FILE *f)
-{
-	Uint16 len;
-	char *str;
-	fread(&len, sizeof(Uint16), 1, f);
-	str = xmalloc(len + 1);
-	fread(str, sizeof(char), len, f);
-	str[len] = '\0';
-	return str;
-}
-
-bool WriteStr(FILE *f, const char *str)
-{
-	Uint16 len = strlen(str);
-	fwrite(&len, sizeof(Uint16), 1, f);
-	fwrite(str, sizeof(char), len, f);
-	return true;
 }
 
 bool StrInArr(char **arr, size_t n, char *str)

@@ -2,7 +2,8 @@
 In order of rough completion plans
 
 - Extra high velocities can cause clipping
-- Zooming is kinda scuffed  
+- Camera funky centering  
+- Slow typing animation  
 - Add jump animation and falling animation logic  
 - Tie movement speed to walking animaiton speed  
 - Add zooming to editor  

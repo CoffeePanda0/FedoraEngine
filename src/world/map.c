@@ -1,6 +1,7 @@
 #include "../core/include/include.h"
 #include "include/include.h"
 #include "../ui/include/ui.h"
+#include "../core/include/file.h"
 
 #define TEXTURE_PATH "game/map/textures/"
 #define BG_PATH "game/map/backgrounds/"

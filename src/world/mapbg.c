@@ -1,8 +1,9 @@
 #include <SDL.h>
-#include "include/camera.h"
-#include "include/map.h"
-#include "include/mapbg.h"
+#include "include/include.h"
 #include "../core/include/include.h"
+
+#include "../core/include/file.h"
+#include "../ext/ini.h"
 
 #define PARALLAX_DIRECTORY "game/map/parallax/"
 
@@ -16,6 +17,62 @@ static FE_Map_Parallax *parallax;
 static size_t parallax_layers;
 static float parallax_speed = 1.0f;
 static bool parallax_dirty = false;
+
+static int ConfigParser(void *user, const char *section, const char *name, const char *value)
+{
+    (void)user;
+
+    static char *dir = 0;
+    static short last_layer = 0;
+
+    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+    if (MATCH("CONFIG", "name")) { // load each layer name
+        last_layer = 0;
+        if (dir) free(dir);
+        dir = AddStr(value, "/");
+    } else if (MATCH("CONFIG", "ratio")) { // load each layer name
+        parallax_speed = atof(value);
+    } else if (MATCH("LAYERS", "path")) { // load each layer name
+        char *path = AddStr(dir, value);
+        FE_Parallax_Add(path, 1.0f);
+        free(path);
+    } else if (MATCH("SPEED", "value")) { // load each layer speed
+        if (last_layer == (short)parallax_layers) {
+            warn("Parallax config in incorrect order, or too many speed arguments");
+            return 0;
+        }
+        parallax[last_layer++].scale = atof(value);
+    } else {
+        info("Unknown parallax config option: %s.%s", section, name);
+    }
+    
+    return 1;
+}
+
+void FE_Parallax_Load(const char *name)
+{
+    // Check that parallax directory exists
+    char *full_path = xmalloc(strlen(name) + strlen(PARALLAX_DIRECTORY) + 2);
+    snprintf(full_path, strlen(name) + strlen(PARALLAX_DIRECTORY) + 2, "%s%s/", PARALLAX_DIRECTORY, name);
+    if (!FE_DirectoryExists(full_path)) {
+        warn("Parallax directory %s does not exist", name);
+        free(full_path);
+        return;
+    }
+
+    // Load config file
+    char *ini_path = AddStr(full_path, "parallax.ini");
+    if (ini_parse(ini_path, ConfigParser, NULL) < 0) {
+        warn("Can't load parallax config file %s", ini_path);
+        free(full_path);
+        free(ini_path);
+        return;
+    }
+    free(full_path);
+    free(ini_path);
+
+    info("Loaded parallax '%s'", name);
+}
 
 void FE_Parallax_SetSpeed(float speed)
 {
@@ -35,9 +92,26 @@ void FE_Parallax_Add(const char *layer_name, float scale)
     free(path);
 
     parallax[parallax_layers].scale = scale;
-    parallax[parallax_layers].r1 = (SDL_Rect){0, 600, layer_width, layer_height};
-    parallax[parallax_layers++].r2 = (SDL_Rect){-layer_width, 600, layer_width, layer_height};
+
+    int ypos = PresentGame->MapConfig.MapHeight - layer_height;
+    parallax[parallax_layers].r1 = (SDL_Rect){0, ypos, layer_width, layer_height};
+    parallax[parallax_layers++].r2 = (SDL_Rect){-layer_width, ypos, layer_width, layer_height};
     parallax_dirty = true;
+}
+
+void FE_Parallax_Clean()
+{
+    if (parallax_layers == 0)
+        return;
+    
+    for (size_t i = 0; i < parallax_layers; i++)
+        FE_DestroyResource(parallax[i].texture->path);
+    free(parallax);
+
+    parallax = 0;
+    parallax_dirty = true;
+    parallax_layers = 0;
+    parallax_speed = 1.0f;
 }
 
 static void FE_Parallax_Render(FE_Camera *camera)

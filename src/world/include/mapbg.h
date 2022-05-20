@@ -31,4 +31,13 @@ void FE_Parallax_Add(const char *layer_name, float scale);
 void FE_Parallax_SetSpeed(float speed);
 
 
+/** Loads an entire parallax background from a config
+ * \param name The name of the parallax to load
+*/
+void FE_Parallax_Load(const char *name);
+
+
+/* Removes all loaded parallax layers */
+void FE_Parallax_Clean();
+
 #endif

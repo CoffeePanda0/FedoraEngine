@@ -51,21 +51,6 @@ char *IntToSTR (int i);
 char *AddStr(const char *str, const char *add);
 
 
-/** Uses fread to read a string with the length prefix before
- *\param f File to read from
-  *\return Pointer to the string
-*/
-char *ReadStr(FILE *f);
-
-
-/** Writes str to file, appending the length of the string
- * \param f File to write to
- * \param str String to write
- * \return true on success, false on failure
- */
-bool WriteStr(FILE *F, const char *str);
-
-
 /** Checks if a string exists in an array of strings
  * \param arr The array of strings to check
  * \param n The number of elements in the array
