@@ -1,3 +1,4 @@
+#include <string.h>
 #include "../core/include/include.h"
 #include "include/uiobject.h"
 #include "include/label.h"
@@ -15,6 +16,33 @@ static size_t max_index; // last index of the text
 
 static char **speakers; // array of speakers
 static char **contents; // array containing all content
+
+static size_t current_char = 1; // the current char that we have drawn
+static bool drawing_text = false; // whether or not we are slowly drawing text
+
+void FE_Dialogue_Update()
+{
+    static float last_time = 0;
+    if (!drawing_text || !PresentGame->DialogueActive) {
+        last_time = 0;
+        return;
+    }
+    
+    size_t len = strlen(contents[cur_index-1]);
+    if (len == current_char) {
+        drawing_text = false;
+        return;
+    }
+
+    float dialoguespeed = ((100 - PresentGame->DialogueSpeed) * 2) / 1000.0f;
+    if (last_time > dialoguespeed) {
+        last_time = 0;
+        char *newtext = substr(contents[cur_index-1], ++current_char);
+        FE_UpdateLabel(content, newtext);
+        free(newtext);
+    }
+    last_time += FE_DT;
+}
 
 int FE_FreeDialogue() // frees both speakers and content array
 {
@@ -49,16 +77,22 @@ int FE_PlayDialogue() // plays current dialogue
         return -1;
     }
     
+    char *first = substr(contents[cur_index-1], 1);
+
     if (!PresentGame->DialogueActive) { // if elements have not been made yet
         box = FE_CreateUIObject(0, 0, PresentGame->Window_width, PresentGame->Window_height / 6, DIALOGUETEXT);
         title = FE_CreateLabel(NULL, speakers[cur_index-1], FE_NewVector(30, 10), COLOR_WHITE);
-        content = FE_CreateLabel(NULL, contents[cur_index-1], FE_NewVector(30, 50), COLOR_WHITE);
+        content = FE_CreateLabel(NULL, first, FE_NewVector(30, 50), COLOR_WHITE);
     } else {
         FE_UpdateLabel(title, speakers[cur_index-1]);
-        FE_UpdateLabel(content, contents[cur_index-1]);
+        FE_UpdateLabel(content, first);
     }
 
+    free(first);
+    current_char = 1;
+    drawing_text = true;
     PresentGame->DialogueActive = true;
+
     return 1;
 }
 
@@ -162,6 +196,13 @@ int FE_DialogueFromFile(char *path)
 
 int FE_DialogueInteract()
 {
+    // If text is slowly being typed, complete text first
+    if (drawing_text) {
+        drawing_text = false;
+        FE_UpdateLabel(content, contents[cur_index-1]);
+        return 1;
+    }
+
     if (cur_index == max_index) {
         FE_FreeDialogue();
         return 1;

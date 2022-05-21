@@ -54,6 +54,8 @@ typedef struct FE_Game {
     bool InText;
     bool StartedInput;
     bool MBShown;
+
+    int DialogueSpeed;
     
     SDL_Window *Window;
     SDL_Renderer *Renderer;

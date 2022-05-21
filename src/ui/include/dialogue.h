@@ -23,4 +23,15 @@ int FE_DialogueFromFile(char *path);
 /* Handles event to move to the next line of dialogue, or close the dialogue */
 int FE_DialogueInteract();
 
+
+/* Updates the text being displayed with time */
+void FE_Dialogue_Update();
+
+
+/** Sets the speed for the dialogue to be written at
+ * \param speed The speed to write the dialogue at (1 being slowest, 100 fastest)
+*/
+void FE_Dialogue_SetSpeed(int speed);
+
+
 #endif

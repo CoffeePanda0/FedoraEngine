@@ -23,6 +23,14 @@ char *strseps(char **sp, char *sep)
 	return(s);
 }
 
+char *substr(char *str, size_t len)
+{
+	char *res = xcalloc(len + 1, 1);
+	res = memcpy(res, str, len);
+	res[len] = '\0';
+	return res;
+}
+
 void FE_Log_Init(void) {
 	f = fopen("log.txt", "a");
 	info("Started FedoraEngine");

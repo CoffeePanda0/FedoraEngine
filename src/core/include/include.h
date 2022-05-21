@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 #include <stdbool.h>
+#include <string.h> 
 
 #include "fedoraengine.h"
 #include "linkedlist.h"

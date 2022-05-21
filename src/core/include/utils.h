@@ -3,6 +3,7 @@
 
 #include "mem.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 enum dietypes {
 	DT_NONE,
@@ -58,6 +59,13 @@ char *AddStr(const char *str, const char *add);
 */
 bool StrInArr(char **arr, size_t n, char *str);
 
+
+/** Returns a malloced substring
+ * \param str The original string
+ * \param len The number of characters for the substring
+ * \returns the malloc'd substring
+*/
+char *substr(char *str, size_t len);
 
 /** Safe random function - catches floating point exception if 0 is passed
  * \param val The maximum random value

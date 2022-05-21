@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <stdio.h>
 #include "include/fedoraengine.h"
 
 #ifndef _MATH_H

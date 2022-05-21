@@ -1,3 +1,4 @@
+#include <string.h>
 #include "include/font.h"
 #include "../core/include/utils.h"
 #include "../core/include/linkedlist.h"

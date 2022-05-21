@@ -53,6 +53,8 @@ void FE_StartGame(const char *mapname)
 	FE_CreateGameObject((SDL_Rect){1200, 1200, 64, 128}, "torch.png", "", ENEMY, 0, false);
 	FE_CreateLight((SDL_Rect){870,1050,712,512}, "torchglow.png");
 
+	FE_DialogueFromStr("narrator","suck these nuts");
+
 	PresentGame->GameState = GAME_STATE_PLAY;
 }
 
@@ -84,7 +86,8 @@ void FE_GameLoop()
 	}
 
 	FE_DebugUI_Update(GamePlayer);
-	
+	FE_Dialogue_Update();
+
 	PresentGame->Timing.EventTime = SDL_GetPerformanceCounter();
 	PresentGame->Timing.EventTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.EventTime) / SDL_GetPerformanceFrequency()) * 1000;
 	FE_GameEventHandler(GameCamera, GamePlayer);

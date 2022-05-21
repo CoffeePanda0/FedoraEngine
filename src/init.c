@@ -33,6 +33,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.DialogueActive = false,
 		.InText = false,
 		.StartedInput = false,
+		.DialogueSpeed = 85,
 		.Window = NULL,
 		.Renderer = NULL,
 		.GameActive = false,
