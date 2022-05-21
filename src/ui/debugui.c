@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "../core/include/fedoraengine.h"
 #include "../core/include/timing.h"
 #include "../entity/include/player.h"   

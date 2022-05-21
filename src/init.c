@@ -37,7 +37,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.Renderer = NULL,
 		.GameActive = false,
 		.GameState = GAME_STATE_MENU,
-		.MapConfig = {false, 0, 0, 0, VEC_EMPTY, 0.0f, 150},
+		.MapConfig = {false, 0, 0, 0, VEC_EMPTY, 0.0f, 50},
 		.AudioConfig = {50, false},
 		.Timing = {0,0,0},
 		.DebugConfig = {false, true}

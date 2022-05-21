@@ -1,16 +1,16 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include "include/utils.h"
 #include <stdbool.h>
 
 #ifdef WIN32
-    #include <io.h>
-    #define F_OK 0
-    #define access _access
+#include <io.h>
+#define F_OK 0
+#define access _access
 #else
-    #include <unistd.h>
+#include <unistd.h>
 #endif
-
 
 char *ReadStr(FILE *f)
 {
@@ -33,7 +33,7 @@ bool WriteStr(FILE *f, const char *str)
 
 bool FE_DirectoryExists(const char *path)
 {
-    if (access(path, F_OK) != 0)
-        return false;
-    return true;
+	if (access(path, F_OK) != 0)
+		return false;
+	return true;
 }

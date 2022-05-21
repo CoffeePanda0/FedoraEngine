@@ -1,7 +1,7 @@
 #ifndef H_RESOURCEMANAGER
 #define H_RESOURCEMANAGER
 
-#include <stdint.h>
+#include <stdio.h>
 
 typedef enum FE_RESOURCE_TYPE {
     FE_RESOURCE_TYPE_UNKNOWN,
