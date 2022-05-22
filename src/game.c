@@ -53,8 +53,6 @@ void FE_StartGame(const char *mapname)
 	FE_CreateGameObject((SDL_Rect){1200, 1200, 64, 128}, "torch.png", "", ENEMY, 0, false);
 	FE_CreateLight((SDL_Rect){870,1050,712,512}, "torchglow.png");
 
-	FE_DialogueFromStr("narrator","suck these nuts");
-
 	PresentGame->GameState = GAME_STATE_PLAY;
 }
 
@@ -67,7 +65,9 @@ void FE_RenderGame()
 	FE_RenderMapBackground(GameCamera);
 	FE_RenderParticles(GameCamera);
 	FE_RenderMap(GameCamera);
+	FE_Trigger_Render(GameCamera);
 	FE_RenderGameObjects(GameCamera);
+	FE_Trigger_Render(GameCamera);
 	FE_RenderPlayer(GamePlayer, GameCamera);
 	if (PresentGame->DebugConfig.LightingEnabled)
 		FE_RenderLighting(GameCamera, world);

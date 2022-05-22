@@ -13,7 +13,6 @@ In order of rough completion plans
 - Make "virtual Y" based on the lowest tile 
 - Map editor - change tilesize and map size  
 - Pushable physobjects  
-- Map event triggers  
 - Sound emitters  
 - Handle end of level  
 - Scaling game resolution  

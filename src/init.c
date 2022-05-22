@@ -41,7 +41,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.MapConfig = {false, 0, 0, 0, VEC_EMPTY, 0.0f, 50},
 		.AudioConfig = {50, false},
 		.Timing = {0,0,0},
-		.DebugConfig = {false, true}
+		.DebugConfig = {false, true, false}
 	};
 	return Game;
 }
@@ -123,6 +123,7 @@ void FE_Init(FE_InitConfig *InitConfig)
 void FE_CleanAll() // Cleans all resources possible without exiting
 {
 	FE_CloseMap();
+	FE_Trigger_Clean();
 	FE_Parallax_Clean();
 	FE_FreeUI();
 	FE_FreeDialogue();

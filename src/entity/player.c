@@ -1,6 +1,7 @@
 #include "../core/include/include.h"
 #include "include/animation.h"
 #include "include/player.h"
+#include "include/trigger.h"
 #include "../world/include/map.h"
 
 #define IDLE_ANIMATION "player_idle.png"
@@ -112,6 +113,8 @@ static bool OnGround(FE_Player *player)
 
 void FE_UpdatePlayer(FE_Player *player)
 {
+    FE_Trigger_Check(&player->PhysObj->body);
+
     player->render_rect = player->PhysObj->body;
     player->on_ground = OnGround(player);
 

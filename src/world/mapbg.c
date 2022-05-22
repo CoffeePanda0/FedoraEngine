@@ -71,7 +71,10 @@ void FE_Parallax_Load(const char *name)
     free(full_path);
     free(ini_path);
 
-    info("Loaded parallax '%s'", name);
+    if (parallax_layers > 0)
+        info("Loaded parallax '%s'", name);
+    else
+        warn("Parallax %s has no layers", name);
 }
 
 void FE_Parallax_SetSpeed(float speed)
