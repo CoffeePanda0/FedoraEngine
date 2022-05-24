@@ -17,6 +17,21 @@ enum logtypes {
 	LT_ERROR,
 };
 
+
+/** Returns the width relative to the screen width
+ * \param w The width to convert (as a percentage)
+ * \return The width relative to the screen width
+ */
+uint16_t rel_w(uint16_t w);
+
+
+/** Returns the height relative to the screen height
+ * \param h The height to convert (as a percentage)
+ * \return The height relative to the screen height
+ */
+uint16_t rel_h(uint16_t h);
+
+
 /** Custom implementation of strsep to be universal
  * \param sp String to split
  * \param sep Delimiter to split on
@@ -58,6 +73,15 @@ char *AddStr(const char *str, const char *add);
  * \param str The string to compare against
 */
 bool StrInArr(char **arr, size_t n, char *str);
+
+
+/** Returns an array of strings, each of max length as max_chars, or split by word space
+ * \param str The string to split
+ * \param max_chars The maximum length of each line
+ * \param line_count The number of lines in the string to output to
+ * \return The array of strings
+*/
+char **StrWrap(char *str, size_t max_chars, size_t *line_count);
 
 
 /** Returns a malloced substring

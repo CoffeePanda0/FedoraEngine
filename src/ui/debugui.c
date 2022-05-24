@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "../core/include/fedoraengine.h"
+#include "../core/include/utils.h"
 #include "../core/include/timing.h"
 #include "../entity/include/player.h"   
 #include "include/ui.h"
@@ -16,22 +17,22 @@ static bool UI_Created = false;
 
 static void CreateUI()
 {
-    update_label = FE_CreateLabel(PresentGame->font, "Update: ", FE_NewVector(0, 0), COLOR_BLACK);
+    update_label = FE_CreateLabel(PresentGame->font, "Update: ", rel_w(20), FE_NewVector(0, 0), COLOR_BLACK);
     update_label->showbackground = true;
 
-    event_label = FE_CreateLabel(PresentGame->font, "Event: ", FE_NewVector(0, 25), COLOR_BLACK);
+    event_label = FE_CreateLabel(PresentGame->font, "Event: ", rel_w(20), FE_NewVector(0, 25), COLOR_BLACK);
     event_label->showbackground = true;
 
-    render_label = FE_CreateLabel(PresentGame->font, "Render: ", FE_NewVector(0, 50), COLOR_BLACK);
+    render_label = FE_CreateLabel(PresentGame->font, "Render: ", rel_w(20), FE_NewVector(0, 50), COLOR_BLACK);
     render_label->showbackground = true;
 
-    fps_label = FE_CreateLabel(PresentGame->font, "FPS: ", FE_NewVector(0, 75), COLOR_BLACK);
+    fps_label = FE_CreateLabel(PresentGame->font, "FPS: ", rel_w(20), FE_NewVector(0, 75), COLOR_BLACK);
     fps_label->showbackground = true;
 
-    coord_label = FE_CreateLabel(PresentGame->font, "X: Y:", FE_NewVector(0, 100), COLOR_BLACK);
+    coord_label = FE_CreateLabel(PresentGame->font, "X: Y:", rel_w(20), FE_NewVector(0, 100), COLOR_BLACK);
     coord_label->showbackground = true;
 
-    velocity_label = FE_CreateLabel(PresentGame->font, "Velocity: ", FE_NewVector(0, 125), COLOR_BLACK);
+    velocity_label = FE_CreateLabel(PresentGame->font, "Velocity: ", rel_w(20), FE_NewVector(0, 125), COLOR_BLACK);
     velocity_label->showbackground = true;
 
     UI_Created = true;

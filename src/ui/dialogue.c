@@ -81,8 +81,8 @@ int FE_PlayDialogue() // plays current dialogue
 
     if (!PresentGame->DialogueActive) { // if elements have not been made yet
         box = FE_CreateUIObject(0, 0, PresentGame->Window_width, PresentGame->Window_height / 6, DIALOGUETEXT);
-        title = FE_CreateLabel(NULL, speakers[cur_index-1], FE_NewVector(30, 10), COLOR_WHITE);
-        content = FE_CreateLabel(NULL, first, FE_NewVector(30, 50), COLOR_WHITE);
+        title = FE_CreateLabel(NULL, speakers[cur_index-1], rel_w(90), FE_NewVector(30, 10), COLOR_WHITE);
+        content = FE_CreateLabel(NULL, first, rel_w(90), FE_NewVector(30, 50), COLOR_WHITE);
     } else {
         FE_UpdateLabel(title, speakers[cur_index-1]);
         FE_UpdateLabel(content, first);

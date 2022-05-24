@@ -12,6 +12,16 @@
 
 static FILE* f;
 
+uint16_t rel_w(uint16_t w)
+{
+	return (w * PresentGame->Window_width) / 100;
+}
+
+uint16_t rel_h(uint16_t h)
+{
+	return (h / 100) * PresentGame->Window_height;
+}
+
 char *strseps(char **sp, char *sep)
 {
 	char *p, *s;
@@ -25,6 +35,7 @@ char *strseps(char **sp, char *sep)
 
 char *substr(char *str, size_t len)
 {
+	if (len > strlen(str)) return strdup(str);
 	char *res = xcalloc(len + 1, 1);
 	res = memcpy(res, str, len);
 	res[len] = '\0';
@@ -128,6 +139,49 @@ void vlog (enum logtypes type, const char *s, ...) {
 		FE_ConsoleSetText(out);
 	}
 	free(out);
+}
+
+char **StrWrap(char *str, size_t max_chars, size_t *line_count)
+{
+	size_t len = strlen(str);
+
+	// Make sure we have a valid string to prevent infinite loop
+	if (len > max_chars) {
+		*line_count = 1;
+		char **res = xmalloc(sizeof(char*));
+		res[0] = strdup(str);
+		return res;
+	}
+
+	*line_count = 0;
+	char **res = 0;
+
+	size_t sorted_chars = 0;
+	while (sorted_chars < len) {
+		*line_count = *line_count + 1;
+		res = xrealloc(res, *line_count * sizeof(char*));
+
+		// Remove leading spaces
+		char *sp = str + sorted_chars;
+		while (*sp == ' ' && sorted_chars < len) {
+			sorted_chars++;
+			sp++;
+		}
+
+		char *s = substr(str + sorted_chars, max_chars);
+		
+		// check if there is a space in the string. If so, wrap the line at the word
+		char *p = strrchr(s, ' ');
+		if (p && (size_t)(p - s) > max_chars / 2) {
+			res[*line_count - 1] = substr(s, p - s);
+			sorted_chars += strlen(res[*line_count - 1]);
+			free(s);
+			continue;
+		}
+		sorted_chars += strlen(s);
+		res[*line_count - 1] = s;
+	}
+	return res;
 }
 
 char *IntToSTR (int i) {

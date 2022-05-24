@@ -135,6 +135,7 @@ static void DeleteTile(int x, int y)
 	} else {
 		free(newmap.tiles);
 		newmap.tiles = 0;
+		newmap.tilecount = 0;
 	}
 
 }
@@ -144,13 +145,23 @@ static void AddTile(int x, int y)
 	// snap x and y to a grid using tile size
 	GridSnap(&x, &y);
 
+	static Vector2D last_click = VEC_NULL;
+	static size_t last_texture = 0;
+
+	// no point replacing same tile when mouse held
+	if (last_click.x == x && last_click.y == y && last_texture == selectedtexture)
+		return;
+
+	last_click = FE_NewVector(x,y);
+	last_texture = selectedtexture;
+
 	// check if tile in that location already exists, and it it does then deletes it
 	for (size_t i = 0; i < newmap.tilecount; i++) {
 		if (newmap.tiles[i].position.x == x && newmap.tiles[i].position.y == y) {
 			DeleteTile(x,y);
 		}
 	}
-
+	
 	// Add tile to newmap
 	if (newmap.tilecount == 0)
 		newmap.tiles = xmalloc(sizeof(FE_Map_Tile));
@@ -397,7 +408,7 @@ static void CreateUI()
 	FE_CreateButton("Clear", 60, 7, BUTTON_TINY, &FE_StartEditor, NULL);
 	FE_CreateCheckbox("Tiles", 150, 7, mode, &ChangeMode, NULL);
 
-	coord = FE_CreateLabel(NULL, "X: 0 Y: 0", FE_NewVector(340, 6), COLOR_BLACK);
+	coord = FE_CreateLabel(NULL, "X: 0 Y: 0", 128, FE_NewVector(340, 6), COLOR_BLACK);
 	spawntexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/spawn.png");
 	endtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 }
