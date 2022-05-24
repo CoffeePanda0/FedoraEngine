@@ -1,6 +1,7 @@
 #include "editor.h"
 #include "../ui/include/messagebox.h"
 #include "../core/include/file.h"
+#include "../core/lib/string.h"
 
 #define MAP_DIRECTORY "game/map/maps/"
 
@@ -35,7 +36,7 @@ static void SortTiles(FE_Map *save)
 bool Editor_CallSave(FE_Map *save) // used to call the save function as a callback and display dialogues 
 {
     save->name = 0;
-	save->name = strdup(FE_GetMessageBoxInput());
+	save->name = mstrdup(FE_GetMessageBoxInput());
 	if (save->name[0] == '\0') {
 		warn("Editor: Map name cannot be empty! Aborting save.");
 		FE_ShowMessageBox("Warning", "Map name cannot be empty!");
@@ -59,7 +60,7 @@ bool Editor_CallSave(FE_Map *save) // used to call the save function as a callba
     SortTiles(save);
 	Editor_Save(save);
 
-    if (save->name && strlen(save->name) > 0) {
+    if (save->name && mstrlen(save->name) > 0) {
         free(save->name);
     }
 
@@ -73,9 +74,9 @@ fail:
 void Editor_Save(FE_Map *mapsave)
 {
     // Create new map file and write as binary
-    char *map_path = xcalloc(strlen(MAP_DIRECTORY) + strlen(mapsave->name) + 2, 1);
-    strcpy(map_path, MAP_DIRECTORY);
-    strcat(map_path, mapsave->name);
+    char *map_path = xcalloc(mstrlen(MAP_DIRECTORY) + mstrlen(mapsave->name) + 2, 1);
+    mstrcpy(map_path, MAP_DIRECTORY);
+    mstrcat(map_path, mapsave->name);
 
     FILE *f = fopen(map_path, "wb");
     if (f == NULL) {

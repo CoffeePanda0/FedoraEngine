@@ -33,7 +33,7 @@ static void GenerateTexture(FE_Label *l)
     // Check if the text is too long to fit on one line
     size_t max_chars = l->linewidth / l->font->size;
     // Split newtext into lines based on max_chars
-    char **lines = StrWrap(l->text, max_chars, &surface_count);
+    char **lines = mstrwrap(l->text, max_chars, &surface_count);
 
     // Load each line as a surface and then export to texture
     surfaces = xmalloc(sizeof(SDL_Surface*) * surface_count);
@@ -77,7 +77,7 @@ static void GenerateTexture(FE_Label *l)
 FE_Label *FE_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, Vector2D position, SDL_Color color)
 {
     FE_Label *newlabel = xmalloc(sizeof(FE_Label));
-    newlabel->text = text ? strdup(text) : strdup(" ");
+    newlabel->text = text ? mstrdup(text) : mstrdup(" ");
     newlabel->linewidth = linewidth;
     newlabel->color = color;
     newlabel->r = (SDL_Rect){position.x, position.y, 0, 0};
@@ -124,7 +124,7 @@ int FE_UpdateLabel(FE_Label *l, char *text) // Updates a pre-existing label text
     free(l->text);
 
     // Update label text
-    l->text = strdup(text);
+    l->text = mstrdup(text);
     GenerateTexture(l);
 
     return 1;

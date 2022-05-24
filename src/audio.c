@@ -1,7 +1,7 @@
-#include <stdbool.h>
+#include "core/include/utils.h"
+#include "core/lib/string.h"
 #include "include/audio.h"
 #include "core/include/fedoraengine.h"
-#include "core/include/utils.h"
 
 static bool BGMPlaying = false;
 static bool InitAudio = false;
@@ -23,7 +23,7 @@ void FE_PlayBGM() {
 }
 
 void FE_LoadBGM(const char *path) {
-    char *fp = AddStr(AUDIO_DIRECTORY, path);
+    char *fp = mstradd(AUDIO_DIRECTORY, path);
     if (!InitAudio) {
       if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
          error("Failed to initialize audio: %s", Mix_GetError());

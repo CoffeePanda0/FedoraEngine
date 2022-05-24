@@ -4,7 +4,7 @@
 #include <SDL.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include "../../core/lib/string.h"
 
 #include "event.h"
 #include "dialogue.h"

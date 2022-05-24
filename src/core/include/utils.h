@@ -2,7 +2,7 @@
 #define H_UTILS
 
 #include "mem.h"
-#include <stdbool.h>
+#include "../lib/bool.h"
 #include <stdio.h>
 
 enum dietypes {
@@ -31,14 +31,6 @@ uint16_t rel_w(uint16_t w);
  */
 uint16_t rel_h(uint16_t h);
 
-
-/** Custom implementation of strsep to be universal
- * \param sp String to split
- * \param sep Delimiter to split on
- * \return Pointer to the first character of the next token
- */
-char *strseps(char **sp, char *sep);
-
 void die (enum dietypes, const char *, ...);
 
 #define error(...) die(DT_NONE, __VA_ARGS__)
@@ -59,37 +51,6 @@ char *IntToSTR (int i);
 #define clamp(value, min, max)\
     (value < min ? min : (value > max ? max : value));
 
-/** Adds one string to the end of the other, handling memory allocation
- * \param str String to add to
- * \param add String to add
- * \return Pointer to the destination string
- */
-char *AddStr(const char *str, const char *add);
-
-
-/** Checks if a string exists in an array of strings
- * \param arr The array of strings to check
- * \param n The number of elements in the array
- * \param str The string to compare against
-*/
-bool StrInArr(char **arr, size_t n, char *str);
-
-
-/** Returns an array of strings, each of max length as max_chars, or split by word space
- * \param str The string to split
- * \param max_chars The maximum length of each line
- * \param line_count The number of lines in the string to output to
- * \return The array of strings
-*/
-char **StrWrap(char *str, size_t max_chars, size_t *line_count);
-
-
-/** Returns a malloced substring
- * \param str The original string
- * \param len The number of characters for the substring
- * \returns the malloc'd substring
-*/
-char *substr(char *str, size_t len);
 
 /** Safe random function - catches floating point exception if 0 is passed
  * \param val The maximum random value

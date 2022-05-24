@@ -24,7 +24,7 @@ typedef struct {
  * \param visible Whether or not the trigger is visible or invisible
  * \returns The created trigger
 */
-FE_Trigger *FE_Trigger_Create(Vector2D position, int range, void (*event), void *event_data, bool visible);
+FE_Trigger *FE_Trigger_Create(Vector2D position, int range, void (*event)(), void *event_data, bool visible);
 
 
 /** Renders all visible triggers to the screen

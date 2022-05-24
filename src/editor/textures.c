@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
-#include <stdbool.h>
+#include "../core/lib/bool.h"
+#include "../core/lib/string.h"
 #include "editor.h"
 
 #define BG_PATH "game/map/backgrounds/"
@@ -24,9 +25,9 @@ size_t Editor_LoadBackgrounds()
 			if (ent->d_type == DT_REG) {
 				// validate file is a texure by trying to load it
 				SDL_Surface *tmp;
-				char *path = xmalloc(strlen(BG_PATH) + strlen(ent->d_name) + 1);
-				strcpy(path, BG_PATH);
-				strcat(path, ent->d_name);
+				char *path = xmalloc(mstrlen(BG_PATH) + mstrlen(ent->d_name) + 1);
+				mstrcpy(path, BG_PATH);
+				mstrcat(path, ent->d_name);
 				tmp = IMG_Load(path);
 				if (tmp != NULL) {
 					if (bgcount == 10) {

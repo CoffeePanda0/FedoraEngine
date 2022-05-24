@@ -1,9 +1,5 @@
-#include <stdbool.h>
+#include "../core/include/include.h"
 #include "include/animation.h"
-#include "../core/include/linkedlist.h"
-#include "../core/include/resourcemanager.h"
-#include "../core/include/timing.h"
-#include "../core/include/utils.h"
 
 #define ANIMATION_PATH "game/sprites/animations/"
 
@@ -28,7 +24,7 @@ FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint
 {
     FE_Animation *anim = xmalloc(sizeof(FE_Animation));
 
-    char *temp_path = AddStr(ANIMATION_PATH, spritesheet_name);
+    char *temp_path = mstradd(ANIMATION_PATH, spritesheet_name);
     anim->spritesheet = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, temp_path);
     free(temp_path);
 

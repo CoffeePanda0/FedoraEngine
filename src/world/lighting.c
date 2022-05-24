@@ -41,7 +41,7 @@ FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture)
     light->enabled = true;
 
     // Create absoloute path
-    char *path = AddStr(LIGHT_DIRECTORY, texture);
+    char *path = mstradd(LIGHT_DIRECTORY, texture);
     light->Texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     free(path);
 

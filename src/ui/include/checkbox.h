@@ -20,7 +20,7 @@ typedef struct FE_Checkbox{
 *\param onclick The callback function to call when the checkbox is clicked
 *\param onclick_data The data to pass to the callback function
 */
-FE_CheckBox *FE_CreateCheckbox(const char *label, int x, int y, bool checked, void (*onclick), void *onclick_data);
+FE_CheckBox *FE_CreateCheckbox(const char *label, int x, int y, bool checked, void (*onclick)(), void *onclick_data);
 
 
 /* Destroys all checkboxes on screen */

@@ -1,6 +1,8 @@
 #ifndef H_TIMER
 #define H_TIMER
 
+#include "../../core/lib/bool.h"
+
 typedef struct FE_Timer {
     unsigned long duration; // How long the timer will last in milliseconds
     unsigned long elapsed; // How long the timer has been running in milliseconds
@@ -21,7 +23,7 @@ typedef struct FE_Timer {
     *\param params The parameters to pass to the callback function
     *\return A pointer to the new timer
 */
-FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, void (*callback), void *params);
+FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, void (*callback)(), void *params);
 
 
 /* Main timer loop, must be called for the timers to run */

@@ -22,7 +22,7 @@ int FE_LoadMap(const char *name)
     PresentGame->MapConfig.MinimumX = 0;
 
     // Combine map directory and map file path
-    char *map_path = AddStr(MAP_DIRECTORY, name);
+    char *map_path = mstradd(MAP_DIRECTORY, name);
     // Read map file from binary format
     FILE *f = fopen(map_path, "rb");
     if (f == NULL) {

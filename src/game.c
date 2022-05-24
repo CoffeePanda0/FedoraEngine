@@ -10,7 +10,7 @@ SDL_Texture *world;
 /* Starts the main game */
 void FE_StartGame(const char *mapname)
 {
-	char *map = strdup(mapname);
+	char *map = mstrdup(mapname);
 	FE_CleanAll();
 
 	// Map setup
@@ -73,7 +73,6 @@ void FE_RenderGame()
 		FE_RenderLighting(GameCamera, world);
 	FE_RenderUI();
 	SDL_RenderPresent(PresentGame->Renderer);
-	
 }
 
 void FE_GameLoop()

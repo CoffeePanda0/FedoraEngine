@@ -129,8 +129,8 @@ static void DeleteTile(int x, int y)
 		FE_Map_Tile *temp = newmap.tiles;
 		
 		newmap.tiles = xmalloc(sizeof(FE_Map_Tile) * (--newmap.tilecount));
-		memcpy(newmap.tiles, temp, sizeof(FE_Map_Tile) * index);
-		memcpy(newmap.tiles + index, temp + index + 1, sizeof(FE_Map_Tile) * (newmap.tilecount - index));
+		mmemcpy(newmap.tiles, temp, sizeof(FE_Map_Tile) * index);
+		mmemcpy(newmap.tiles + index, temp + index + 1, sizeof(FE_Map_Tile) * (newmap.tilecount - index));
 		free(temp);
 	} else {
 		free(newmap.tiles);

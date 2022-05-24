@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
-#include <string.h>
+#include "lib/string.h"
 #include <errno.h>
 #include <SDL.h>
 #include "include/utils.h"
@@ -22,24 +22,11 @@ uint16_t rel_h(uint16_t h)
 	return (h / 100) * PresentGame->Window_height;
 }
 
-char *strseps(char **sp, char *sep)
+char *IntToSTR (int i)
 {
-	char *p, *s;
-	if (sp == NULL || *sp == NULL || **sp == '\0') return(NULL);
-	s = *sp;
-	p = s + strcspn(s, sep);
-	if (*p != '\0') *p++ = '\0';
-	*sp = p;
-	return(s);
-}
-
-char *substr(char *str, size_t len)
-{
-	if (len > strlen(str)) return strdup(str);
-	char *res = xcalloc(len + 1, 1);
-	res = memcpy(res, str, len);
-	res[len] = '\0';
-	return res;
+	char *str = xmalloc(sizeof(int)*8);
+	sprintf(str, "%i", i);
+	return str;
 }
 
 void FE_Log_Init(void) {
@@ -70,18 +57,18 @@ void die (enum dietypes type, const char *s, ...) {
 			break;
 		case DT_ERRNO:
 			err = strerror(errno);
-			len += 2 + strlen(err);
+			len += 2 + mstrlen(err);
 			break;
 		case DT_SDL:
 			err = SDL_GetError();
-			len += 2 + strlen(err);
+			len += 2 + mstrlen(err);
 			break;
 	}
 
 	out = xmalloc(len);
 	vsprintf(out, s, ap2);
 	if (err)
-		sprintf(out+strlen(out), ": %s", err);
+		sprintf(out+mstrlen(out), ": %s", err);
 
 	vlog(LT_ERROR, "%s", out);
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", out, NULL);
@@ -139,76 +126,6 @@ void vlog (enum logtypes type, const char *s, ...) {
 		FE_ConsoleSetText(out);
 	}
 	free(out);
-}
-
-char **StrWrap(char *str, size_t max_chars, size_t *line_count)
-{
-	size_t len = strlen(str);
-
-	// Make sure we have a valid string to prevent infinite loop
-	if (len > max_chars) {
-		*line_count = 1;
-		char **res = xmalloc(sizeof(char*));
-		res[0] = strdup(str);
-		return res;
-	}
-
-	*line_count = 0;
-	char **res = 0;
-
-	size_t sorted_chars = 0;
-	while (sorted_chars < len) {
-		*line_count = *line_count + 1;
-		res = xrealloc(res, *line_count * sizeof(char*));
-
-		// Remove leading spaces
-		char *sp = str + sorted_chars;
-		while (*sp == ' ' && sorted_chars < len) {
-			sorted_chars++;
-			sp++;
-		}
-
-		char *s = substr(str + sorted_chars, max_chars);
-		
-		// check if there is a space in the string. If so, wrap the line at the word
-		char *p = strrchr(s, ' ');
-		if (p && (size_t)(p - s) > max_chars / 2) {
-			res[*line_count - 1] = substr(s, p - s);
-			sorted_chars += strlen(res[*line_count - 1]);
-			free(s);
-			continue;
-		}
-		sorted_chars += strlen(s);
-		res[*line_count - 1] = s;
-	}
-	return res;
-}
-
-char *IntToSTR (int i) {
-	char *str = xmalloc(sizeof(int)*8);
-	sprintf(str, "%i", i);
-	return str;
-}
-
-char *AddStr(const char *str, const char *add)
-{
-	if (!str) {
-		warn("Passing NULL str to AddStr");
-		return 0;
-	}
-	char *newstr = xmalloc(strlen(str) + strlen(add) + 1);
-	strcpy(newstr, str);
-	strcat(newstr, add);
-	return newstr;
-}
-
-bool StrInArr(char **arr, size_t n, char *str)
-{
-	for (size_t i = 0; i < n; i++) {
-		if (strcmp(arr[i], str) == 0)
-			return true;
-	}
-	return false;
 }
 
 int s_Rand(int val)

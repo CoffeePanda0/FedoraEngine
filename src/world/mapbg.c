@@ -29,11 +29,11 @@ static int ConfigParser(void *user, const char *section, const char *name, const
     if (MATCH("CONFIG", "name")) { // load each layer name
         last_layer = 0;
         if (dir) free(dir);
-        dir = AddStr(value, "/");
+        dir = mstradd(value, "/");
     } else if (MATCH("CONFIG", "ratio")) { // load each layer name
         parallax_speed = atof(value);
     } else if (MATCH("LAYERS", "path")) { // load each layer name
-        char *path = AddStr(dir, value);
+        char *path = mstradd(dir, value);
         FE_Parallax_Add(path, 1.0f);
         free(path);
     } else if (MATCH("SPEED", "value")) { // load each layer speed
@@ -52,8 +52,8 @@ static int ConfigParser(void *user, const char *section, const char *name, const
 void FE_Parallax_Load(const char *name)
 {
     // Check that parallax directory exists
-    char *full_path = xmalloc(strlen(name) + strlen(PARALLAX_DIRECTORY) + 2);
-    snprintf(full_path, strlen(name) + strlen(PARALLAX_DIRECTORY) + 2, "%s%s/", PARALLAX_DIRECTORY, name);
+    char *full_path = xmalloc(mstrlen(name) + mstrlen(PARALLAX_DIRECTORY) + 2);
+    snprintf(full_path, mstrlen(name) + mstrlen(PARALLAX_DIRECTORY) + 2, "%s%s/", PARALLAX_DIRECTORY, name);
     if (!FE_DirectoryExists(full_path)) {
         warn("Parallax directory %s does not exist", name);
         free(full_path);
@@ -61,7 +61,7 @@ void FE_Parallax_Load(const char *name)
     }
 
     // Load config file
-    char *ini_path = AddStr(full_path, "parallax.ini");
+    char *ini_path = mstradd(full_path, "parallax.ini");
     if (ini_parse(ini_path, ConfigParser, NULL) < 0) {
         warn("Can't load parallax config file %s", ini_path);
         free(full_path);
@@ -90,7 +90,7 @@ void FE_Parallax_Add(const char *layer_name, float scale)
     else
         parallax = xrealloc(parallax, sizeof(FE_Map_Parallax) * (parallax_layers + 1));
     
-    char *path = AddStr(PARALLAX_DIRECTORY, layer_name);
+    char *path = mstradd(PARALLAX_DIRECTORY, layer_name);
     parallax[parallax_layers].texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     free(path);
 

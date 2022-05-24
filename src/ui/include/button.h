@@ -31,7 +31,7 @@ enum FE_BUTTON_TYPE {
 *\param onclick_data The data to pass to the onclick function
 *\return The new button
 */
-FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t, void (*onclick), void *onclick_data);
+FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t, void (*onclick)(), void *onclick_data);
 
 
 /** Destroys a button, freeing resources used and removed from render

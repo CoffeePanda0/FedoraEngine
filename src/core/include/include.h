@@ -2,8 +2,9 @@
 #define H_PRIMARY_CORE
 
 #include <SDL.h>
-#include <stdbool.h>
-#include <string.h> 
+
+#include "../lib/string.h"
+#include "../lib/bool.h"
 
 #include "fedoraengine.h"
 #include "linkedlist.h"

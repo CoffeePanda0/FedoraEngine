@@ -1,5 +1,4 @@
 #include <SDL.h>
-#include <stdbool.h>
 #include "include/timer.h"
 #include "../core/include/utils.h"
 
@@ -116,7 +115,7 @@ void FE_RestartTimer(FE_Timer *timer)
     timer->elapsed = 0;
 }
 
-FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, void (*callback), void *params)
+FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, void (*callback)(), void *params)
 {
     if (!callback) {
         warn("Callback is null! (FE_CreateTimer)");

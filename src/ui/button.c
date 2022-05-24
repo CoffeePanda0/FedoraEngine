@@ -12,7 +12,7 @@ static FE_List *FE_Buttons = 0;
 static int mouse_prev_x;
 static int mouse_prev_y;
 
-FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t, void (*onclick), void *onclick_data) // Creates a button with the given text and position
+FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t, void (*onclick)(), void *onclick_data) // Creates a button with the given text and position
 {
     FE_Button *b = xmalloc(sizeof(FE_Button));
     b->r.x = x;

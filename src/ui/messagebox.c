@@ -21,7 +21,7 @@ static void HandleCallBack()
         callback(callback_data);
 }
 
-int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick), void *onclick_data)
+int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick)(), void *onclick_data)
 {
     if (PresentGame->MBShown) {
         warn("Trying to create a message box when one is already active");
@@ -161,7 +161,7 @@ void FE_DestroyMessageBox()
     if (MB->type == MESSAGEBOX_TEXTBOX) {
         if (previous_active)
             FE_ForceActiveTextBox(previous_active);
-        input_content = strdup(MB->textbox->content);
+        input_content = mstrdup(MB->textbox->content);
         FE_DestroyTextBox(MB->textbox);
     }
     FE_DestroyButton(MB->button);

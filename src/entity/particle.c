@@ -63,7 +63,7 @@ FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emissio
     p->emission_rate_timer = 0;
     p->camera_locked = camera_locked;
 
-    char *path = AddStr(AssetPath, texture);
+    char *path = mstradd(AssetPath, texture);
     p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     free(path);
 

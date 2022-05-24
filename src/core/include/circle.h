@@ -2,7 +2,7 @@
 #define H_CIRCLE
 
 #include <stdlib.h>
-#include <stdbool.h>
+#include "../lib/bool.h"
 #include <SDL.h>
 
 typedef struct FE_Circle {

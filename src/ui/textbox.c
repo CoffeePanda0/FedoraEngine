@@ -82,7 +82,7 @@ FE_TextBox *FE_CreateTextBox(int x, int y, int w, int h, char *value) // Makes a
     temp->label->r.x = x;
     temp->label->r.y = y;
 
-    temp->content = strdup(value);
+    temp->content = mstrdup(value);
     FE_List_Add(&FE_Textboxes, temp);
 
     temp->active = false;
@@ -103,7 +103,7 @@ int FE_SetContent(FE_TextBox *t, char *value) // Sets the content of a textbox
 {
     if (t->content)
         free(t->content);
-    t->content = strdup(value);
+    t->content = mstrdup(value);
 
     // redo label texture
     SDL_DestroyTexture(t->label->texture);
@@ -127,23 +127,23 @@ int FE_UpdateTextBox(char c) // Adds or subtracts a character from the text of a
 
     // update content with s
     if (c == '\b') { // if we are backspacing
-        if (!t->content || strlen(t->content) == 0) {
+        if (!t->content || mstrlen(t->content) == 0) {
             return 1;
         } else {
-            t->content[strlen(t->content)-1] = '\0';
-            t->content = xrealloc(t->content, strlen(t->content) +1);
+            t->content[mstrlen(t->content)-1] = '\0';
+            t->content = xrealloc(t->content, mstrlen(t->content) +1);
         }
     } else { // for adding text
-        if (t->content && strlen(t->content) > 0) { // if content already exists, realloc
+        if (t->content && mstrlen(t->content) > 0) { // if content already exists, realloc
             // check if textbox is full, and work out average char width to prevent overflow
             int w, h;
             SDL_QueryTexture(t->label->texture, NULL, NULL, &w, &h);
-            float avgchar = (w / strlen(t->content));
+            float avgchar = (w / mstrlen(t->content));
             if (w >= t->r.w - avgchar - 5) {
                 return 0;
             }
 
-            size_t len = strlen(t->content);
+            size_t len = mstrlen(t->content);
             t->content = xrealloc(t->content, len+2);
             t->content[len] = c;
             t->content[len+1] = '\0';

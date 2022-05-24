@@ -10,7 +10,7 @@ static FE_List *FE_Checkboxes = 0;
 static SDL_Texture *checkbox_texture = 0;
 static SDL_Texture *checkbox_active_texture = 0;
 
-FE_CheckBox *FE_CreateCheckbox(const char *label, int x, int y, bool checked, void (*onclick), void *onclick_data)
+FE_CheckBox *FE_CreateCheckbox(const char *label, int x, int y, bool checked, void (*onclick)(), void *onclick_data)
 {
     // check if textures are loaded
     if (!checkbox_texture) {

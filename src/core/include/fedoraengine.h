@@ -2,9 +2,8 @@
 #define H_FEDORAENGINE
 
 #include <stdint.h>
-#include <stdbool.h>
-#include "../../ui/include/font.h"
 #include "vector2d.h"
+#include "../../ui/include/font.h"
 
 typedef enum FE_GAMESTATE {
     GAME_STATE_MENU,

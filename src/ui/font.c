@@ -1,7 +1,5 @@
-#include <string.h>
+#include "../core/include/include.h"
 #include "include/font.h"
-#include "../core/include/utils.h"
-#include "../core/include/linkedlist.h"
 #define FONT_DIR "game/fonts/"
 #define FONT_EXT ".ttf"
 
@@ -18,7 +16,7 @@ FE_Font *FE_LoadFont(char *name, uint8_t size)
         }
     }
 
-    char *font_path = xmalloc(strlen(name) + strlen(FONT_DIR) + strlen(FONT_EXT) + 1);
+    char *font_path = xmalloc(mstrlen(name) + mstrlen(FONT_DIR) + mstrlen(FONT_EXT) + 1);
     sprintf(font_path, "%s%s%s", FONT_DIR, name, FONT_EXT);
     
     // Open the font
@@ -34,7 +32,7 @@ FE_Font *FE_LoadFont(char *name, uint8_t size)
     FE_Font *f = xmalloc(sizeof(FE_Font));
     f->font = font;
     f->size = size;
-    f->name = strdup(name);
+    f->name = mstrdup(name);
     f->refs = 1;
 
     // Add the font to the list
@@ -87,7 +85,7 @@ SDL_Surface *FE_RenderText(FE_Font *font, const char *str, SDL_Color color)
         return NULL;
     }
 
-    if (!str || strlen(str) == 0)
+    if (!str || mstrlen(str) == 0)
         return NULL;
 
     SDL_Surface *text = TTF_RenderText_Blended(font->font, str, color);

@@ -1,9 +1,6 @@
 // basic gameobject functions
 #include "include/gameobject.h"
-#include "../core/include/linkedlist.h"
-#include "../core/include/fedoraengine.h"
-#include "../core/include/utils.h"
-#include "../core/include/render.h"
+#include "../core/include/include.h"
 #include "../world/include/physics.h"
 
 #define AssetPath "game/sprites/"
@@ -18,9 +15,9 @@ FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *n
 	obj->name = name;
 
 	// combine asset path and texture path
-	char *path = xmalloc(strlen(AssetPath) + strlen(texture_path) + 1);
-	strcpy(path, AssetPath);
-	strcat(path, texture_path);
+	char *path = xmalloc(mstrlen(AssetPath) + mstrlen(texture_path) + 1);
+	mstrcpy(path, AssetPath);
+	mstrcat(path, texture_path);
 	obj->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
 	free(path);
 	

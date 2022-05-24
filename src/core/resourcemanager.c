@@ -1,9 +1,5 @@
 #include <SDL.h>
-#include <string.h>
-#include "include/resourcemanager.h"
-#include "include/utils.h"
-#include "include/mem.h"
-#include "include/texture.h"
+#include "include/include.h"
 #include "../include/audio.h"
 #include "../ext/hashtbl.h"
 
@@ -74,7 +70,7 @@ static void *LoadResource(FE_RESOURCE_TYPE type, char *filepath)
     case FE_RESOURCE_TYPE_TEXTURE:
     {
         FE_Texture *t = xmalloc(sizeof(FE_Texture));
-        t->path = strdup(filepath);
+        t->path = mstrdup(filepath);
         t->Texture = FE_TextureFromFile(filepath);
         return t;
     }
@@ -92,7 +88,7 @@ void *FE_LoadResource(FE_RESOURCE_TYPE type, char *filepath)
     if (!resource_init)
         error("ResourceManager has not yet been initalised");
 
-    char *key = strdup(filepath);
+    char *key = mstrdup(filepath);
 
     /* Check if the resource is already loaded */
     FE_Resource *res = (FE_Resource *)htget(&Resources, key);

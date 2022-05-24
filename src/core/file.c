@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
 #include "include/utils.h"
-#include <stdbool.h>
+#include "lib/string.h"
+#include "lib/bool.h"
 
 #ifdef WIN32
 #include <io.h>
@@ -25,7 +25,7 @@ char *ReadStr(FILE *f)
 
 bool WriteStr(FILE *f, const char *str)
 {
-	uint16_t len = strlen(str);
+	uint16_t len = mstrlen(str);
 	fwrite(&len, sizeof(uint16_t), 1, f);
 	fwrite(str, sizeof(char), len, f);
 	return true;

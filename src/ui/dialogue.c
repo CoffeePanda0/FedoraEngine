@@ -1,4 +1,3 @@
-#include <string.h>
 #include "../core/include/include.h"
 #include "include/uiobject.h"
 #include "include/label.h"
@@ -28,7 +27,7 @@ void FE_Dialogue_Update()
         return;
     }
     
-    size_t len = strlen(contents[cur_index-1]);
+    size_t len = mstrlen(contents[cur_index-1]);
     if (len == current_char) {
         drawing_text = false;
         return;
@@ -37,7 +36,7 @@ void FE_Dialogue_Update()
     float dialoguespeed = ((100 - PresentGame->DialogueSpeed) * 2) / 1000.0f;
     if (last_time > dialoguespeed) {
         last_time = 0;
-        char *newtext = substr(contents[cur_index-1], ++current_char);
+        char *newtext = mstrndup(contents[cur_index-1], ++current_char);
         FE_UpdateLabel(content, newtext);
         free(newtext);
     }
@@ -77,7 +76,7 @@ int FE_PlayDialogue() // plays current dialogue
         return -1;
     }
     
-    char *first = substr(contents[cur_index-1], 1);
+    char *first = mstrndup(contents[cur_index-1], 1);
 
     if (!PresentGame->DialogueActive) { // if elements have not been made yet
         box = FE_CreateUIObject(0, 0, PresentGame->Window_width, PresentGame->Window_height / 6, DIALOGUETEXT);
@@ -102,16 +101,16 @@ int FE_DialogueFromStr(char *speaker, char *content) // plays single line of dia
         warn("NullPTR Speaker or content! (PlayDialogueFromStr)");
         return -1;
     }
-    if (strlen(speaker) == 0 || strlen(content) == 0) {
+    if (mstrlen(speaker) == 0 || mstrlen(content) == 0) {
         warn("Speaker or content cannot be empty (PlayDialogueFromStr)");
         return -1;
     }
 
     // create UI elements
     speakers = xmalloc(sizeof(char*));
-    speakers[0] = strdup(speaker);
+    speakers[0] = mstrdup(speaker);
     contents = xmalloc(sizeof(char*));
-    contents[0] = strdup(content);
+    contents[0] = mstrdup(content);
     
     cur_index = 1;
     max_index = 1;
@@ -123,9 +122,9 @@ int FE_DialogueFromStr(char *speaker, char *content) // plays single line of dia
 
 int FE_DialogueFromFile(char *path)
 {
-    char *newpath = xmalloc(strlen(path) + strlen(DIALOGUEPATH) + 1); // adds full file path
-    strcpy(newpath, DIALOGUEPATH);
-    strcat(newpath, path);
+    char *newpath = xmalloc(mstrlen(path) + mstrlen(DIALOGUEPATH) + 1); // adds full file path
+    mstrcpy(newpath, DIALOGUEPATH);
+    mstrcat(newpath, path);
 
     FILE *f = fopen(newpath, "r");
     if (!f) {
@@ -172,12 +171,12 @@ int FE_DialogueFromFile(char *path)
             if (n == 0) { // if speaker
                 dialogue_count++;
                 speakers = xrealloc(speakers, sizeof(char*) * dialogue_count + 1);
-                speakers[dialogue_count-1] = strdup(child->u.value);
+                speakers[dialogue_count-1] = mstrdup(child->u.value);
                 n++;
             } else { // if dialogue
                 n = 0;
                 contents = xrealloc(contents, sizeof(char*) * dialogue_count + 1);
-                contents[dialogue_count-1] = strdup(child->u.value);
+                contents[dialogue_count-1] = mstrdup(child->u.value);
             }
         }
     }

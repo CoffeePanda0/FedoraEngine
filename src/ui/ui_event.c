@@ -55,8 +55,8 @@ void FE_HandleConsoleInput(SDL_Event *e, const Uint8* keyboard_state)
     
     // handle backspace
     if (keyboard_state[SDL_SCANCODE_BACKSPACE]) {
-        if (strlen(InputBuffer) > 0) {
-            InputBuffer[strlen(InputBuffer) - 1] = '\0';
+        if (mstrlen(InputBuffer) > 0) {
+            InputBuffer[mstrlen(InputBuffer) - 1] = '\0';
             FE_ConsoleUpdateInput(InputBuffer);
         }
     }
@@ -64,8 +64,8 @@ void FE_HandleConsoleInput(SDL_Event *e, const Uint8* keyboard_state)
     switch (e->type) {
         // handle text input
         case SDL_TEXTINPUT:
-            if (strlen(InputBuffer) < 256) {
-                strcat(InputBuffer, e->text.text);
+            if (mstrlen(InputBuffer) < 256) {
+                mstrcat(InputBuffer, e->text.text);
                 FE_ConsoleUpdateInput(InputBuffer);
             }
         break;

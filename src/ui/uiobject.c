@@ -38,8 +38,8 @@ FE_UIObject *FE_CreateUIObject(int x, int y, int w, int h, char *texture_path)  
     FE_UIObject *tmp = xmalloc(sizeof(FE_UIObject));
 
     // combine the path with the asset path
-    char *path = xmalloc(strlen(AssetPath) + strlen(texture_path) + 1);
-    strcpy(path, AssetPath);
+    char *path = xmalloc(mstrlen(AssetPath) + mstrlen(texture_path) + 1);
+    mstrcpy(path, AssetPath);
     strcat(path, texture_path);
     tmp->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     free(path);

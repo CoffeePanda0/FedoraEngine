@@ -36,8 +36,8 @@ int FE_ConsoleInit()
 
     Font = FE_LoadFont(CONSOLE_FONT, CONSOLE_FONT_SIZE);
 
-    console_output = strdup("");
-    console_input = strdup("");
+    console_output = mstrdup("");
+    console_input = mstrdup("");
 
     Console.console_rect = (SDL_Rect){0, PresentGame->Window_height - CONSOLE_HEIGHT, PresentGame->Window_width, CONSOLE_HEIGHT};
 
@@ -84,7 +84,7 @@ int FE_ConsoleUpdateInput(char *in)
     if (Font) {
         if (console_input)
             free(console_input);
-        console_input = strdup(in);
+        console_input = mstrdup(in);
         GenerateInputLabel();
         return 1;
     }
@@ -105,7 +105,7 @@ int FE_ConsoleSetText(const char *text)
     if (console_output)
         free(console_output);
     
-    console_output = strdup(text);
+    console_output = mstrdup(text);
     if (PresentGame->ConsoleVisible)
         GenerateConsoleLabel();
 

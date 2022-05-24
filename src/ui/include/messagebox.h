@@ -38,7 +38,7 @@ typedef struct FE_MessageBox {
 *\param onclick The function to be called when the button is clicked
 *\param onclick_data The data to be passed to the onclick function
 */
-int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick), void *onclick_data);
+int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick)(), void *onclick_data);
 
 
 /** Shows a simple messagebox

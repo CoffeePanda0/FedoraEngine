@@ -2,8 +2,6 @@
 #define H_PARTICLE
 
 #include <SDL.h>
-#include <stdbool.h>
-
 #include "../../core/include/vector2d.h"
 
 typedef struct FE_Particle {

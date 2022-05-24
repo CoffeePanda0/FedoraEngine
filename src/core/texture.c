@@ -110,14 +110,14 @@ Vector2D FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
 
 FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)
 {
-	if (!name || strlen(name) == 0) {
+	if (!name || mstrlen(name) == 0) {
 		warn("Editor_LoadAtlas: Passing NULL to path");
 		return 0;
 	}
 
 	FE_TextureAtlas *atlas = xmalloc(sizeof(FE_TextureAtlas));
 
-	char *path = AddStr(ATLAS_PATH, name);
+	char *path = mstradd(ATLAS_PATH, name);
 	atlas->atlas = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
 	free(path);
 
