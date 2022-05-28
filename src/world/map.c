@@ -1,6 +1,7 @@
 #include "../core/include/include.h"
 #include "include/include.h"
 #include "../ui/include/ui.h"
+#include "../ui/include/menu.h"
 #include "../core/include/file.h"
 
 #define TEXTURE_PATH "game/map/textures/"
@@ -67,7 +68,7 @@ int FE_LoadMap(const char *name)
 
         // calculate map height and width
         if ((Uint16)map.tiles[i].position.x + map.tilesize > PresentGame->MapConfig.MapWidth) PresentGame->MapConfig.MapWidth = map.tiles[i].position.x + map.tilesize;
-        if ((Uint16)map.tiles[i].position.y - PresentGame->Window_height + map.tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = map.tiles[i].position.y + map.tilesize - PresentGame->MapConfig.MapHeight;
+        if ((Uint16)map.tiles[i].position.y - PresentGame->WindowHeight + map.tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = map.tiles[i].position.y + map.tilesize - PresentGame->MapConfig.MapHeight;
     
         // calculate minimum x point and minimum y point for camera bounds
         if ((Uint16)map.tiles[i].position.x < PresentGame->MapConfig.MinimumX || !setminX) {
@@ -110,7 +111,7 @@ void FE_RenderMap(FE_Camera *camera)
 
 	// render all tiles
     for (size_t i = 0; i < map.tilecount; i++) {
-        if (map.tiles[i].position.x + map.tilesize - camera->x < 0 || map.tiles[i].position.x - camera->x > PresentGame->Window_width)
+        if (map.tiles[i].position.x + map.tilesize - camera->x < 0 || map.tiles[i].position.x - camera->x > PresentGame->WindowWidth)
             continue;
 		SDL_Rect r = {map.tiles[i].position.x, map.tiles[i].position.y, map.tilesize, map.tilesize};
         SDL_Rect src = {map.tiles[i].texture_x, map.tiles[i].texture_y, map.atlas->texturesize, map.atlas->texturesize};

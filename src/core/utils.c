@@ -14,12 +14,12 @@ static FILE* f;
 
 uint16_t rel_w(uint16_t w)
 {
-	return (w * PresentGame->Window_width) / 100;
+	return (w * PresentGame->WindowWidth) / 100;
 }
 
 uint16_t rel_h(uint16_t h)
 {
-	return (h / 100) * PresentGame->Window_height;
+	return (h / 100) * PresentGame->WindowHeight;
 }
 
 char *IntToSTR (int i)

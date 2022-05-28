@@ -4,16 +4,6 @@ static FE_Texture *MenuTexture;
 static FE_Camera *Camera;
 static FE_ParticleSystem *Particles;
 
-static inline int midx(int w)
-{
-    return (PresentGame->Window_width / 2) - (w / 2);
-}
-
-static inline int midy(int h)
-{
-    return (PresentGame->Window_height / 2) - (h / 2);
-}
-
 static void LoadMap_()
 {
     FE_StartGame(FE_Messagebox_GetText());
@@ -65,7 +55,7 @@ void FE_Menu_LoadMenu(const char *page)
     Camera = FE_CreateCamera();
     
     Particles = FE_CreateParticleSystem(
-		(SDL_Rect){0, -20, PresentGame->Window_width, 20}, // Position for the whole screen, slightly above the top to create more random
+		(SDL_Rect){0, -20, PresentGame->WindowWidth, 20}, // Position for the whole screen, slightly above the top to create more random
 		300, // Emission rate
 		3000, // Max particles
 		10000, // Max lifetime

@@ -127,7 +127,7 @@ static void FE_Parallax_Render(FE_Camera *camera)
 
     // Render to a buffer so we can just re-render texture if camera hasn't moved
     if (!buff) {
-        buff = FE_CreateRenderTexture(PresentGame->Window_width, PresentGame->Window_width);
+        buff = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowWidth);
         SDL_SetTextureBlendMode(buff, SDL_BLENDMODE_BLEND);
     }
 
@@ -158,9 +158,9 @@ static void FE_Parallax_Render(FE_Camera *camera)
                 parallax[i].r2.x = parallax[i].r1.x + parallax[i].r1.w;
             if (dst1.x + dst1.w < 0)
                 parallax[i].r1.x = parallax[i].r2.x + parallax[i].r2.w;
-            if (dst1.x > PresentGame->Window_width)
+            if (dst1.x > PresentGame->WindowWidth)
                 parallax[i].r1.x = parallax[i].r2.x - parallax[i].r2.w;
-            if (dst2.x > PresentGame->Window_width)
+            if (dst2.x > PresentGame->WindowWidth)
                 parallax[i].r2.x = parallax[i].r1.x - parallax[i].r1.w;
 
             SDL_Texture *prev = SDL_GetRenderTarget(PresentGame->Renderer);
@@ -201,7 +201,7 @@ void FE_RenderMapBG(FE_Camera *camera, FE_LoadedMap *map)
     static SDL_Rect r2 = {-layer_width, 800, layer_width, layer_height};
 
     if (!buffer)
-        buffer = FE_CreateRenderTexture(PresentGame->Window_width, PresentGame->Window_height);
+        buffer = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
     
     SDL_Texture *prev = SDL_GetRenderTarget(PresentGame->Renderer);
     SDL_SetRenderTarget(PresentGame->Renderer, buffer);
@@ -218,7 +218,7 @@ void FE_RenderMapBG(FE_Camera *camera, FE_LoadedMap *map)
             r2.x = r1.x + bg1.w;
         if (bg1.x - camera->x + bg1.w < 0)
             r1.x = r2.x + r1.w;
-        if (bg1.x - camera->x + bg1.w > camera->x + PresentGame->Window_width)
+        if (bg1.x - camera->x + bg1.w > camera->x + PresentGame->WindowWidth)
             r1.x = r2.x - r2.w;
         
         bg1.y -= camera->y;

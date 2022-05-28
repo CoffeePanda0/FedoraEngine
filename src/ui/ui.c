@@ -3,6 +3,7 @@
 #include "include/menu.h"
 #include "../core/include/fedoraengine.h"
 #include "../core/include/utils.h"
+#include "../core/lib/string.h"
 #include "../include/init.h"
 
 void FE_UI_InitUI()
@@ -81,23 +82,24 @@ void FE_UI_ClearElements(FE_UIList *Elements)
 
 void FE_UI_Render()
 {
-    if (PresentGame->UIConfig.ActiveElements->Count == 0)
-        return;
+    if (PresentGame->UIConfig.ActiveElements->Count > 0) {
 
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Objects; l; l = l->next)
-        FE_UI_RenderObject((FE_UI_Object *)l->data);
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Textboxes; l; l = l->next)
-        FE_UI_RenderTextbox((FE_UI_Textbox *)l->data);
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Labels; l; l = l->next)
-        FE_UI_RenderLabel((FE_UI_Label *)l->data);
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Buttons; l; l = l->next)
-        FE_UI_RenderButton((FE_UI_Button *)l->data);
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Checkboxes; l; l = l->next)
-        FE_UI_RenderCheckbox((FE_UI_Checkbox *)l->data);
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next)
-        FE_UI_RenderContainer((FE_UI_Container *)l->data);
-
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Objects; l; l = l->next)
+            FE_UI_RenderObject((FE_UI_Object *)l->data);
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Textboxes; l; l = l->next)
+            FE_UI_RenderTextbox((FE_UI_Textbox *)l->data);
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Labels; l; l = l->next)
+            FE_UI_RenderLabel((FE_UI_Label *)l->data);
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Buttons; l; l = l->next)
+            FE_UI_RenderButton((FE_UI_Button *)l->data);
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Checkboxes; l; l = l->next)
+            FE_UI_RenderCheckbox((FE_UI_Checkbox *)l->data);
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next)
+            FE_UI_RenderContainer((FE_UI_Container *)l->data);
+    }
+    
     FE_Messagebox_Render();
+    FE_Console_Render();
 }
 
 bool FE_UI_HandleClick(SDL_Event *event)
@@ -107,12 +109,17 @@ bool FE_UI_HandleClick(SDL_Event *event)
         int x, y;
         SDL_GetMouseState(&x, &y);
         
-        if (FE_UI_ButtonClick(x,y))
-            return true;
-        if (FE_UI_CheckboxClick(x,y))
-            return true;
-        if (FE_UI_TextboxClick(x,y))
-            return true;
+        if (!PresentGame->UIConfig.MBShown) {
+            if (FE_UI_ButtonClick(x,y))
+                return true;
+            if (FE_UI_CheckboxClick(x,y))
+                return true;
+            if (FE_UI_TextboxClick(x,y))
+                return true;
+        } else {
+            if (FE_Messagebox_Click(x,y))
+                return true;
+        }
     }
     if (PresentGame->UIConfig.InText)
         FE_UI_ForceActiveTextbox(NULL); // make textbox inactive if clicked outside
@@ -122,6 +129,34 @@ bool FE_UI_HandleClick(SDL_Event *event)
 
 bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
 {
+    if (PresentGame->ConsoleVisible) {
+        static char InputBuffer[256];
+
+        if (keyboard_state[SDL_SCANCODE_GRAVE] && event->key.repeat == 0) {
+            if (event->type == SDL_KEYDOWN) { // only close the console if the key is pressed
+                SDL_StopTextInput();
+                FE_Console_Hide();
+                PresentGame->StartedInput = false;
+                return true;
+            }
+	    }
+
+        if (keyboard_state[SDL_SCANCODE_BACKSPACE]) {
+            if (mstrlen(InputBuffer) > 0) {
+                InputBuffer[mstrlen(InputBuffer) - 1] = '\0';
+                FE_Console_UpdateInput(InputBuffer);
+                return true;
+            }
+        }
+
+        if ((mstrlen(InputBuffer) < 256) && event->type == SDL_TEXTINPUT) {
+            mstrcat(InputBuffer, event->text.text);
+            FE_Console_UpdateInput(InputBuffer);
+            return true;
+        }
+
+    }
+
     switch (event->type) {
         case SDL_QUIT:
             FE_Clean();
@@ -138,10 +173,6 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
         break;
 
         case SDL_KEYDOWN:
-            if (PresentGame->ConsoleVisible) {
-                // send all inputs to the console
-                return true;
-            }
 
             if (PresentGame->UIConfig.DialogueActive) {
                 FE_Dialogue_Interact();
@@ -157,7 +188,7 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
             if (keyboard_state[SDL_SCANCODE_F]) {
                 PresentGame->FullScreen = !PresentGame->FullScreen;
                 SDL_SetWindowFullscreen(PresentGame->Window, PresentGame->FullScreen ? SDL_WINDOW_FULLSCREEN : 0);
-                SDL_GetWindowSize(PresentGame->Window, &PresentGame->Window_width, &PresentGame->Window_height); // recalculate window size
+                SDL_GetWindowSize(PresentGame->Window, &PresentGame->WindowWidth, &PresentGame->WindowHeight); // recalculate window size
                 return true;
             }
 

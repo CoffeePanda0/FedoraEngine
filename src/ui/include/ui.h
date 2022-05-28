@@ -76,5 +76,7 @@ bool FE_UI_HandleClick(SDL_Event *event);
 */
 bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state);
 
+#define midx(w) (PresentGame->WindowWidth / 2) - (w / 2)
+#define midy(h) (PresentGame->WindowHeight / 2) - (h / 2)
 
 #endif

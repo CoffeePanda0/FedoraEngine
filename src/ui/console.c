@@ -39,7 +39,7 @@ int FE_Console_Init()
     console_output = mstrdup("");
     console_input = mstrdup("");
 
-    Console.console_rect = (SDL_Rect){0, PresentGame->Window_height - CONSOLE_HEIGHT, PresentGame->Window_width, CONSOLE_HEIGHT};
+    Console.console_rect = (SDL_Rect){0, PresentGame->WindowHeight - CONSOLE_HEIGHT, PresentGame->WindowWidth, CONSOLE_HEIGHT};
 
     PresentGame->ConsoleVisible = false;
     info("Initialised Console");
@@ -61,7 +61,7 @@ static void GenerateConsoleLabel()
     SDL_FreeSurface(text_surface);
 
     Console.output_label_rect.x = 0;
-    Console.output_label_rect.y = (PresentGame->Window_height - CONSOLE_HEIGHT) + 10;
+    Console.output_label_rect.y = (PresentGame->WindowHeight - CONSOLE_HEIGHT) + 10;
     SDL_QueryTexture(Console.output_label_text, NULL, NULL, &Console.output_label_rect.w, &Console.output_label_rect.h);
 }
 
@@ -75,7 +75,7 @@ static void GenerateInputLabel()
     SDL_FreeSurface(text_surface);
 
     Console.input_label_rect.x = 0;
-    Console.input_label_rect.y = (PresentGame->Window_height - CONSOLE_HEIGHT) + CONSOLE_HEIGHT -40;
+    Console.input_label_rect.y = (PresentGame->WindowHeight - CONSOLE_HEIGHT) + CONSOLE_HEIGHT -40;
     SDL_QueryTexture(Console.input_label_text, NULL, NULL, &Console.input_label_rect.w, &Console.input_label_rect.h);
 }
 

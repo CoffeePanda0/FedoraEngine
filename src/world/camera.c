@@ -69,8 +69,8 @@ FE_Camera *FE_CreateCamera()
 {
     FE_Camera *c = xmalloc(sizeof(FE_Camera));
 
-    c->x = (PresentGame->Window_width / 2);
-    c->y = (PresentGame->Window_height / 2);
+    c->x = (PresentGame->WindowWidth / 2);
+    c->y = (PresentGame->WindowHeight / 2);
     c->zoom = 1;
     c->maxzoom = 5.0f;
     c->minzoom = 0.5f;
@@ -104,8 +104,8 @@ void FE_UpdateCamera(FE_Camera *camera)
     
     int initial_x = r->x;
     int initial_y = r->y;
-    int win_height = (PresentGame->Window_height / camera->zoom);
-    int win_width = (PresentGame->Window_width / camera->zoom);
+    int win_height = (PresentGame->WindowHeight / camera->zoom);
+    int win_width = (PresentGame->WindowWidth / camera->zoom);
     
     // Centre the player X on the screen (accounting for zoom)
     r->x = (win_width / 2) - r->w;
@@ -144,7 +144,7 @@ void FE_Camera_SmoothZoom(FE_Camera *camera, float amount, uint16_t time)
 
 SDL_Rect SCREEN_RECT(FE_Camera *camera)
 {
-    return (SDL_Rect){0, 0, PresentGame->Window_width / camera->zoom, PresentGame->Window_height / camera->zoom};
+    return (SDL_Rect){0, 0, PresentGame->WindowWidth / camera->zoom, PresentGame->WindowHeight / camera->zoom};
 }
 
 void FE_MoveCamera(float x, float y, FE_Camera *c)
@@ -157,8 +157,8 @@ void FE_MoveCamera(float x, float y, FE_Camera *c)
 
     // check if in x bounds
     if (x != 0) {
-        if (c->x + x > c->x_bound - PresentGame->Window_width)
-            c->x = c->x_bound - PresentGame->Window_width;
+        if (c->x + x > c->x_bound - PresentGame->WindowWidth)
+            c->x = c->x_bound - PresentGame->WindowWidth;
         else if (c->x + x < c->x_min)
             c->x = c->x_min;
         else

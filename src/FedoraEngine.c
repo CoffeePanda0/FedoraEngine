@@ -55,7 +55,8 @@ int main(int argc, char* argv[])
 				FE_GameLoop();
 			break;
 			case GAME_STATE_PAUSE:
-				FE_GameLoop();
+				FE_Pause_Render();
+				FE_Menu_EventHandler();
 			break;
 			case GAME_STATE_EDITOR:
 				FE_RenderEditor();

@@ -18,22 +18,41 @@ static FE_UI_Textbox *previous_active;
 static void HandleCallBack()
 {
     FE_Messagebox_Destroy();
-    PresentGame->MBShown = false;
+    PresentGame->UIConfig.MBShown = false;
     if (callback)
         callback(callback_data);
 }
 
 void FE_Messagebox_AddCallback(void (*func)(), void *data)
 {
-    if (PresentGame->MBShown) {
+    if (PresentGame->UIConfig.MBShown) {
         callback = func;
         callback_data = data;
     }
 }
 
+bool FE_Messagebox_Click(int x, int y)
+{
+    // Check if the click is the button
+    if (MB->button->r.x < x && MB->button->r.x + MB->button->r.w > x &&
+        MB->button->r.y < y && MB->button->r.y + MB->button->r.h > y) {
+        MB->button->onclick(MB->button->onclick_data);
+        return true;
+    }
+
+    // Check if the click is the textbox
+    if (MB->textbox->r.x < x && MB->textbox->r.x + MB->textbox->r.w > x &&
+        MB->textbox->r.y < y && MB->textbox->r.y + MB->textbox->r.h > y) {
+        FE_UI_ForceActiveTextbox(MB->textbox);
+        return true;
+    }
+
+    return false;
+}
+
 void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
 {
-    if (PresentGame->MBShown) {
+    if (PresentGame->UIConfig.MBShown) {
         warn("Trying to create a message box when one is already active");
         return;
     }
@@ -50,8 +69,8 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
 
     // calculate display rect
     MB->displayrect = (SDL_Rect){
-        (PresentGame->Window_width / 2) - (MB_WIDTH / 2),
-        (PresentGame->Window_height / 2) - (MB_HEIGHT / 2),
+        (PresentGame->WindowWidth / 2) - (MB_WIDTH / 2),
+        (PresentGame->WindowHeight / 2) - (MB_HEIGHT / 2),
         MB_WIDTH,
         MB_HEIGHT
     };
@@ -77,9 +96,10 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
         FE_UI_ForceActiveTextbox(MB->textbox);
         FE_UI_MoveTextbox(MB->textbox, FE_GetCentre(MB->textbox->r, MB->displayrect).x, MB->content->r.y + MB->content->r.h + 10);
         FE_UI_AddElement(FE_UI_TEXTBOX, MB->textbox);
+        FE_UI_AddTextboxCallback(MB->textbox, &HandleCallBack, NULL);
     }
 
-    PresentGame->MBShown = true;
+    PresentGame->UIConfig.MBShown = true;
 }
 
 char *FE_Messagebox_GetText()
@@ -92,7 +112,7 @@ char *FE_Messagebox_GetText()
 
 void FE_Messagebox_Render()
 {
-    if (!PresentGame->MBShown)
+    if (!PresentGame->UIConfig.MBShown)
         return;
 
     SDL_RenderCopy(PresentGame->Renderer, MB->texture->Texture, NULL, &MB->displayrect);
@@ -107,7 +127,7 @@ void FE_Messagebox_Render()
 
 void FE_Messagebox_Destroy()
 {
-    if (!PresentGame->MBShown)
+    if (!PresentGame->UIConfig.MBShown)
         return;
 
     if (MB->type == MESSAGEBOX_TEXTBOX) {
@@ -124,6 +144,6 @@ void FE_Messagebox_Destroy()
     free(MB);
 
     MB = 0;
-    PresentGame->MBShown = false;
+    PresentGame->UIConfig.MBShown = false;
     previous_active = NULL;
 }

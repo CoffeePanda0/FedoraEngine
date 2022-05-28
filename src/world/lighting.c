@@ -32,7 +32,7 @@ void FE_ToggleLight(FE_Light *light)
 FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture)
 {
     if (!light_layer) {
-        light_layer = FE_CreateRenderTexture(PresentGame->Window_width, PresentGame->Window_height);
+        light_layer = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
     }
 
     // Create new light object
@@ -122,7 +122,16 @@ void FE_CleanLighting()
     if (light_layer)    
         SDL_DestroyTexture(light_layer);
     light_layer = 0;
-    if (lights)
+
+    if (lights) {
+        for (FE_List *l = lights; l; l = l->next) {
+            FE_Light *light = l->data;
+            if (!light || !light->Texture) continue;
+            FE_DestroyResource(light->Texture->path);
+            free(light);
+        }
         FE_List_Destroy(&lights);
+    }
+    
     lights = 0;
 }

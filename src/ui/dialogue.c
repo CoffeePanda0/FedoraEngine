@@ -78,7 +78,7 @@ int FE_Dialogue_Play() // plays current dialogue
     char *first = mstrndup(contents[cur_index-1], 1);
 
     if (!PresentGame->UIConfig.DialogueActive) { // if elements have not been made yet
-        box = FE_UI_CreateObject(0, 0, PresentGame->Window_width, PresentGame->Window_height / 6, DIALOGUETEXT);
+        box = FE_UI_CreateObject(0, 0, PresentGame->WindowWidth, PresentGame->WindowHeight / 6, DIALOGUETEXT);
         title = FE_UI_CreateLabel(NULL, speakers[cur_index-1], rel_w(90), vec2(30, 10), COLOR_WHITE);
         content = FE_UI_CreateLabel(NULL, first, rel_w(90), vec2(30, 50), COLOR_WHITE);
         FE_UI_AddElement(FE_UI_OBJECT, box);

@@ -14,8 +14,8 @@
 
 char *ReadStr(FILE *f)
 {
-	uint16_t len;
-	char *str;
+	uint16_t len = 0;
+	char *str = 0;
 	fread(&len, sizeof(uint16_t), 1, f);
 	str = xmalloc(len + 1);
 	fread(str, sizeof(char), len, f);

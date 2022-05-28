@@ -47,7 +47,7 @@ void FE_StartGame(const char *mapname)
 		false
 	);
 
-	world = FE_CreateRenderTexture(PresentGame->Window_width, PresentGame->Window_height);
+	world = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
 	FE_ResetDT();
 
 	FE_CreateGameObject((SDL_Rect){1200, 1200, 64, 128}, "torch.png", "", ENEMY, 0, false);

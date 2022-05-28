@@ -10,14 +10,13 @@ FE_InitConfig *FE_NewInitConfig()
 	/* Fills default values */
 	FE_InitConfig *config = xmalloc(sizeof(FE_InitConfig));
 	config->window_title = "FedoraEngine";
-	config->window_width = 1280;
-	config->window_height = 720;
+	config->WindowWidth = 1280;
+	config->WindowHeight = 720;
 	config->vsync = true;
 	config->show_fps = true;
 	config->default_font = "OpenSans";
 	return config;
 }
-
 
 static FE_Game *NewGame(FE_InitConfig *ic)
 {
@@ -37,11 +36,11 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.Renderer = NULL,
 		.GameActive = false,
 		.GameState = GAME_STATE_MENU,
-		.MapConfig = {false, ic->window_width, ic->window_height, 0, VEC_EMPTY, 0.0f, 50},
+		.MapConfig = {false, ic->WindowWidth, ic->WindowHeight, 0, VEC_EMPTY, 0.0f, 50},
 		.AudioConfig = {50, false},
 		.Timing = {0,0,0},
 		.DebugConfig = {false, true, false},
-		.UIConfig = {0, 0, COLOR_WHITE, false, false}
+		.UIConfig = {0, 0, COLOR_WHITE, false, false, false}
 	};
 	return Game;
 }
@@ -69,12 +68,12 @@ void FE_Init(FE_InitConfig *InitConfig)
 		PresentGame->Window = SDL_CreateWindow(
 			InitConfig->window_title,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			InitConfig->window_width, InitConfig->window_height,
+			InitConfig->WindowWidth, InitConfig->WindowHeight,
 			SDL_WINDOW_ALLOW_HIGHDPI
 		);
 		
-		PresentGame->Window_height = InitConfig->window_height;
-		PresentGame->Window_width = InitConfig->window_width;
+		PresentGame->WindowHeight = InitConfig->WindowHeight;
+		PresentGame->WindowWidth = InitConfig->WindowWidth;
 
 		if (PresentGame->Window) {
 			info("Window Created");
@@ -124,6 +123,7 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 {
 	FE_CloseMap();
 	FE_Trigger_Clean();
+	FE_CleanLighting();
 	FE_Parallax_Clean();
 	FE_UI_ClearElements(PresentGame->UIConfig.ActiveElements);
 	FE_Dialogue_Free();
@@ -147,7 +147,6 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		FE_CleanAll();
 		free(PresentGame->UIConfig.ActiveElements);
 		FE_Console_Destroy();
-		FE_CleanLighting();
 		SDL_DestroyRenderer(PresentGame->Renderer);
 		SDL_DestroyWindow(PresentGame->Window);
 		FE_CleanFonts();

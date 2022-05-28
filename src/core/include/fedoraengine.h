@@ -36,6 +36,8 @@ typedef struct FE_UIConfig {
 
     bool DialogueActive;
     bool InText;
+    bool MBShown;
+
 } FE_UIConfig;
 
 typedef struct FE_Timing {
@@ -59,7 +61,7 @@ typedef struct FE_AudioConfig {
 
 typedef struct FE_InitConfig {
     const char *window_title;
-    uint16_t window_width, window_height;
+    uint16_t WindowWidth, WindowHeight;
     bool vsync, show_fps;
     char *default_font;
 } FE_InitConfig;
@@ -68,12 +70,11 @@ typedef struct FE_Game {
     FE_InitConfig *config;
     FE_Font *font;
 
-    int Window_height, Window_width;
+    int WindowHeight, WindowWidth;
     bool FullScreen;
     
     bool ConsoleVisible;
     bool StartedInput;
-    bool MBShown;
 
     int DialogueSpeed;
     

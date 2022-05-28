@@ -47,7 +47,7 @@ int FE_RenderCopy(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rect 
         s = *src;
 
     // Check if rect is in screen bounds
-    if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0,PresentGame->Window_width, PresentGame->Window_height})) {
+    if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0,PresentGame->WindowWidth, PresentGame->WindowHeight})) {
         return SDL_RenderCopy(PresentGame->Renderer, texture->Texture, &s, &RenderRect);
     } else
         return 0;
@@ -72,7 +72,7 @@ int FE_RenderCopyEx(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rec
     else
         s = *src;
 
-    if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0, PresentGame->Window_width, PresentGame->Window_height})) {
+    if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0, PresentGame->WindowWidth, PresentGame->WindowHeight})) {
         const SDL_Point center = (SDL_Point){RenderRect.w/2, RenderRect.h/2};
         return SDL_RenderCopyEx(PresentGame->Renderer, texture->Texture, &s, &RenderRect, angle, &center, flip);
     } else
@@ -87,7 +87,7 @@ int FE_RenderDrawLine(FE_Camera *camera, int x1, int y1, int x2, int y2, SDL_Col
     }
 
     // return if line is out of bounds
-    if (x1 + camera->x < 0 || x1 > PresentGame->Window_width + camera->x || y1 + camera->y < 0 || y1 > PresentGame->Window_height + camera->y)
+    if (x1 + camera->x < 0 || x1 > PresentGame->WindowWidth + camera->x || y1 + camera->y < 0 || y1 > PresentGame->WindowHeight + camera->y)
         return 0;
 
     // change the color of the renderer and restore it after drawing the line

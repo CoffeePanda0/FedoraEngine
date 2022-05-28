@@ -25,7 +25,7 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
         switch (event.type) {
             case SDL_KEYDOWN:
                 if (keyboard_state[SDL_SCANCODE_ESCAPE] && event.key.repeat == 0) {
-                    PresentGame->GameState = GAME_STATE_PAUSE;
+                    FE_PauseGame();
                     break;
                 }
                 if (keyboard_state[SDL_SCANCODE_GRAVE] && event.key.repeat == 0) {

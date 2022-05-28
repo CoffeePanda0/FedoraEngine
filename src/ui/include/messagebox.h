@@ -53,5 +53,8 @@ char *FE_Messagebox_GetText();
 */
 void FE_Messagebox_AddCallback(void (*func)(), void *data);
 
+/* Checks if the button or textbox the messagebox is being clicked on */
+bool FE_Messagebox_Click(int x, int y);
+
 
 #endif

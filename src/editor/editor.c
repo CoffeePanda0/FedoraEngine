@@ -73,14 +73,14 @@ void FE_RenderEditor()
 	}
 
 	// render grid on map with camera
-	for (int i = 0; i < map_max_width + PresentGame->Window_width; i += newmap.tilesize)
-		FE_RenderDrawLine(camera, i, 0, i, map_max_height + PresentGame->Window_width, COLOR_WHITE);
-	for (int i = 0; i < map_max_height + PresentGame->Window_height; i += newmap.tilesize)
-		FE_RenderDrawLine(camera, 0, i, map_max_width + PresentGame->Window_width, i, COLOR_WHITE);
+	for (int i = 0; i < map_max_width + PresentGame->WindowWidth; i += newmap.tilesize)
+		FE_RenderDrawLine(camera, i, 0, i, map_max_height + PresentGame->WindowWidth, COLOR_WHITE);
+	for (int i = 0; i < map_max_height + PresentGame->WindowHeight; i += newmap.tilesize)
+		FE_RenderDrawLine(camera, 0, i, map_max_width + PresentGame->WindowWidth, i, COLOR_WHITE);
 
 
 	// render panel for UI to go over
-	FE_RenderRect(&(SDL_Rect){0, 0, PresentGame->Window_width, 42}, COLOR_WHITE);
+	FE_RenderRect(&(SDL_Rect){0, 0, PresentGame->WindowWidth, 42}, COLOR_WHITE);
 	FE_UI_Render();
 
 
