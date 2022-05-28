@@ -29,7 +29,7 @@ static char *console_output;
 static char *console_input;
 
 // function to create console
-int FE_ConsoleInit()
+int FE_Console_Init()
 {
     if (TTF_Init() == -1)
     	error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
@@ -79,28 +79,26 @@ static void GenerateInputLabel()
     SDL_QueryTexture(Console.input_label_text, NULL, NULL, &Console.input_label_rect.w, &Console.input_label_rect.h);
 }
 
-int FE_ConsoleUpdateInput(char *in)
+void FE_Console_UpdateInput(char *in)
 {
     if (Font) {
         if (console_input)
             free(console_input);
         console_input = mstrdup(in);
         GenerateInputLabel();
-        return 1;
+        return;
     }
-        
-    return 1;
 }
 
-int FE_ConsoleSetText(const char *text)
+void FE_Console_SetText(const char *text)
 {
     if (!text) {
         warn("Passing nullptr! (ConsoleSetText)");
-        return -1;
+        return;
     }
 
     if (!Font)
-        return -1;
+        return;
 
     if (console_output)
         free(console_output);
@@ -108,11 +106,9 @@ int FE_ConsoleSetText(const char *text)
     console_output = mstrdup(text);
     if (PresentGame->ConsoleVisible)
         GenerateConsoleLabel();
-
-    return 1;
 }
 
-void FE_ConsoleShow()
+void FE_Console_Show()
 {
     PresentGame->ConsoleVisible = true;
     if (!Console.console_texture)
@@ -122,7 +118,7 @@ void FE_ConsoleShow()
     GenerateInputLabel();
 }
 
-void FE_ConsoleHide()
+void FE_Console_Hide()
 {
     PresentGame->ConsoleVisible = false;
 
@@ -136,7 +132,7 @@ void FE_ConsoleHide()
     }
 }
 
-void FE_DestroyConsole()
+void FE_Console_Destroy()
 {
     if (Console.output_label_text)
         SDL_DestroyTexture(Console.output_label_text);
@@ -161,7 +157,7 @@ void FE_DestroyConsole()
     console_input = 0;
 }
 
-void FE_RenderConsole()
+void FE_Console_Render()
 {
     if (PresentGame->ConsoleVisible) {
         SDL_RenderCopy(PresentGame->Renderer, Console.console_texture, NULL, &Console.console_rect); // console texture

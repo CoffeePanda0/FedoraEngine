@@ -4,6 +4,8 @@
 typedef struct FE_Light {
     SDL_Rect Rect;
     FE_Texture *Texture;
+    uint8_t intensity;
+    
     bool enabled;
 } FE_Light;
 

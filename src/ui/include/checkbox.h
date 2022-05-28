@@ -1,15 +1,17 @@
-#ifndef H_CHECKBOX
-#define H_CHECKBOX
+#ifndef _CHECKBOX_H
+#define _CHECKBOX_H
 
-typedef struct FE_Checkbox{ 
+#include <SDL.h>
+
+typedef struct { 
     SDL_Rect r; // rect containing the checkbox
     bool checked; // is the checkbox checked?
-    void (*onclick)(void *data); // callback function on checkbox click
+    void (*onclick)(); // callback function on checkbox click
     void *onclick_data; // data passed to callback func
 
     SDL_Texture *label;
     SDL_Rect label_rect;
-} FE_CheckBox;
+} FE_UI_Checkbox;
 
 
 /** Creates and renders a checkbox
@@ -20,18 +22,25 @@ typedef struct FE_Checkbox{
 *\param onclick The callback function to call when the checkbox is clicked
 *\param onclick_data The data to pass to the callback function
 */
-FE_CheckBox *FE_CreateCheckbox(const char *label, int x, int y, bool checked, void (*onclick)(), void *onclick_data);
+FE_UI_Checkbox *FE_UI_CreateCheckbox(const char *label, int x, int y, bool checked, void (*onclick)(), void *onclick_data);
 
 
-/* Destroys all checkboxes on screen */
-int FE_CleanCheckBoxes();
+/* Renders a checkbox */
+void FE_UI_RenderCheckbox(FE_UI_Checkbox *c);
 
 
-/* Renders all created checkboxes */
-void FE_RenderCheckBoxes();
+/** Destroys a checkbox
+ * \param c The checkbox to destroy
+ * \param global Whether to remove the checkbox from the global list or not
+ */
+void FE_UI_DestroyCheckbox(FE_UI_Checkbox *c, bool global);
 
 
-/* Handles click event if the mouse clicks on an existing checkbox */
-bool FE_CheckboxClick(int x, int y);
+/** Handles click event if the mouse clicks on an existing checkbox
+*\param x The x position of the mouse
+*\param y The y position of the mouse
+*\return Whether the mouse click was on an existing checkbox
+*/
+bool FE_UI_CheckboxClick(int x, int y);
 
 #endif

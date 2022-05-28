@@ -28,20 +28,20 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 	FE_Game *Game = xmalloc(sizeof(FE_Game));
 	*Game = (FE_Game){
 		.config = ic,
+		.FullScreen = false,
 		.font = NULL,
 		.ConsoleVisible = false,
-		.DialogueActive = false,
-		.InText = false,
 		.StartedInput = false,
 		.DialogueSpeed = 85,
 		.Window = NULL,
 		.Renderer = NULL,
 		.GameActive = false,
 		.GameState = GAME_STATE_MENU,
-		.MapConfig = {false, 0, 0, 0, VEC_EMPTY, 0.0f, 50},
+		.MapConfig = {false, ic->window_width, ic->window_height, 0, VEC_EMPTY, 0.0f, 50},
 		.AudioConfig = {50, false},
 		.Timing = {0,0,0},
-		.DebugConfig = {false, true, false}
+		.DebugConfig = {false, true, false},
+		.UIConfig = {0, 0, COLOR_WHITE, false, false}
 	};
 	return Game;
 }
@@ -59,7 +59,6 @@ void FE_Init(FE_InitConfig *InitConfig)
 	}
 
 	PresentGame = NewGame(InitConfig);
-
 	FE_Log_Init();
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
@@ -107,7 +106,8 @@ void FE_Init(FE_InitConfig *InitConfig)
 
 		PresentGame->font = FE_LoadFont(InitConfig->default_font, 24);
 		
-		FE_ConsoleInit();
+		FE_Console_Init();
+		FE_UI_InitUI();
 
 		info("FedoraEngine started successfully");
 
@@ -125,12 +125,11 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_CloseMap();
 	FE_Trigger_Clean();
 	FE_Parallax_Clean();
-	FE_FreeUI();
-	FE_FreeDialogue();
+	FE_UI_ClearElements(PresentGame->UIConfig.ActiveElements);
+	FE_Dialogue_Free();
 	FE_CleanEditor();
 	FE_CleanCameras();
 	FE_CleanGameObjects();
-	FE_DestroyMessageBox();
 	FE_CleanAudio();
 	FE_CleanTimers();
 	FE_CleanAnimations();
@@ -146,7 +145,8 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		PresentGame->GameActive = false;
 		IMG_Quit();
 		FE_CleanAll();
-		FE_DestroyConsole();
+		free(PresentGame->UIConfig.ActiveElements);
+		FE_Console_Destroy();
 		FE_CleanLighting();
 		SDL_DestroyRenderer(PresentGame->Renderer);
 		SDL_DestroyWindow(PresentGame->Window);

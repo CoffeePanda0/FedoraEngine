@@ -53,7 +53,7 @@ bool FE_VecNULL(Vector2D v);
  * \param y - The y paramater of the vector
  * \return The new vector
 */
-Vector2D FE_NewVector(float x, float y);
+Vector2D vec2(float x, float y);
 
 
 /** Sets the rect values to the Vector position

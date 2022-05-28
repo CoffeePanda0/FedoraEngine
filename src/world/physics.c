@@ -93,8 +93,8 @@ void FE_PhysLoop() // Applies velocity forces in both directions to each object
                                     1000,
                                     false,
                                     "impact.png",
-                                    FE_NewVector(5,5),
-                                    FE_NewVector(-obj->velocity.y / 10, -obj->velocity.y / 20),
+                                    vec2(5,5),
+                                    vec2(-obj->velocity.y / 10, -obj->velocity.y / 20),
                                     false
                                 );
                             }
@@ -166,10 +166,10 @@ FE_PhysObj *FE_CreatePhysObj(Uint16 mass, Uint16 maxvelocity, SDL_Rect body, boo
 {
     FE_PhysObj *o = xmalloc(sizeof(FE_PhysObj));
     o->mass = mass;
-    o->velocity = FE_NewVector(0, 0);
-    o->maxvelocity = FE_NewVector(maxvelocity, 0);
+    o->velocity = vec2(0, 0);
+    o->maxvelocity = vec2(maxvelocity, 0);
     o->body = body;
-    o->position = FE_NewVector(body.x, body.y);
+    o->position = vec2(body.x, body.y);
     o->moveable = moveable;
 
     return o;

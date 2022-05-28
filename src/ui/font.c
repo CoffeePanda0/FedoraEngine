@@ -10,7 +10,7 @@ FE_Font *FE_LoadFont(char *name, uint8_t size)
     // Check if a font with the same name and size already exists
     for (FE_List *l = fonts; l; l = l->next) {
         FE_Font *f = l->data;
-        if (strcmp(f->name, name) == 0 && f->size == size) {
+        if (mstrcmp(f->name, name) == 0 && f->size == size) {
             f->refs++;
             return f;
         }

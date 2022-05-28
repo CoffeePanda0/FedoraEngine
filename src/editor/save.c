@@ -1,5 +1,5 @@
 #include "editor.h"
-#include "../ui/include/messagebox.h"
+#include "../ui/include/include.h"
 #include "../core/include/file.h"
 #include "../core/lib/string.h"
 
@@ -36,25 +36,25 @@ static void SortTiles(FE_Map *save)
 bool Editor_CallSave(FE_Map *save) // used to call the save function as a callback and display dialogues 
 {
     save->name = 0;
-	save->name = mstrdup(FE_GetMessageBoxInput());
+	save->name = mstrdup(FE_Messagebox_GetText());
 	if (save->name[0] == '\0') {
 		warn("Editor: Map name cannot be empty! Aborting save.");
-		FE_ShowMessageBox("Warning", "Map name cannot be empty!");
+        FE_Messagebox_Show("Warning", "Map name cannot be empty!", MESSAGEBOX_TEXT);
 		goto fail;
 	}
 	if (save->tilecount == 0) {
 		warn("Editor: Map must have at least one tile! Aborting save.");
-		FE_ShowMessageBox("Warning", "Map must have at least one tile!");
+	    FE_Messagebox_Show("Warning", "Map must have at least one tile!", MESSAGEBOX_TEXT);
 		goto fail;
 	}
 	if (save->PlayerSpawn.x == -1 && save->PlayerSpawn.y == -1) {
 		warn("Editor: Map must have a spawn! Aborting save.");
-		FE_ShowMessageBox("Warning", "Map must have a spawn! (press Q)");
+	    FE_Messagebox_Show("Warning", "Map must have a spawn! (press Q)", MESSAGEBOX_TEXT);
 		goto fail;
 	}
     if (save->EndFlag.x == -1 && save->EndFlag.y == -1) {
         warn("Editor: Map must have an end flag! Aborting save.");
-        FE_ShowMessageBox("Warning", "Map must have an end flag! (press E)");
+        FE_Messagebox_Show("Warning", "Map must have an end flag! (press E)", MESSAGEBOX_TEXT);
         goto fail;
     }
     SortTiles(save);
@@ -123,12 +123,12 @@ void Editor_Save(FE_Map *mapsave)
     
     free(map_path);
     fclose(f);
-    FE_ShowMessageBox("Map Editor", "Map saved successfully");
+    FE_Messagebox_Show("Map Editor", "Map saved successfully", MESSAGEBOX_TEXT);
     return;
 
 err:
     warn("Editor: Error writing map to file %s", map_path);
-    FE_ShowMessageBox("Map Editor", "Error: Failed to save map");
+    FE_Messagebox_Show("Map Editor", "Error: Failed to save map", MESSAGEBOX_TEXT);
     fclose(f);
     free(map_path);
 }

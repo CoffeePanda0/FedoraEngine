@@ -1,7 +1,7 @@
-#ifndef H_BUTTON
-#define H_BUTTON
+#ifndef _BUTTON_H
+#define _BUTTON_H
 
-typedef struct FE_Button {
+typedef struct {
     SDL_Texture *text;
     SDL_Texture *hover_text;
 
@@ -13,14 +13,14 @@ typedef struct FE_Button {
     void *onclick_data;
 
     bool hover;
-} FE_Button;
+} FE_UI_Button;
 
-enum FE_BUTTON_TYPE {
+typedef enum FE_BUTTON_TYPE {
     BUTTON_TINY,
     BUTTON_SMALL,
     BUTTON_MEDIUM,
     BUTTON_LARGE
-};
+} FE_BUTTON_TYPE;
 
 /** Creates a new button on the UI
 *\param text The text to display on the button
@@ -31,31 +31,41 @@ enum FE_BUTTON_TYPE {
 *\param onclick_data The data to pass to the onclick function
 *\return The new button
 */
-FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t, void (*onclick)(), void *onclick_data);
+FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE t, void (*onclick)(), void *onclick_data);
 
 
-/** Destroys a button, freeing resources used and removed from render
+/** Destroys a button, freeing resources
  * \param b The button to destroy
- * \return -1 on error, 1 on success
+ * \param global Whether to free the button from the global list of buttons
 */
-int FE_DestroyButton(FE_Button *b);
+void FE_UI_DestroyButton(FE_UI_Button *b, bool global);
 
 
-/* Renders all buttons on screen */
-void FE_RenderButtons();
-
-
-/** Destroys all buttons
- * \return -1 on error, 1 on success
- */
-int FE_CleanButtons();
+/** Renders a button to the screen
+ * \param b The button to render
+*/
+void FE_UI_RenderButton(FE_UI_Button *b);
 
 
 /* Handles callback when a button is clicked
-    * \param x The x position of the mouse click
-    * \param y The y position of the mouse click
-    * \return true if button was clicked, false otherwise
-    */
-bool FE_ButtonClick(int x, int y);
+* \param x The x position of the mouse click
+* \param y The y position of the mouse click
+* \return true if button was clicked, false otherwise
+*/
+bool FE_UI_ButtonClick(int x, int y);
+
+
+/** Checks if the mouse is hovering over a button on screen
+ * \return true if the mouse is hovering over the button, false otherwise
+*/
+void FE_UI_CheckHover();
+
+
+/** Moves a button to a new position
+ * \param b The button to move
+ * \param x The new x position
+ * \param y The new y position
+*/
+void FE_UI_MoveButton(FE_UI_Button *b, int x, int y);
 
 #endif

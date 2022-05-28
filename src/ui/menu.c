@@ -1,74 +1,94 @@
 #include "../include/game.h"
 
-// Contains preset menus
+static FE_Texture *MenuTexture;
+static FE_Camera *Camera;
+static FE_ParticleSystem *Particles;
 
-void (*MenuPage)();
-
-static void loadmap_buf(FE_TextBox *t)
+static inline int midx(int w)
 {
-	if (!t->content || mstrlen(t->content) == 0)
-		FE_ShowMessageBox("Warning", "Map name cannot be empty");
-	else
-		FE_StartGame(t->content);
+    return (PresentGame->Window_width / 2) - (w / 2);
 }
 
-void FE_Menu_ShowMaps()
+static inline int midy(int h)
 {
-	FE_FreeUI();
-	
-	PresentGame->GameState = GAME_STATE_MENU;
-	MenuPage = &FE_Menu_ShowMaps;
+    return (PresentGame->Window_height / 2) - (h / 2);
+}
 
-	FE_CreateLabel(NULL, "FedoraEngine - Load Map", rel_w(50), FE_NewVector(142, 0), COLOR_BLACK);
-	FE_CreateButton("Back", 156,400, BUTTON_MEDIUM, &FE_Menu_MainMenu, NULL);
-	FE_CreateLabel(NULL, "Enter Map Name", rel_w(50), FE_NewVector(72, 90), COLOR_BLACK);
-	FE_TextBox *input_box = FE_CreateTextBox(72, 128, 356, 40, "");
-	FE_ForceActiveTextBox(input_box);
-	FE_CreateButton("Load", 156,198, BUTTON_MEDIUM, &loadmap_buf, input_box);
+static void LoadMap_()
+{
+    FE_StartGame(FE_Messagebox_GetText());
+}
+
+static void LoadMap()
+{
+    FE_Messagebox_Show("Load Map", "Enter Map name", MESSAGEBOX_TEXTBOX);
+    FE_Messagebox_AddCallback(&LoadMap_, NULL);
+}
+
+void FE_MenuPage_Main()
+{
+    FE_UI_Container *container = FE_UI_CreateContainer(midx(400), midy(500), 400, 500, "FedoraEngine", false);
+    FE_UI_AddElement(FE_UI_CONTAINER, container);
+
+    FE_UI_Button *start_btn = FE_UI_CreateButton("Load Map", 0, 0, BUTTON_LARGE, &LoadMap, NULL);
+    FE_UI_Button *editor_btn = FE_UI_CreateButton("Map Editor", 0, 0, BUTTON_LARGE, &FE_StartEditor, NULL);
+    FE_UI_Button *quit_btn = FE_UI_CreateButton("Quit", 0, 0, BUTTON_LARGE, &FE_Clean, NULL);
+
+    FE_UI_AddChild(container, FE_UI_BUTTON, start_btn, FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_BUTTON, editor_btn, FE_LOCATION_CENTRE);
+    FE_UI_AddContainerSpacer(container, 100);
+    FE_UI_AddChild(container, FE_UI_BUTTON, quit_btn, FE_LOCATION_CENTRE);
+}
+
+void FE_Menu_Render()
+{
+    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 255);
+	SDL_RenderClear(PresentGame->Renderer);
+
+    SDL_RenderCopy(PresentGame->Renderer, MenuTexture->Texture, NULL, NULL);
+
+    FE_UpdateParticles();
+    FE_RenderParticles(Camera);
+
+    FE_UI_Render();
+    FE_Console_Render();
+
+    SDL_RenderPresent(PresentGame->Renderer);
+}
+
+void FE_Menu_LoadMenu(const char *page)
+{
+    PresentGame->GameState = GAME_STATE_MENU;
+    FE_CleanAll();
+
+    MenuTexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/menu.jpg");
+    Camera = FE_CreateCamera();
+    
+    Particles = FE_CreateParticleSystem(
+		(SDL_Rect){0, -20, PresentGame->Window_width, 20}, // Position for the whole screen, slightly above the top to create more random
+		300, // Emission rate
+		3000, // Max particles
+		10000, // Max lifetime
+		true, // Particles to respawn once they go off screen
+		"snow.png", // Texture
+		(Vector2D){15, 15}, // Max size of each particle
+		(Vector2D){10, 3}, // Set initial velocity so particle doesn't float until they accelerate
+		true
+	);
+
+    if ((mstrcmp(page, "Main") == 0))
+        FE_MenuPage_Main();
 
 }
 
-void FE_Menu_MainMenu()
+void FE_Menu_EventHandler()
 {
-	FE_FreeUI();
+    SDL_PumpEvents();
+	SDL_Event event;
+    const Uint8* keyboard_state = SDL_GetKeyboardState(NULL);
 
-	PresentGame->GameState = GAME_STATE_MENU;
-	MenuPage = &FE_Menu_MainMenu;
-
-	FE_CreateLabel(NULL, "Fedora Engine - Main Menu", rel_w(50), FE_NewVector(128, 0), COLOR_BLACK);
-	FE_CreateUIObject(192, 50, 128, 128, "jeffy.png");
-	FE_CreateButton("Start Game", 156,200, BUTTON_MEDIUM, &FE_Menu_ShowMaps, NULL);
-	FE_CreateButton("Options", 156,275, BUTTON_MEDIUM, &FE_Menu_OptionsMenu, NULL);
-	FE_CreateButton("Map Editor", 156,350, BUTTON_MEDIUM, &FE_StartEditor, NULL);
-	FE_CreateButton("Exit", 156,425, BUTTON_MEDIUM, &FE_Clean, NULL);
-}
-
-static void ChangeVol(int amount)
-{
-	FE_ChangeVolume(amount);
-	FE_Menu_OptionsMenu();
-}
-
-void FE_Menu_OptionsMenu()
-{
-	FE_FreeUI();
-
-	PresentGame->GameState = GAME_STATE_MENU;
-	MenuPage = &FE_Menu_OptionsMenu;
-
-	FE_CreateLabel(NULL, "FedoraEngine - Options Menu", rel_w(50), FE_NewVector(112, 0), COLOR_BLACK);
-
-	FE_CreateLabel(NULL, "Volume", 128, FE_NewVector(140, 156), COLOR_BLACK);
-
-	FE_CreateButton("-", 156, 200, BUTTON_TINY, &ChangeVol, (void *)-10);
-	FE_CreateButton("+", 256, 200, BUTTON_TINY, &ChangeVol, (void *)10);
-
-	char *MusicVolStr = IntToSTR(PresentGame->AudioConfig.Volume);
-	FE_CreateLabel(NULL, MusicVolStr, 80, FE_NewVector(210, 200), COLOR_BLACK);
-	free(MusicVolStr);
-
-	FE_CreateCheckbox("Muted", 150, 250, PresentGame->AudioConfig.Muted, &FE_MuteAudio, NULL);
-
-	FE_CreateButton("Back", 156,400, BUTTON_MEDIUM, &FE_Menu_MainMenu, NULL);
-
+    while (SDL_PollEvent(&event)) {
+        if (FE_UI_HandleEvent(&event, keyboard_state))
+            break;
+    }
 }

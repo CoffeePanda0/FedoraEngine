@@ -4,58 +4,40 @@
 
 #define AssetPath "game/ui/"
 
-static FE_List *UIObjects;
-
-int FE_DestroyUIObject(FE_UIObject *o) // Frees resources and removes from linked list
+void FE_UI_DestroyObject(FE_UI_Object *o, bool global) // Frees resources and removes from linked list
 {
     if (!o) {
         warn("Passing nullptr (FE_DestroyUIObject)");
-        return 1;
+        return;
     }
     FE_DestroyResource(o->texture->path);
-    FE_List_Remove(&UIObjects, o);
-     
-    free(o);
-    return 1;
-}
 
-int FE_CleanUIObjects() // removes all UI object nodes and frees memory
-{
-    for (struct FE_List *l = UIObjects; l; l = l->next) {
-        FE_UIObject *tmp = l->data;
-        FE_DestroyResource(tmp->texture->path);
-        free(tmp);
+    if (global) {
+        int r = FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Objects, o);
+        if (r == 1) PresentGame->UIConfig.ActiveElements->Count--;
     }
 
-    FE_List_Destroy(&UIObjects);
+    free(o);
+}
 
-    UIObjects = 0;
-    return 1;
-} 
-
-FE_UIObject *FE_CreateUIObject(int x, int y, int w, int h, char *texture_path)  // returns the new object. Adds to render list
+FE_UI_Object *FE_UI_CreateObject(int x, int y, int w, int h, char *texture_path)
 {
-    FE_UIObject *tmp = xmalloc(sizeof(FE_UIObject));
+    FE_UI_Object *tmp = xmalloc(sizeof(FE_UI_Object));
 
     // combine the path with the asset path
     char *path = xmalloc(mstrlen(AssetPath) + mstrlen(texture_path) + 1);
     mstrcpy(path, AssetPath);
-    strcat(path, texture_path);
+    mstrcat(path, texture_path);
     tmp->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     free(path);
 
     SDL_Rect r = {x, y, w, h};
     tmp->r = r;
-
-    FE_List_Add(&UIObjects, tmp);
     
     return tmp;
 }
 
-void FE_RenderUIObjects()
+void FE_UI_RenderObject(FE_UI_Object *o)
 {
-    for (FE_List *o = UIObjects; o; o = o->next) {
-        FE_UIObject *tmp = o->data;
-        SDL_RenderCopy(PresentGame->Renderer, tmp->texture->Texture, NULL, &tmp->r);
-    }
+    SDL_RenderCopy(PresentGame->Renderer, o->texture->Texture, NULL, &o->r);
 }

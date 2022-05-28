@@ -3,12 +3,9 @@ In order of rough completion plans
 
 - Extra high velocities can cause clipping
 - Camera funky centering  
-- Slow typing animation  
 - Add jump animation and falling animation logic  
 - Tie movement speed to walking animaiton speed  
 - Add zooming to editor  
-- New UI lib creation
-- Nicer event handling  
 - Pause UI  
 - Make "virtual Y" based on the lowest tile 
 - Map editor - change tilesize and map size  
@@ -18,7 +15,6 @@ In order of rough completion plans
 - Scaling game resolution  
 - Prefabs  
 - Flickering lights  
-- Light intensity  
 - Scene transitions  
 - LUA support  
 - Fully featured console  

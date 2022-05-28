@@ -16,10 +16,8 @@
 
 #include "../world/include/include.h"
 #include "../editor/editor.h"
-#include "../ui/include/ui.h"
-
-extern void (*MenuPage)(); // pointer to current menu page function for redrawing
-
+#include "../ui/include/include.h"
+#include "../ui/include/menu.h"
 
 /* Loads a map and initalises a game */
 void FE_StartGame(const char *mapname);

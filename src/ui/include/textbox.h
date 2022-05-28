@@ -1,16 +1,21 @@
-#ifndef H_TEXBOX
-#define H_TEXBOX
+#ifndef _TEXTBOX_H
+#define _TEXTBOX_H
 
 #include "label.h"
+#include "../../core/include/texture.h"
 
-
-typedef struct FE_TextBox {
-    SDL_Texture *text;
+typedef struct {
+    FE_Texture *text;
+    FE_Texture *active_text;
+    
     SDL_Rect r;
     char *content;
-    FE_Label *label;
+    FE_UI_Label *label;
     bool active;
-} FE_TextBox;
+
+    void (*onenter)();
+    void *data;
+} FE_UI_Textbox;
 
 /** Creates a new textbox for user input on screen
  *\param x The x coordinate of the textbox
@@ -20,47 +25,57 @@ typedef struct FE_TextBox {
  *\param value The default value inside the textbox (can be NULL)
  *\returns A pointer to the created textbox
 */
-FE_TextBox *FE_CreateTextBox(int x, int y, int w, int h, char *value);
+FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, int h, char *value);
 
 
-/* Renders all text boxes on screen */
-void FE_RenderTextBox();
+/** Renders a textbox on screen
+ *\param tb The textbox to render
+*/
+void FE_UI_RenderTextbox(FE_UI_Textbox *tb);
 
 
 /** Destroys and frees resources used by a textbox
  *\param l A pointer to the textbox to destroy
  */
-int FE_DestroyTextBox(FE_TextBox *l);
-
-
-/* Destroys all textboxes */
-int FE_CleanTextBoxes();
+void FE_UI_DestroyTextbox(FE_UI_Textbox *tb, bool global);
 
 
 /* Adds one character to the end of the selected textbox */
-int FE_UpdateTextBox(char c);
+void FE_UI_UpdateTextbox(char c);
 
 
 /* Returns a string of the user-inputted text */
-char *FE_GetContent(FE_TextBox *t);
+char *FE_UI_GetTextboxContent(FE_UI_Textbox *tb);
 
 
 /** Sets the value of a textbox
 *\param t A pointer to the textbox to update
-*\value The value for the textbox input to display
+*\param value The value for the textbox input to display
 */
-int FE_SetContent(FE_TextBox *t, char *value);
+void FE_UI_SetTextboxContent(FE_UI_Textbox *tb, char *value);
 
 
 /* Returns a pointer to the currently active (selected) textbox, or NULL otherwise */
-FE_TextBox *FE_GetActiveTextBox();
+FE_UI_Textbox *FE_UI_GetActiveTextbox();
 
 
 /* Forces the textbox to be active (where user input will go to) */
-int FE_ForceActiveTextBox(FE_TextBox *t);
+void FE_UI_ForceActiveTextbox(FE_UI_Textbox *tb);
 
 
 /* Handles clicking on a textbox to make it active. Returns true if textbox was clicked, false otherwise */
-bool FE_TextBoxClick(int x, int y);
+bool FE_UI_TextboxClick(int x, int y);
+
+/* Moves the textbox including the label to the given coordinates */
+void FE_UI_MoveTextbox(FE_UI_Textbox *tb, int x, int y);
+
+
+/** Adds a callback when the enter key is pressed in a textbox
+ * \param tb A pointer to the textbox to add the callback to
+ * \param callback The callback to add
+ * \param data A pointer to data to pass to the callback
+ */
+void FE_UI_AddTextboxCallback(FE_UI_Textbox *tb, void (*callback)(), void *data);
+
 
 #endif

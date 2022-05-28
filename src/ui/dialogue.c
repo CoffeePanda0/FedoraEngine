@@ -1,14 +1,13 @@
 #include "../core/include/include.h"
-#include "include/uiobject.h"
-#include "include/label.h"
+#include "include/include.h"
 #include "../ext/tiny-json.h"
 
 #define DIALOGUEPATH "game/dialogue/"
 #define DIALOGUETEXT "dialogue.png"
 
-static FE_Label *title;
-static FE_Label *content;
-static FE_UIObject *box;
+static FE_UI_Label *title;
+static FE_UI_Label *content;
+static FE_UI_Object *box;
 
 static size_t cur_index; // cur_index and max_index start at 1 so we use 0 for no text loaded
 static size_t max_index; // last index of the text
@@ -22,7 +21,7 @@ static bool drawing_text = false; // whether or not we are slowly drawing text
 void FE_Dialogue_Update()
 {
     static float last_time = 0;
-    if (!drawing_text || !PresentGame->DialogueActive) {
+    if (!drawing_text || !PresentGame->UIConfig.DialogueActive) {
         last_time = 0;
         return;
     }
@@ -37,23 +36,23 @@ void FE_Dialogue_Update()
     if (last_time > dialoguespeed) {
         last_time = 0;
         char *newtext = mstrndup(contents[cur_index-1], ++current_char);
-        FE_UpdateLabel(content, newtext);
+        FE_UI_UpdateLabel(content, newtext);
         free(newtext);
     }
     last_time += FE_DT;
 }
 
-int FE_FreeDialogue() // frees both speakers and content array
+int FE_Dialogue_Free() // frees both speakers and content array
 {
-    PresentGame->DialogueActive = false;
+    PresentGame->UIConfig.DialogueActive = false;
 
     if (max_index > 0) {
         if (box)
-            FE_DestroyUIObject(box);
+            FE_UI_DestroyObject(box, true);
         if (title)
-            FE_DestroyLabel(title);
+            FE_UI_DestroyLabel(title, true);
         if (content)
-            FE_DestroyLabel(content);
+            FE_UI_DestroyLabel(content, true);
     }
 
     if (speakers && contents && max_index != 0) {
@@ -69,7 +68,7 @@ int FE_FreeDialogue() // frees both speakers and content array
     return 1;
 }
 
-int FE_PlayDialogue() // plays current dialogue
+int FE_Dialogue_Play() // plays current dialogue
 {
     if (max_index == 0) {
         warn("No dialogue loaded (PlayDialogue)");
@@ -78,24 +77,27 @@ int FE_PlayDialogue() // plays current dialogue
     
     char *first = mstrndup(contents[cur_index-1], 1);
 
-    if (!PresentGame->DialogueActive) { // if elements have not been made yet
-        box = FE_CreateUIObject(0, 0, PresentGame->Window_width, PresentGame->Window_height / 6, DIALOGUETEXT);
-        title = FE_CreateLabel(NULL, speakers[cur_index-1], rel_w(90), FE_NewVector(30, 10), COLOR_WHITE);
-        content = FE_CreateLabel(NULL, first, rel_w(90), FE_NewVector(30, 50), COLOR_WHITE);
+    if (!PresentGame->UIConfig.DialogueActive) { // if elements have not been made yet
+        box = FE_UI_CreateObject(0, 0, PresentGame->Window_width, PresentGame->Window_height / 6, DIALOGUETEXT);
+        title = FE_UI_CreateLabel(NULL, speakers[cur_index-1], rel_w(90), vec2(30, 10), COLOR_WHITE);
+        content = FE_UI_CreateLabel(NULL, first, rel_w(90), vec2(30, 50), COLOR_WHITE);
+        FE_UI_AddElement(FE_UI_OBJECT, box);
+        FE_UI_AddElement(FE_UI_LABEL, title);
+        FE_UI_AddElement(FE_UI_LABEL, content);
     } else {
-        FE_UpdateLabel(title, speakers[cur_index-1]);
-        FE_UpdateLabel(content, first);
+        FE_UI_UpdateLabel(title, speakers[cur_index-1]);
+        FE_UI_UpdateLabel(content, first);
     }
 
     free(first);
     current_char = 1;
     drawing_text = true;
-    PresentGame->DialogueActive = true;
+    PresentGame->UIConfig.DialogueActive = true;
 
     return 1;
 }
 
-int FE_DialogueFromStr(char *speaker, char *content) // plays single line of dialogue at once. Also empties current dialogue!
+int FE_Dialogue_FromStr(char *speaker, char *content) // plays single line of dialogue at once. Also empties current dialogue!
 {
     if (!speaker || !content) {
         warn("NullPTR Speaker or content! (PlayDialogueFromStr)");
@@ -115,12 +117,12 @@ int FE_DialogueFromStr(char *speaker, char *content) // plays single line of dia
     cur_index = 1;
     max_index = 1;
 
-    FE_PlayDialogue();
+    FE_Dialogue_Play();
 
     return 1;
 }
 
-int FE_DialogueFromFile(char *path)
+int FE_Dialogue_FromFile(char *path)
 {
     char *newpath = xmalloc(mstrlen(path) + mstrlen(DIALOGUEPATH) + 1); // adds full file path
     mstrcpy(newpath, DIALOGUEPATH);
@@ -188,27 +190,27 @@ int FE_DialogueFromFile(char *path)
     fclose(f);
     free(fs);
     free(newpath);
-    FE_PlayDialogue();
+    FE_Dialogue_Play();
 
     return 0;
 }
 
-int FE_DialogueInteract()
+int FE_Dialogue_Interact()
 {
     // If text is slowly being typed, complete text first
     if (drawing_text) {
         drawing_text = false;
-        FE_UpdateLabel(content, contents[cur_index-1]);
+        FE_UI_UpdateLabel(content, contents[cur_index-1]);
         return 1;
     }
 
     if (cur_index == max_index) {
-        FE_FreeDialogue();
+        FE_Dialogue_Free();
         return 1;
     }
     
     cur_index++;
-    FE_PlayDialogue();
+    FE_Dialogue_Play();
 
     return 1;
 }

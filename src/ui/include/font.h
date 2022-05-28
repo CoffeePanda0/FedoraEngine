@@ -1,5 +1,5 @@
-#ifndef H_FONT
-#define H_FONT
+#ifndef _FONT_H
+#define _FONT_H
 
 #include <SDL_ttf.h>
 

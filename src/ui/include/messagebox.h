@@ -1,62 +1,57 @@
-#ifndef H_MESSAGEBOX
-#define H_MESSAGEBOX
+#ifndef _MESSAGEBOX_H
+#define _MESSAGEBOX_H
 
 #include "font.h"
 #include "textbox.h"
 #include "button.h"
 #include "../../core/include/texture.h"
 
-enum FE_MBTYPE {
+typedef enum {
     MESSAGEBOX_TEXT,
     MESSAGEBOX_TEXTBOX
-};
+} FE_UI_MBType;
 
-
-typedef struct FE_MessageBox {
-    enum FE_MBTYPE type;
+typedef struct {
+    FE_UI_MBType type;
 
     SDL_Rect displayrect;
 
     FE_Texture *texture;
 
-    SDL_Texture *title_texture;
-    SDL_Rect title_rect;
+    FE_UI_Label *title;
+    FE_UI_Label *content;
 
-    SDL_Texture *dialogue_texture;
-    SDL_Rect dialogue_rect;
+    FE_UI_Textbox *textbox;
 
-    FE_TextBox *textbox;
-
-    FE_Button *button;
+    FE_UI_Button *button;
     
-} FE_MessageBox;
+} FE_UI_Messagebox;
 
-
-/** Shows a messagebox with an input text prompt
-*\param title The title of the messagebox
-*\param dialogue The dialogue to be displayed
-*\param onclick The function to be called when the button is clicked
-*\param onclick_data The data to be passed to the onclick function
-*/
-int FE_ShowInputMessageBox(char *title, char *dialogue, void (*onclick)(), void *onclick_data);
-
-
-/** Shows a simple messagebox
+/** Shows a messagebox
  * \param title The title of the messagebox
  * \param body The dialogue to be displayed
+ * \param type The type of messagebox
 */
-int FE_ShowMessageBox(char *title, char *body);
+void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type);
 
 
 /** Renders the current messagebox being displayed, if any */
-void FE_RenderMessageBox();
+void FE_Messagebox_Render();
 
 
 /* Destroys the current messagebox being shown */
-void FE_DestroyMessageBox();
+void FE_Messagebox_Destroy();
 
 
 /* Returns the text that the user has entered into the messagebox input prompt */
-char *FE_GetMessageBoxInput();
+char *FE_Messagebox_GetText();
+
+
+/** Adds a callback to the confirm button of the messagebox
+ * \param func The function to call
+ * \param data The params to call func with
+*/
+void FE_Messagebox_AddCallback(void (*func)(), void *data);
+
 
 #endif

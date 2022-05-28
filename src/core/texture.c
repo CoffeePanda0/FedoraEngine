@@ -105,7 +105,7 @@ Vector2D FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
     if (col == 0)
         col = atlas_cols;
 
-    return FE_NewVector(col * atlas->texturesize, row * atlas->texturesize);
+    return vec2(col * atlas->texturesize, row * atlas->texturesize);
 }
 
 FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)

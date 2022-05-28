@@ -32,8 +32,7 @@ int FE_List_Remove(FE_List **head, void *data)
         prev = curr;
         curr = curr->next;
     }
-    warn("Could not find node to remove");
-    return -1;
+    return 0;
 }
 
 /* Destroys all nodes in the list * - NOTE does not free object data */

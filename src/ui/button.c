@@ -1,5 +1,5 @@
 #include "../core/include/include.h"
-#include "include/button.h"
+#include "include/include.h"
 
 #define BUTTON_TEXTURE "game/ui/button.png"
 #define ACTIVE_TEXTURE "game/ui/button_active.png"
@@ -7,14 +7,9 @@
 #define BUTTON_SMALL_W 128
 #define BUTTON_SMALL_H 32
 
-static FE_List *FE_Buttons = 0;
-
-static int mouse_prev_x;
-static int mouse_prev_y;
-
-FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t, void (*onclick)(), void *onclick_data) // Creates a button with the given text and position
+FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE t, void (*onclick)(), void *onclick_data) // Creates a button with the given text and position
 {
-    FE_Button *b = xmalloc(sizeof(FE_Button));
+    FE_UI_Button *b = xmalloc(sizeof(FE_UI_Button));
     b->r.x = x;
     b->r.y = y;
 
@@ -74,96 +69,113 @@ FE_Button *FE_CreateButton(const char *text, int x, int y, enum FE_BUTTON_TYPE t
         b->label_rect.x = x + (b->r.w - b->label_rect.w) / 2;
     }
 
-    FE_List_Add(&FE_Buttons, b);
-
     return b;
 }
 
-int FE_DestroyButton(FE_Button *b) // Destroys the button and removes from linked list
+void FE_UI_DestroyButton(FE_UI_Button *b, bool global)
 {
     if (!b) {
         warn("Can't destroy a null button (DestroyButton)");
-        return -1;
+        return;
     }
 
     SDL_DestroyTexture(b->text);
     SDL_DestroyTexture(b->hover_text);
     SDL_DestroyTexture(b->label);
-    FE_List_Remove(&FE_Buttons, b);
-    free(b);
 
-    return 1;
+    // Check if this label exists in the global list, if so remove it
+    if (global) {
+        int r = FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Buttons, b);
+        if (r == 1) PresentGame->UIConfig.ActiveElements->Count--;
+    }
+
+    free(b);
 }
 
-void FE_CheckHover() // Checks if the mouse is hovering over a button
+static void CheckHover(FE_UI_Button *b)
 {
+    if (!b) return;
     int mouse_x, mouse_y;
     SDL_GetMouseState(&mouse_x, &mouse_y);
 
-    // only bother checking if the mouse moved
-    if (mouse_x == mouse_prev_x && mouse_y == mouse_prev_y) {
-        return;
+    if (b->r.x < mouse_x && b->r.x + b->r.w > mouse_x &&
+        b->r.y < mouse_y && b->r.y + b->r.h > mouse_y) {
+        b->hover = true;
     } else {
-        mouse_prev_x = mouse_x;
-        mouse_prev_y = mouse_y;
+        b->hover = false;
+    }
+}
+
+void FE_UI_CheckHover() // checks all buttons to see which (if any) are being hovered over
+{
+    // Check all present game buttons first
+    if (!FE_UI_ControlContainerLocked) {
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Buttons; l; l = l->next)
+            CheckHover(l->data);
     }
 
-
-    for (FE_List *f = FE_Buttons; f; f = f->next) {
-        struct FE_Button *t = f->data;
-        if (t->r.x < mouse_x && t->r.x + t->r.w > mouse_x &&
-            t->r.y < mouse_y && t->r.y + t->r.h > mouse_y) {
-            t->hover = true;
-        } else {
-            t->hover = false;
+    // Check through container to see if any buttons are hovered
+    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+        FE_UI_Container *c = l->data;
+        for (size_t i = 0; i < c->children_count; i++) {
+            if (c->children[i].type == FE_UI_BUTTON)
+                CheckHover(c->children[i].element);
         }
     }
 }
 
-bool FE_ButtonClick(int x, int y) // Checks if the mouse is clicking on a button. Returns true if button found
+bool FE_UI_ButtonClick(int x, int y)
 {
-    for (struct FE_List *l = FE_Buttons; l; l = l->next) {
-        struct FE_Button *t = l->data;
-        if (t->r.x < x && t->r.x + t->r.w > x &&
-            t->r.y < y && t->r.y + t->r.h > y) {
-            t->onclick(t->onclick_data);
-            return true;
+    // Check all present game buttons first
+    if (!FE_UI_ControlContainerLocked) {
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Buttons; l; l = l->next) {
+            FE_UI_Button *b = l->data;
+            if (b->r.x < x && b->r.x + b->r.w > x &&
+                b->r.y < y && b->r.y + b->r.h > y) {
+                b->onclick(b->onclick_data);
+                return true;
+            }
         }
     }
+
+    // Check through container to see if any buttons arehovered
+    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+        FE_UI_Container *c = l->data;
+        for (size_t i = 0; i < c->children_count; i++) {
+            if (c->children[i].type == FE_UI_BUTTON) {
+                FE_UI_Button *b = c->children[i].element;
+                if (b->r.x < x && b->r.x + b->r.w > x &&
+                    b->r.y < y && b->r.y + b->r.h > y) {
+                    b->onclick(b->onclick_data);
+                    return true;
+                }
+            }
+        }
+    }
+
     return false;
 }
 
-void FE_RenderButtons() // Renders all buttons and their labels
+void FE_UI_MoveButton(FE_UI_Button *b, int x, int y)
 {
-    if (!FE_Buttons)
+    if (!b) {
+        warn("Can't move a null button (MoveButton)");
         return;
-    else
-        FE_CheckHover();
-
-    for (struct FE_List *l = FE_Buttons; l; l = l->next) {
-        struct FE_Button *t = l->data;
-        if (t->hover) {
-            SDL_RenderCopy(PresentGame->Renderer, t->hover_text, NULL, &t->r);
-        } else {
-            SDL_RenderCopy(PresentGame->Renderer, t->text, NULL, &t->r);
-        }
-        SDL_RenderCopy(PresentGame->Renderer, t->label, NULL, &t->label_rect);
     }
+
+    b->r.x = x;
+    b->r.y = y;
+
+    // recentre label
+    b->label_rect.x = x + (b->r.w - b->label_rect.w) / 2;
+    b->label_rect.y = y + (b->r.h - b->label_rect.h) / 2;
 }
 
-int FE_CleanButtons() // Frees all buttons and removes from linked list
+void FE_UI_RenderButton(FE_UI_Button *b) // Renders all buttons and their labels
 {
-    // free resources inside button
-    for (struct FE_List *l = FE_Buttons; l; l = l->next) {
-        struct FE_Button *b = l->data;
-        SDL_DestroyTexture(b->text);
-        SDL_DestroyTexture(b->hover_text);
-        SDL_DestroyTexture(b->label);
-        free(b);
-    }
-
-    // destroy linked list
-    FE_List_Destroy(&FE_Buttons);
-
-    return 1;
+    if (b->hover)
+        SDL_RenderCopy(PresentGame->Renderer, b->hover_text, NULL, &b->r);
+    else
+        SDL_RenderCopy(PresentGame->Renderer, b->text, NULL, &b->r);
+    SDL_RenderCopy(PresentGame->Renderer, b->label, NULL, &b->label_rect);
 }

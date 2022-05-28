@@ -17,17 +17,13 @@ int FE_LoadMap(const char *name)
     if (!flagtexture)
         flagtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 
-    PresentGame->MapConfig.MapWidth = 0;
-    PresentGame->MapConfig.MapHeight = 0;
-    PresentGame->MapConfig.MinimumX = 0;
-
     // Combine map directory and map file path
     char *map_path = mstradd(MAP_DIRECTORY, name);
     // Read map file from binary format
     FILE *f = fopen(map_path, "rb");
     if (f == NULL) {
         warn("Failed to open map file: %s", name);
-        FE_Menu_MainMenu(); // return to main menu when we can't open map
+        FE_Menu_LoadMenu("Main"); // return to main menu when we can't open map
         free(map_path);
         return -1;
     }
@@ -205,7 +201,7 @@ static size_t LeftTileRange(SDL_Rect *r) // calculates the left-most tile near t
     else
         arr_pt++;
 
-    // find the tile closest to the player's left side using a binary search
+    /* find the tile closest to the player's left side using a binary search */
     Uint16 left = 0;
     Uint16 right = map.tilecount - 1;
     Uint16 mid = 0;
@@ -225,9 +221,9 @@ static size_t LeftTileRange(SDL_Rect *r) // calculates the left-most tile near t
     return mid;
 }
 
-static size_t RightTileRange(size_t left, SDL_Rect *r) // calculates the right-most tile near the player to check for collision
+static size_t RightTileRange(size_t left, SDL_Rect *r) /* calculates the right-most tile near the player to check for collision */
 {
-    // check if the rect hasn't moved, if so we can just return the previous value
+    /* check if the rect hasn't moved, if so we can just return the previous value */
     static uint16_t prev_x[5];
     static uint16_t prev_mid[5];
     static uint8_t arr_pt = 0;
@@ -273,7 +269,7 @@ Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
         if (out.h < 10 || out.w == 0)
             continue;
         if (tilerect.x < r->x && out.w > 0)
-            return FE_NewVector(map.tiles[i].position.x + map.tilesize, map.tiles[i].position.y);
+            return vec2(map.tiles[i].position.x + map.tilesize, map.tiles[i].position.y);
     } 
     return VEC_NULL;
 }
@@ -352,7 +348,7 @@ Vector2D FE_CheckMapCollisionBelow(SDL_Rect *r)
             continue;
 
         if (collrect.h > 0 && (r->y > tilerect.y + (tilerect.h / 2)))
-            return FE_NewVector(map.tiles[i].position.x, map.tiles[i].position.y + map.tilesize);
+            return vec2(map.tiles[i].position.x, map.tiles[i].position.y + map.tilesize);
     }
     return VEC_NULL;
 

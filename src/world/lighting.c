@@ -39,6 +39,7 @@ FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture)
     FE_Light *light = xmalloc(sizeof(FE_Light));
     light->Rect = rect;
     light->enabled = true;
+    light->intensity = 255;
 
     // Create absoloute path
     char *path = mstradd(LIGHT_DIRECTORY, texture);
@@ -83,7 +84,7 @@ void FE_RenderLighting(FE_Camera *camera, SDL_Texture *world)
     CheckIfLightDirty(camera);
 
     /* Create an layer to render the lighting to. Only re-render if lighting has changed. */
-    if (light_layer_dirty) {
+    if (light_layer_dirty || 1) {
         SDL_SetRenderTarget(PresentGame->Renderer, light_layer);
         SDL_SetTextureBlendMode(light_layer, SDL_BLENDMODE_MOD);
         SDL_SetRenderDrawColor(PresentGame->Renderer, brightness, brightness, brightness, 0);
@@ -93,7 +94,10 @@ void FE_RenderLighting(FE_Camera *camera, SDL_Texture *world)
         for (FE_List *l = lights; l; l = l->next) {
             FE_Light *light = l->data;
             if (!light->enabled) continue;
+            // apply intensity
+            SDL_SetTextureAlphaMod(light->Texture->Texture, light->intensity);
             FE_RenderCopy(camera, false, light->Texture,  NULL, &light->Rect);
+            SDL_SetTextureAlphaMod(light->Texture->Texture, 255);
         }
         light_layer_dirty = false;
     }

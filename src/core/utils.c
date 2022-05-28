@@ -123,7 +123,7 @@ void vlog (enum logtypes type, const char *s, ...) {
 	fputc('\n', f);
 	fflush(f);
 	if (FE_GameInitialised && PresentGame->GameActive) {
-		FE_ConsoleSetText(out);
+		FE_Console_SetText(out);
 	}
 	free(out);
 }

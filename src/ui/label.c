@@ -1,16 +1,11 @@
 #include "../core/include/include.h"
 #include "include/label.h"
 
-static FE_List *FE_Labels = 0;
-
-void FE_RenderLabels()
+void FE_UI_RenderLabel(FE_UI_Label *l)
 {
-	for (struct FE_List *o = FE_Labels; o; o = o->next) {
-        FE_Label *l = o->data;
-        if (l->showbackground)
-            FE_RenderRect(&l->r, l->backcolor);
-        SDL_RenderCopy(PresentGame->Renderer, l->texture, NULL, &l->r);
-    }
+    if (l->showbackground)
+        FE_RenderRect(&l->r, l->backcolor);
+    SDL_RenderCopy(PresentGame->Renderer, l->texture, NULL, &l->r);
 }
 
 SDL_Texture *FE_TextureFromText(char *text, SDL_Color color)
@@ -24,7 +19,7 @@ SDL_Texture *FE_TextureFromText(char *text, SDL_Color color)
 }
 
 /* generates one multiline/wrapped text texture for rendering */
-static void GenerateTexture(FE_Label *l)
+static void GenerateTexture(FE_UI_Label *l)
 {
     SDL_Surface **surfaces = 0;
     size_t surface_count = 0;
@@ -74,9 +69,9 @@ static void GenerateTexture(FE_Label *l)
     l->r = (SDL_Rect){l->r.x, l->r.y, largest_w, h * surface_count};
 }
 
-FE_Label *FE_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, Vector2D position, SDL_Color color)
+FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, Vector2D position, SDL_Color color)
 {
-    FE_Label *newlabel = xmalloc(sizeof(FE_Label));
+    FE_UI_Label *newlabel = xmalloc(sizeof(FE_UI_Label));
     newlabel->text = text ? mstrdup(text) : mstrdup(" ");
     newlabel->linewidth = linewidth;
     newlabel->color = color;
@@ -102,22 +97,20 @@ FE_Label *FE_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, Vector2D
     else
         newlabel->backcolor = COLOR_WHITE;
     newlabel->showbackground = false;
-
-    FE_List_Add(&FE_Labels, newlabel);
     
     return newlabel;
 }
 
-int FE_UpdateLabel(FE_Label *l, char *text) // Updates a pre-existing label text
+void FE_UI_UpdateLabel(FE_UI_Label *l, char *text) // Updates a pre-existing label text
 {
     if (!l) {
         warn("Passed NULL label to FE_UpdateLabel");
-        return -1;
+        return;
     }
 
     // Don't bother updating label if new text is the same
-    if (strcmp(l->text, text) == 0)
-        return 0;
+    if (mstrcmp(l->text, text) == 0)
+        return;
 
     // Remove old texture and text
     SDL_DestroyTexture(l->texture);
@@ -126,41 +119,25 @@ int FE_UpdateLabel(FE_Label *l, char *text) // Updates a pre-existing label text
     // Update label text
     l->text = mstrdup(text);
     GenerateTexture(l);
-
-    return 1;
 }
 
-int FE_DestroyLabel(FE_Label *l)
+void FE_UI_DestroyLabel(FE_UI_Label *l, bool global)
 {
     if (!l) {
         warn("Passing NULL (DestroyLabel)");
-        return -1;
+        return;
     }
 
     SDL_DestroyTexture(l->texture);
     if (l->text)
         free(l->text);
-    FE_List_Remove(&FE_Labels, l);
+
+    // Check if this label exists in the global list, if so remove it
+    if (global) {
+        int r = FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Labels, l);
+        if (r == 1) PresentGame->UIConfig.ActiveElements->Count--;
+    }
+    
     free(l);
     
-    return -1;
-}
-
-int FE_CleanLabels() // Destroys all labels and free'd
-{
-    if (!FE_Labels) {
-        return 0;
-    }
-
-    for (struct FE_List *l = FE_Labels; l; l = l->next) {
-        struct FE_Label *tmp = l->data;
-        SDL_DestroyTexture(tmp->texture);
-        free(tmp->text);
-        free(tmp);
-    }
-
-    FE_List_Destroy(&FE_Labels);
-
-    FE_Labels = 0;
-    return 1;
 }

@@ -16,8 +16,8 @@ void FE_StartGame(const char *mapname)
 	// Map setup
 	if (FE_LoadMap(map) == -1) {
 		warn("Failed to start game");
-		FE_Menu_MainMenu();
 		free(map);
+		FE_Menu_LoadMenu("Main");
 		return;
 	}
 	free(map);
@@ -71,14 +71,14 @@ void FE_RenderGame()
 	FE_RenderPlayer(GamePlayer, GameCamera);
 	if (PresentGame->DebugConfig.LightingEnabled)
 		FE_RenderLighting(GameCamera, world);
-	FE_RenderUI();
+	FE_UI_Render();
 	SDL_RenderPresent(PresentGame->Renderer);
 }
 
 void FE_GameLoop()
 {
 	if (!PresentGame->MapConfig.Loaded || PresentGame->GameState != GAME_STATE_PLAY)
-		error("Game not configured correctly");
+		error("Gamestate Error: Game not configured correctly");
 
 	if (FE_FPS == 0) {
 		return;

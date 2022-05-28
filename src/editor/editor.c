@@ -1,9 +1,12 @@
 #include "editor.h"
-#include "../ui/include/ui.h"
+#include "../ui/include/include.h"
+#include "../ui/include/menu.h"
 #include "../core/include/include.h"
 #include "../include/init.h"
 
 #define ATLAS "tileset.png"
+
+static bool initialised = false;
 
 static size_t selectedtexture; // The currently selected texture
 static Vector2D selectedtexture_position; // the position of the selected texture in the atlas
@@ -19,7 +22,7 @@ static FE_LoadedMap newmap; // Current map for rendering from
 
 /* UI objects for layout */
 static FE_Camera *camera;
-static FE_Label *coord;
+static FE_UI_Label *coord;
 
 static FE_Texture *spawntexture;
 static FE_Texture *endtexture;
@@ -31,11 +34,13 @@ static bool drag_delete = false;
 
 static int map_max_width = 4096;
 static int map_max_height = 1024;
-
 // TODO: loading previous maps, tile bg, change tilesize/gravity, nice UI, click anywhere in tile to delete, allow multiple atlas
 
 void FE_RenderEditor()
 {
+	if (!initialised)
+		error("Gamestate error: Trying to render editor before initialising");
+
     SDL_RenderClear(PresentGame->Renderer);
 	SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 0);
 
@@ -76,7 +81,7 @@ void FE_RenderEditor()
 
 	// render panel for UI to go over
 	FE_RenderRect(&(SDL_Rect){0, 0, PresentGame->Window_width, 42}, COLOR_WHITE);
-	FE_RenderUI();
+	FE_UI_Render();
 
 
 	// render thumbnail previewing currently selected texture
@@ -101,7 +106,7 @@ static void UpdateCoordinates() // updates the label position on screen
 {
 	char buffer[64];
 	sprintf(buffer, "X: %i, Y: %i", (int)camera->x, (int)camera->y);
-	FE_UpdateLabel(coord, buffer);
+	FE_UI_UpdateLabel(coord, buffer);
 }
 
 static void DeleteTile(int x, int y)
@@ -152,7 +157,7 @@ static void AddTile(int x, int y)
 	if (last_click.x == x && last_click.y == y && last_texture == selectedtexture)
 		return;
 
-	last_click = FE_NewVector(x,y);
+	last_click = vec2(x,y);
 	last_texture = selectedtexture;
 
 	// check if tile in that location already exists, and it it does then deletes it
@@ -167,7 +172,7 @@ static void AddTile(int x, int y)
 		newmap.tiles = xmalloc(sizeof(FE_Map_Tile));
 	else
 		newmap.tiles = xrealloc(newmap.tiles, sizeof(FE_Map_Tile) * (newmap.tilecount + 1));
-	newmap.tiles[newmap.tilecount++] = (FE_Map_Tile){selectedtexture_position.x, selectedtexture_position.y, rotation, FE_NewVector(x, y)};
+	newmap.tiles[newmap.tilecount++] = (FE_Map_Tile){selectedtexture_position.x, selectedtexture_position.y, rotation, vec2(x, y)};
 
 }
 
@@ -176,7 +181,7 @@ static void SetSpawn(int x, int y)
 	// snap x and y to a grid using tile size
 	GridSnap(&x, &y);
 
-	newmap.PlayerSpawn = FE_NewVector(x, y);
+	newmap.PlayerSpawn = vec2(x, y);
 	info("Editor: Spawn set to (%d, %d)", x, y);
 }
 
@@ -184,7 +189,7 @@ static void SetEnd(int x, int y)
 {
 	GridSnap(&x, &y);
 
-	newmap.EndFlag = FE_NewVector(x, y);
+	newmap.EndFlag = vec2(x, y);
 	info("Editor: Spawn end flag to (%d, %d)", x, y);
 }
 
@@ -192,7 +197,6 @@ static void RotateTile(int x, int y)
 {
 	// snap x and y to a grid using tile size
 	GridSnap(&x, &y);
-
 
 	// check if tile already exists
 	for (size_t i = 0; i < newmap.tilecount; i++) {
@@ -249,106 +253,106 @@ void FE_EventEditorHandler()
 	SDL_PumpEvents();
 	SDL_Event event;
 
-	/* Allow user to drag to place tiles */
-	if (drag_place) {
-		int mouse_x, mouse_y;
-		SDL_GetMouseState(&mouse_x, &mouse_y);
-		if (mode)
-			AddTile(mouse_x + camera->x, mouse_y + camera->y);
-		else
-			newmap.bg = editor_backgrounds[selectedbackground];
-	} else if (drag_delete) {
-		int mouse_x, mouse_y;
-		SDL_GetMouseState(&mouse_x, &mouse_y);
-		DeleteTile(mouse_x + camera->x, mouse_y + camera->y);
-	}
-
+	bool ui_handled = false;
 
     while (SDL_PollEvent(&event)) {
-		if (PresentGame->ConsoleVisible) {
-			FE_HandleConsoleInput(&event, keyboard_state);
-		} else {
-			switch (event.type) {
-				case SDL_QUIT:
-					FE_Clean();
-				break;
-				case SDL_MOUSEBUTTONDOWN:
-					if (event.button.button == SDL_BUTTON_LEFT) {
-						if (!FE_UI_HandleClick(&event)) {
-							if (!saving) {
-								drag_place = true;
-								drag_delete = false;
-							}
-						}
-					} else if (event.button.button == SDL_BUTTON_RIGHT) {
-						if (!saving) {
-							drag_delete = true;
-							drag_place = false;
-						}
-					}
-				break;
-
-				case SDL_MOUSEBUTTONUP:
-					if (event.button.button == SDL_BUTTON_LEFT) {
-						drag_place = false;
-					} else if (event.button.button == SDL_BUTTON_RIGHT) {
+		if (FE_UI_HandleEvent(&event, keyboard_state)) {
+			drag_delete = false;
+			drag_place = false;
+			ui_handled = true;
+			break;
+		}
+		
+		switch (event.type) {
+			case SDL_MOUSEBUTTONDOWN:
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					if (!saving) {
+						drag_place = true;
 						drag_delete = false;
 					}
-				break;
+				} else if (event.button.button == SDL_BUTTON_RIGHT) {
+					if (!saving) {
+						drag_delete = true;
+						drag_place = false;
+					}
+				}
+			break;
 
-				case SDL_KEYDOWN: // switch between textures and bgs
-					if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
-						if (!saving) {
-							saving = true;
-							FE_ShowInputMessageBox("Map Editor", "Enter Map Name", &Save, NULL);
-						} else {
-							saving = false;
-							FE_DestroyMessageBox();
-						}
-					}
-					if (saving && !keyboard_state[SDL_SCANCODE_ESCAPE]) {
-						FE_UpdateTextBox(event.key.keysym.sym);
-						break;
-					}
+			case SDL_MOUSEBUTTONUP:
+				if (event.button.button == SDL_BUTTON_LEFT) {
+					drag_place = false;
+				} else if (event.button.button == SDL_BUTTON_RIGHT) {
+					drag_delete = false;
+				}
+			break;
 
-					// if a num key is pressed
-					if (event.key.keysym.sym > 47 && event.key.keysym.sym < 58)
-						ChangeSelection(event.key.keysym.sym - 48);
-					
-					if (keyboard_state[SDL_SCANCODE_Q]) {
-						int mouse_x, mouse_y;
-						SDL_GetMouseState(&mouse_x, &mouse_y);
-						SetSpawn(mouse_x + camera->x, mouse_y + camera->y);
+			case SDL_KEYDOWN: // switch between textures and bgs
+				if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
+					if (!saving) {
+						saving = true;
+						FE_Messagebox_Show("Map Editor", "Enter Map Name", MESSAGEBOX_TEXTBOX);
+						FE_Messagebox_AddCallback(&Save, NULL);
+					} else {
+						saving = false;
+						FE_Messagebox_Destroy();
 					}
-					else if (keyboard_state[SDL_SCANCODE_E]) {
-						int mouse_x, mouse_y;
-						SDL_GetMouseState(&mouse_x, &mouse_y);
-						SetEnd(mouse_x + camera->x, mouse_y + camera->y);
-					} else if (keyboard_state[SDL_SCANCODE_R]) {
-						int mouse_x, mouse_y;
-						SDL_GetMouseState(&mouse_x, &mouse_y);
-						RotateTile(mouse_x + camera->x, mouse_y + camera->y);
-					}
+				}
 
-				break;
+				// if a num key is pressed
+				if (event.key.keysym.sym > 47 && event.key.keysym.sym < 58)
+					ChangeSelection(event.key.keysym.sym - 48);
+				
+				if (keyboard_state[SDL_SCANCODE_Q]) {
+					int mouse_x, mouse_y;
+					SDL_GetMouseState(&mouse_x, &mouse_y);
+					SetSpawn(mouse_x + camera->x, mouse_y + camera->y);
+				}
+				else if (keyboard_state[SDL_SCANCODE_E]) {
+					int mouse_x, mouse_y;
+					SDL_GetMouseState(&mouse_x, &mouse_y);
+					SetEnd(mouse_x + camera->x, mouse_y + camera->y);
+				} else if (keyboard_state[SDL_SCANCODE_R]) {
+					int mouse_x, mouse_y;
+					SDL_GetMouseState(&mouse_x, &mouse_y);
+					RotateTile(mouse_x + camera->x, mouse_y + camera->y);
+				}
+
+			break;
 
 			}
+	}
+
+	if (!ui_handled && !PresentGame->UIConfig.InText) {
+		// moving camera (outside of loop so movement is smooth)
+		if (keyboard_state[SDL_SCANCODE_W]) {
+			FE_MoveCamera(0, -10 * FE_DT_MULTIPLIER, camera);
+			UpdateCoordinates();
+		} else if (keyboard_state[SDL_SCANCODE_A]) {
+			FE_MoveCamera(-10 * FE_DT_MULTIPLIER, 0, camera);
+			UpdateCoordinates();
+		} else if (keyboard_state[SDL_SCANCODE_S]) {
+			FE_MoveCamera(0, 10 * FE_DT_MULTIPLIER, camera);
+			UpdateCoordinates();
+		} else if (keyboard_state[SDL_SCANCODE_D]) {
+			FE_MoveCamera(10 * FE_DT_MULTIPLIER, 0, camera);
+			UpdateCoordinates();
+		}
+
+		/* Allow user to drag to place tiles */
+		if (drag_place) {
+			int mouse_x, mouse_y;
+			SDL_GetMouseState(&mouse_x, &mouse_y);
+			if (mode)
+				AddTile(mouse_x + camera->x, mouse_y + camera->y);
+			else
+				newmap.bg = editor_backgrounds[selectedbackground];
+		} else if (drag_delete) {
+			int mouse_x, mouse_y;
+			SDL_GetMouseState(&mouse_x, &mouse_y);
+			DeleteTile(mouse_x + camera->x, mouse_y + camera->y);
 		}
 	}
-	// moving camera (outside of loop so movement is smooth)
-	if (keyboard_state[SDL_SCANCODE_W]) {
-		FE_MoveCamera(0, -10 * FE_DT_MULTIPLIER, camera);
-		UpdateCoordinates();
-	} else if (keyboard_state[SDL_SCANCODE_A]) {
-		FE_MoveCamera(-10 * FE_DT_MULTIPLIER, 0, camera);
-		UpdateCoordinates();
-	} else if (keyboard_state[SDL_SCANCODE_S]) {
-		FE_MoveCamera(0, 10 * FE_DT_MULTIPLIER, camera);
-		UpdateCoordinates();
-	} else if (keyboard_state[SDL_SCANCODE_D]) {
-		FE_MoveCamera(10 * FE_DT_MULTIPLIER, 0, camera);
-		UpdateCoordinates();
-	}
+
 }
 
 void FE_CleanEditor()
@@ -388,12 +392,13 @@ void FE_CleanEditor()
 	newmap.tiles = 0;
 	newmap.PlayerSpawn = VEC_NULL;
 	newmap.EndFlag = VEC_NULL;
+	initialised = false;
 }
 
 static void Exit()
 {
 	FE_CleanEditor();
-	FE_Menu_MainMenu();
+	FE_Menu_LoadMenu("Main");
 }
 
 static void ChangeMode()
@@ -404,11 +409,13 @@ static void ChangeMode()
 static void CreateUI()
 {
 	// UI elements
-	FE_CreateButton("<", 10, 7, BUTTON_TINY, &Exit, NULL);
-	FE_CreateButton("Clear", 60, 7, BUTTON_TINY, &FE_StartEditor, NULL);
-	FE_CreateCheckbox("Tiles", 150, 7, mode, &ChangeMode, NULL);
+	FE_UI_AddElement(FE_UI_BUTTON, FE_UI_CreateButton("<", 10, 7, BUTTON_TINY, &Exit, NULL));
+	FE_UI_AddElement(FE_UI_BUTTON, FE_UI_CreateButton("Clear", 60, 7, BUTTON_TINY, &FE_StartEditor, NULL));
+	FE_UI_AddElement(FE_UI_CHECKBOX, FE_UI_CreateCheckbox("Tiles", 150, 7, mode, &ChangeMode, NULL));
 
-	coord = FE_CreateLabel(NULL, "X: 0 Y: 0", 128, FE_NewVector(340, 6), COLOR_BLACK);
+	coord = FE_UI_CreateLabel(NULL, "X: 0 Y: 0", 128, vec2(340, 6), COLOR_BLACK);
+	FE_UI_AddElement(FE_UI_LABEL, coord);
+	
 	spawntexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/spawn.png");
 	endtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 }
@@ -441,4 +448,5 @@ void FE_StartEditor() // cleans up from other game modes
 	newmap.tilesize = 64;
 	newmap.gravity = 70;
 	newmap.atlas = FE_LoadTextureAtlas(ATLAS);
+	initialised = true;
 }

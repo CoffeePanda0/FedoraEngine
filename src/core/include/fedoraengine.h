@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "vector2d.h"
 #include "../../ui/include/font.h"
+#include "../../core/include/linkedlist.h"
 
 typedef enum FE_GAMESTATE {
     GAME_STATE_MENU,
@@ -17,6 +18,25 @@ typedef struct FE_DebugConfig {
     bool LightingEnabled;
     bool ShowTriggers;
 } FE_DebugConfig;
+
+typedef struct FE_UIList {
+    FE_List *Containers;
+    FE_List *Labels;
+    FE_List *Buttons;
+    FE_List *Checkboxes;
+    FE_List *Objects;
+    FE_List *Textboxes;
+    size_t Count;
+} FE_UIList;
+
+typedef struct FE_UIConfig {
+    FE_UIList *ActiveElements;
+    FE_Font *UIFont;
+    SDL_Color UIFontColor;
+
+    bool DialogueActive;
+    bool InText;
+} FE_UIConfig;
 
 typedef struct FE_Timing {
     long double EventTime;
@@ -47,11 +67,11 @@ typedef struct FE_InitConfig {
 typedef struct FE_Game {
     FE_InitConfig *config;
     FE_Font *font;
-    int Window_height, Window_width;
 
+    int Window_height, Window_width;
+    bool FullScreen;
+    
     bool ConsoleVisible;
-    bool DialogueActive;
-    bool InText;
     bool StartedInput;
     bool MBShown;
 
@@ -67,6 +87,7 @@ typedef struct FE_Game {
     FE_AudioConfig AudioConfig;
     FE_Timing Timing;
     FE_DebugConfig DebugConfig;
+    FE_UIConfig UIConfig;
 } FE_Game;
 
 extern bool FE_GameInitialised;

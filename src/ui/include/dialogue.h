@@ -1,5 +1,5 @@
-#ifndef H_DIALOGUE
-#define H_DIALOGUE
+#ifndef _DIALOGUE_H
+#define _DIALOGUE_H
 // pragma balls lmao gotem
 
 
@@ -7,21 +7,21 @@
 *\speaker The speaker of the dialogue
 *\content The text to display
 */
-int FE_DialogueFromStr(char *speaker, char *content);
+int FE_Dialogue_FromStr(char *speaker, char *content);
 
 
 /* Frees the memory used by the loaded dialogue */
-int FE_FreeDialogue();
+int FE_Dialogue_Free();
 
 
 /* Loads multi-line dialogue from a file 
 *\path The path to the file
 */
-int FE_DialogueFromFile(char *path);
+int FE_Dialogue_FromFile(char *path);
 
 
 /* Handles event to move to the next line of dialogue, or close the dialogue */
-int FE_DialogueInteract();
+int FE_Dialogue_Interact();
 
 
 /* Updates the text being displayed with time */

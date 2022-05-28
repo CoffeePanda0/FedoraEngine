@@ -45,7 +45,6 @@ static void GenerateParticle(FE_ParticleSystem *p, size_t index)
     }
 
     p->particles[index] = particle;
-
 }
 
 FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, Vector2D max_size, Vector2D initial_velocity, bool camera_locked)
@@ -108,7 +107,6 @@ void FE_UpdateParticles()
 
         for (size_t i = 0; i < p->max_particles; i++) {
             FE_Particle *particle = &p->particles[i];    
-            
             if (particle->is_dead) { // if we are already due to emit a new particle, use this one
                 if (to_emit > 0) {
                     GenerateParticle(p, i);

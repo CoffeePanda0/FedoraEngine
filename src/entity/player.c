@@ -85,7 +85,7 @@ void FE_MovePlayer(FE_Player *player, Vector2D movement)
     if (!player)
         return;
 
-    Vector2D mov_vec = FE_NewVector(movement.x * FE_DT_MULTIPLIER, movement.y * FE_DT_MULTIPLIER);
+    Vector2D mov_vec = vec2(movement.x * FE_DT_MULTIPLIER, movement.y * FE_DT_MULTIPLIER);
     FE_ApplyForce(player->PhysObj, mov_vec);
 }
 
@@ -124,7 +124,7 @@ void FE_UpdatePlayer(FE_Player *player)
     if (last_position.x != player->PhysObj->body.x || last_position.y != player->PhysObj->body.y) {
         if (player->Light) {
             FE_MoveLight(player->Light, player->PhysObj->body.x + player->PhysObj->body.w/2 - player->Light->Rect.w/2, player->PhysObj->body.y + player->PhysObj->body.h/2 - player->Light->Rect.h/2);
-            last_position = FE_NewVector(player->PhysObj->body.x, player->PhysObj->body.y);
+            last_position = vec2(player->PhysObj->body.x, player->PhysObj->body.y);
         }
     }
     
@@ -157,11 +157,11 @@ void FE_UpdatePlayerJump(FE_Player *player)
     player->jump_elapsed += FE_DT;
 
     if (player->PhysObj->velocity.y == 0) {
-        FE_ApplyForce(player->PhysObj, FE_NewVector(0, -min_jump));
+        FE_ApplyForce(player->PhysObj, vec2(0, -min_jump));
         return;
     }
 
-    FE_ApplyForce(player->PhysObj, FE_NewVector(0, -3 * FE_DT_MULTIPLIER));
+    FE_ApplyForce(player->PhysObj, vec2(0, -3 * FE_DT_MULTIPLIER));
 
     if (player->PhysObj->velocity.y <= -player->jumpforce || player->jump_elapsed > 0.15) {
         player->PhysObj->velocity.y = -player->jumpforce;

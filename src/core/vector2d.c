@@ -30,7 +30,7 @@ bool FE_VecNULL(Vector2D v)
     return false;
 }
 
-Vector2D FE_NewVector(float x, float y)
+Vector2D vec2(float x, float y)
 {
     return (Vector2D){x,y};
 }

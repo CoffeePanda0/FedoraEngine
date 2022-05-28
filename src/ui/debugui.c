@@ -3,36 +3,42 @@
 #include "../core/include/utils.h"
 #include "../core/include/timing.h"
 #include "../entity/include/player.h"   
-#include "include/ui.h"
+#include "include/include.h"
 
-static FE_Label *update_label;
-static FE_Label *event_label;
-static FE_Label *render_label;
-static FE_Label *fps_label;
+static FE_UI_Label *update_label;
+static FE_UI_Label *event_label;
+static FE_UI_Label *render_label;
+static FE_UI_Label *fps_label;
 
-static FE_Label *coord_label;
-static FE_Label *velocity_label;
+static FE_UI_Label *coord_label;
+static FE_UI_Label *velocity_label;
 
 static bool UI_Created = false;
 
 static void CreateUI()
 {
-    update_label = FE_CreateLabel(PresentGame->font, "Update: ", rel_w(20), FE_NewVector(0, 0), COLOR_BLACK);
+    update_label = FE_UI_CreateLabel(PresentGame->font, "Update: ", rel_w(20), vec2(0, 0), COLOR_BLACK);
+    FE_UI_AddElement(FE_UI_LABEL, update_label);
     update_label->showbackground = true;
 
-    event_label = FE_CreateLabel(PresentGame->font, "Event: ", rel_w(20), FE_NewVector(0, 25), COLOR_BLACK);
+    event_label = FE_UI_CreateLabel(PresentGame->font, "Event: ", rel_w(20), vec2(0, 25), COLOR_BLACK);
+    FE_UI_AddElement(FE_UI_LABEL, event_label);
     event_label->showbackground = true;
 
-    render_label = FE_CreateLabel(PresentGame->font, "Render: ", rel_w(20), FE_NewVector(0, 50), COLOR_BLACK);
+    render_label = FE_UI_CreateLabel(PresentGame->font, "Render: ", rel_w(20), vec2(0, 50), COLOR_BLACK);
+    FE_UI_AddElement(FE_UI_LABEL, render_label);
     render_label->showbackground = true;
 
-    fps_label = FE_CreateLabel(PresentGame->font, "FPS: ", rel_w(20), FE_NewVector(0, 75), COLOR_BLACK);
+    fps_label = FE_UI_CreateLabel(PresentGame->font, "FPS: ", rel_w(20), vec2(0, 75), COLOR_BLACK);
+    FE_UI_AddElement(FE_UI_LABEL, fps_label);
     fps_label->showbackground = true;
 
-    coord_label = FE_CreateLabel(PresentGame->font, "X: Y:", rel_w(20), FE_NewVector(0, 100), COLOR_BLACK);
+    coord_label = FE_UI_CreateLabel(PresentGame->font, "X: Y:", rel_w(20), vec2(0, 100), COLOR_BLACK);
+    FE_UI_AddElement(FE_UI_LABEL, coord_label);
     coord_label->showbackground = true;
 
-    velocity_label = FE_CreateLabel(PresentGame->font, "Velocity: ", rel_w(20), FE_NewVector(0, 125), COLOR_BLACK);
+    velocity_label = FE_UI_CreateLabel(PresentGame->font, "Velocity: ", rel_w(20), vec2(0, 125), COLOR_BLACK);
+    FE_UI_AddElement(FE_UI_LABEL, velocity_label);
     velocity_label->showbackground = true;
 
     UI_Created = true;
@@ -41,12 +47,12 @@ static void CreateUI()
 static void DestroyUI()
 {
     if (UI_Created) {
-        FE_DestroyLabel(update_label);
-        FE_DestroyLabel(event_label);
-        FE_DestroyLabel(render_label);
-        FE_DestroyLabel(fps_label);
-        FE_DestroyLabel(coord_label);
-        FE_DestroyLabel(velocity_label);
+        FE_UI_DestroyLabel(update_label, true);
+        FE_UI_DestroyLabel(event_label, true);
+        FE_UI_DestroyLabel(render_label, true);
+        FE_UI_DestroyLabel(fps_label, true);
+        FE_UI_DestroyLabel(coord_label, true);
+        FE_UI_DestroyLabel(velocity_label, true);
     }
     UI_Created = false;
 }
@@ -80,12 +86,12 @@ void FE_DebugUI_Update(FE_Player *player)
             sprintf(coord_text, "X: %i Y: %i", player->PhysObj->body.x, player->PhysObj->body.y);
             sprintf(velocity_text, "Velocity: (%.2f, %.2f)", player->PhysObj->velocity.x, player->PhysObj->velocity.y);
 
-            FE_UpdateLabel(update_label, update_text);
-            FE_UpdateLabel(event_label, event_text);
-            FE_UpdateLabel(render_label, render_text);
-            FE_UpdateLabel(fps_label, fps_text);
-            FE_UpdateLabel(coord_label, coord_text);
-            FE_UpdateLabel(velocity_label, velocity_text);
+            FE_UI_UpdateLabel(update_label, update_text);
+            FE_UI_UpdateLabel(event_label, event_text);
+            FE_UI_UpdateLabel(render_label, render_text);
+            FE_UI_UpdateLabel(fps_label, fps_text);
+            FE_UI_UpdateLabel(coord_label, coord_text);
+            FE_UI_UpdateLabel(velocity_label, velocity_text);
         }
     } else {
         if (UI_Created)

@@ -1,49 +1,80 @@
-#ifndef H_UI
-#define H_UI
+#ifndef _UI_H
+#define _UI_H
 
-#include <SDL.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "../../core/lib/string.h"
+#include "../../core/include/linkedlist.h"
+#include "../../core/include/fedoraengine.h"
+#include "../../entity/include/player.h"
 
-#include "event.h"
-#include "dialogue.h"
-#include "uiobject.h"
-#include "console.h"
-#include "button.h"
-#include "label.h"
-#include "textbox.h"
-#include "checkbox.h"
-#include "menu.h"
-#include "messagebox.h"
-#include "font.h"
+typedef enum {
+    FE_UI_LABEL,
+    FE_UI_BUTTON,
+    FE_UI_CONTAINER,
+    FE_UI_OBJECT,
+    FE_UI_CHECKBOX,
+    FE_UI_TEXTBOX
+} FE_UI_Type;
 
-typedef enum FE_UI_CENTRE_TYPE {
-    FE_UI_CENTRE_NONE,
-    FE_UI_CENTRE_VERTICAL,
-    FE_UI_CENTRE_HORIZONTAL,
-    FE_UI_CENTRE_ALL
-} FE_UI_CENTRE_TYPE;
+typedef struct {
+    FE_UI_Type type;
+    void *element;
+} FE_UI_Element;
 
-/* The render function used for the menus */
-void FE_RenderMenu();
+typedef enum {
+    FE_LOCATION_CENTRE,
+    FE_LOCATION_LEFT,
+    FE_LOCATION_RIGHT,
+    FE_LOCATION_NONE
+} FE_UI_LOCATION;
 
-/* Cleans all UI element types */
-void FE_FreeUI();
+extern bool FE_UI_ControlContainerLocked;
 
-/* The event handler used for the menus */
-void FE_MenuEventHandle();
+/* Renders the active list of elements of any UI type to the screen */
+void FE_UI_Render();
 
-/* Renders all UI elements */
-void FE_RenderUI();
 
-/* Updates the debug info UI */
-void FE_DebugUI_Update();
-
-/** Centres a rect inside the screen 
- * \param type The type of centering to perform
- * \param r The rect to centre
+/** Adds an element to the active world to be rendered 
+*\param type The type of element to be added
+*\param element The element to be added
 */
-void FE_CentreRect(FE_UI_CENTRE_TYPE type, SDL_Rect *r);
+void FE_UI_AddElement(FE_UI_Type type, void *element);
+
+
+/** Removes an element from the active list to be rendered, freeing the resource
+ * \param type The type of element to be removed
+ * \param element The element to be removed
+ */
+void FE_UI_Destroy(FE_UI_Element *element);
+
+
+/**
+*\param Clears a list of UI elements, destroying all elements in the list
+*\param Elements The list of elements to be cleared
+*/
+void FE_UI_ClearElements(FE_UIList *Elements);
+
+
+/* Initialises the UI system */
+void FE_UI_InitUI();
+
+
+/* Updates the UI elements */
+void FE_UI_Update();
+
+
+/* Updates the DebugUI */
+void FE_DebugUI_Update(FE_Player *player);
+
+
+/* Handles a click event on screen, checking if it is on an element */
+bool FE_UI_HandleClick(SDL_Event *event);
+
+
+/** Handles events for moving / resizing windows and taking input keys used by FedoraEngine
+ * \param event The SDL_Event to be handled
+ * \param keyboard The SDL_KeyboardState to be handled
+ * \returns true if the event was handled, false if not. If false, continue to handle the event in the game loop
+*/
+bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state);
+
 
 #endif
