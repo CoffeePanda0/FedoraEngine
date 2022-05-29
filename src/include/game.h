@@ -1,8 +1,10 @@
-#ifndef H_GAME
-#define H_GAME
+#ifndef _GAME_H
+#define _GAME_H
 
 #include "include.h"
+
 #include "../core/include/include.h"
+#include "../core/include/keymap.h"
 
 #include "audio.h"
 #include "init.h"
@@ -19,7 +21,9 @@
 #include "../ui/include/include.h"
 #include "../ui/include/menu.h"
 
-/* Loads a map and initalises a game */
+/** Loads a map and initalises a game
+ * \param mapname The name of the map to load
+ */
 void FE_StartGame(const char *mapname);
 
 /* The main game loop. Calls rendering, game event handling and update */

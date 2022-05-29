@@ -35,9 +35,9 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                     break;
                 }
                 
-                if (keyboard_state[SDL_SCANCODE_Z] && event.key.repeat == 0)
+                if (keyboard_state[FE_Key_Get("ZOOM IN")] && event.key.repeat == 0)
                     FE_Camera_SmoothZoom(camera, 0.5, 250);
-                if (keyboard_state[SDL_SCANCODE_X] && event.key.repeat == 0)
+                if (keyboard_state[FE_Key_Get("ZOOM OUT")] && event.key.repeat == 0)
                     FE_Camera_SmoothZoom(camera, -0.5, 250);
                 
 
@@ -63,11 +63,11 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 
     // Handle essential inputs here to prevent first click issue
     if (!ui_handled) {
-        if (keyboard_state[SDL_SCANCODE_A])
+        if (keyboard_state[FE_Key_Get("LEFT")])
             FE_MovePlayer(player, vec2(-player->movespeed, 0));
-        if (keyboard_state[SDL_SCANCODE_D])
+        if (keyboard_state[FE_Key_Get("RIGHT")])
             FE_MovePlayer(player, vec2(player->movespeed, 0));
-        if (keyboard_state[SDL_SCANCODE_SPACE]) {
+        if (keyboard_state[FE_Key_Get("JUMP")]) {
             if (!player->jump_started) {
                 FE_StartPlayerJump(player);
             } else {

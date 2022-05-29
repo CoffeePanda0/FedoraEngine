@@ -75,10 +75,12 @@ void FE_UI_AddChild(FE_UI_Container *container, FE_UI_Type type, void *element, 
     /* Calculate the position of the child relative to the previous child */
     int newy = container->last_child_bottom + Padding;
     int newx = 0;
+    
     switch (type) {
         case FE_UI_LABEL:
             child_r = &((FE_UI_Label *)element)->r;
             child_r->x = calc_location(location, child_r, &container->inner_rect);
+            child_r->y = newy;
             break;
         case FE_UI_BUTTON:
             child_r = &((FE_UI_Button *)element)->r;

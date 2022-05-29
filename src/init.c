@@ -107,6 +107,7 @@ void FE_Init(FE_InitConfig *InitConfig)
 		
 		FE_Console_Init();
 		FE_UI_InitUI();
+		FE_Key_Init();
 
 		info("FedoraEngine started successfully");
 
@@ -145,6 +146,7 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		PresentGame->GameActive = false;
 		IMG_Quit();
 		FE_CleanAll();
+		FE_Key_Clean();
 		free(PresentGame->UIConfig.ActiveElements);
 		FE_Console_Destroy();
 		SDL_DestroyRenderer(PresentGame->Renderer);

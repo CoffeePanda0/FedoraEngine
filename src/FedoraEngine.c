@@ -40,10 +40,9 @@ int main(int argc, char* argv[])
 
 	/* Check launch args */
 	LoadArgs(argc, argv);
-	
-	
+		
+	/* main game loop - calls functions based on game state */
 	while (PresentGame->GameActive) {
-		// main game loop - calls functions based on game state
 		FE_CalculateDT();
 
 		switch (PresentGame->GameState) {

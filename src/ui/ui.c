@@ -173,7 +173,6 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
         break;
 
         case SDL_KEYDOWN:
-
             if (PresentGame->UIConfig.DialogueActive) {
                 FE_Dialogue_Interact();
                 return true;
