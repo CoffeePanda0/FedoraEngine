@@ -1,13 +1,8 @@
 src := $(wildcard *.c */*.c */*/*.c */*/*/*.c)
-obj := $(src:.c=.o)
+obj = $(src:.c=.o)
 out = FedoraEngine
 
-CC = gcc
-CFLAGS = -MD --pedantic -Wall -Wextra -g -fstack-protector -O2 -fno-common $$(sdl2-config --cflags) -lm
-LD = $(CC) 
-
-LIBS = -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lm
- 
+include win.mk
 
 all: $(out)
 
