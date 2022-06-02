@@ -85,19 +85,19 @@ void Editor_Save(FE_Map *mapsave)
     }
 
     // Write map name
-    if (!(WriteStr(f, mapsave->name))) goto err;
+    if (!(FE_File_WriteStr(f, mapsave->name))) goto err;
 
     // write gravity
     if (fwrite(&mapsave->gravity, sizeof(float), 1, f) != 1) goto err;
 
     // write atlas path
-    if (!WriteStr(f, mapsave->atlaspath)) goto err;
+    if (!FE_File_WriteStr(f, mapsave->atlaspath)) goto err;
 
     // write atlas tile size
     if (fwrite(&mapsave->atlas_tilesize, sizeof(Uint16), 1, f) != 1) goto err;
 
     // Write background texture path
-    if (!(WriteStr(f, mapsave->bg_texturepath))) goto err;
+    if (!(FE_File_WriteStr(f, mapsave->bg_texturepath))) goto err;
 
     // Write tilecount
     if (fwrite(&mapsave->tilecount, sizeof(Uint16), 1, f) != 1) goto err;

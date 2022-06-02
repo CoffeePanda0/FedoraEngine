@@ -12,7 +12,7 @@
 #include <unistd.h>
 #endif
 
-char *ReadStr(FILE *f)
+char *FE_File_ReadStr(FILE *f)
 {
 	uint16_t len = 0;
 	char *str = 0;
@@ -23,7 +23,7 @@ char *ReadStr(FILE *f)
 	return str;
 }
 
-bool WriteStr(FILE *f, const char *str)
+bool FE_File_WriteStr(FILE *f, const char *str)
 {
 	uint16_t len = mstrlen(str);
 	fwrite(&len, sizeof(uint16_t), 1, f);
@@ -31,7 +31,7 @@ bool WriteStr(FILE *f, const char *str)
 	return true;
 }
 
-bool FE_DirectoryExists(const char *path)
+bool FE_File_DirectoryExists(const char *path)
 {
 	if (access(path, F_OK) != 0)
 		return false;

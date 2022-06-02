@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "../core/lib/string.h"
 #include "include/utils.h"
 #include "../ext/hashtbl.h"
 #include "../include/init.h"
@@ -60,7 +61,7 @@ void FE_Key_Assign(char *input, uint8_t keycode)
 {
     entry *e = xmalloc(sizeof(entry));
     e->keycode = keycode;
-    htset(&keymap, strdup(input), e);
+    htset(&keymap, mstrdup(input), e);
 }
 
 void FE_Key_Clean()
@@ -77,22 +78,15 @@ void FE_Key_Read()
         error("Could not open keymap file");
 
     // Read line by line
-    char *line = NULL;
-    size_t len = 0;
-    int read;
-    while ((read = getline(&line, &len, f)) != -1) {
-        // Remove newline
-        line[read - 1] = '\0';
-
+    char line[128];
+    while (fgets(line, 128, f)) {
         // Split line into keycode and key
         char *key = strtok(line, "=");
         char *keycode = strtok(NULL, "=");
-        
         // Add to keymap
         FE_Key_Assign(key, atoi(keycode));
     }
 
-    free(line);
     fclose(f);
     info("Loaded keymap");
 }

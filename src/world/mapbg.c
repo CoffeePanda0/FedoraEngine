@@ -54,7 +54,7 @@ void FE_Parallax_Load(const char *name)
     // Check that parallax directory exists
     char *full_path = xmalloc(mstrlen(name) + mstrlen(PARALLAX_DIRECTORY) + 2);
     snprintf(full_path, mstrlen(name) + mstrlen(PARALLAX_DIRECTORY) + 2, "%s%s/", PARALLAX_DIRECTORY, name);
-    if (!FE_DirectoryExists(full_path)) {
+    if (!FE_File_DirectoryExists(full_path)) {
         warn("Parallax directory %s does not exist", name);
         free(full_path);
         return;

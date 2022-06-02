@@ -31,14 +31,14 @@ int FE_LoadMap(const char *name)
     free(map_path);
 
     // Read map name
-    if (!(map.name = ReadStr(f))) goto err;
+    if (!(map.name = FE_File_ReadStr(f))) goto err;
     
     // read gravity
     if (fread(&map.gravity, sizeof(float), 1, f) != 1) goto err;
     
     // load texture atlas
     char *atlas_path = 0;
-    if (!(atlas_path = ReadStr(f))) goto err;
+    if (!(atlas_path = FE_File_ReadStr(f))) goto err;
     map.atlas = FE_LoadTextureAtlas(atlas_path);
     free(atlas_path);
 
@@ -48,7 +48,7 @@ int FE_LoadMap(const char *name)
 
     // load background image
     char *bg_path = 0;
-    if (!(bg_path = ReadStr(f))) goto err;
+    if (!(bg_path = FE_File_ReadStr(f))) goto err;
 
     map.bg = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, bg_path);
     free(bg_path);
