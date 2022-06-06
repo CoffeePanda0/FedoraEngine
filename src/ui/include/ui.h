@@ -11,7 +11,8 @@ typedef enum {
     FE_UI_CONTAINER,
     FE_UI_OBJECT,
     FE_UI_CHECKBOX,
-    FE_UI_TEXTBOX
+    FE_UI_TEXTBOX,
+    FE_UI_GRID
 } FE_UI_Type;
 
 typedef struct {
@@ -55,10 +56,6 @@ void FE_UI_ClearElements(FE_UIList *Elements);
 
 /* Initialises the UI system */
 void FE_UI_InitUI();
-
-
-/* Updates the UI elements */
-void FE_UI_Update();
 
 
 /* Updates the DebugUI */

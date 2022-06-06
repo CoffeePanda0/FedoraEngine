@@ -57,4 +57,13 @@ int FE_RenderDrawLine(FE_Camera *camera, int x1, int y1, int x2, int y2, SDL_Col
 */
 SDL_Rect FE_ApplyZoom(SDL_Rect *r, FE_Camera *camera, bool locked);
 
+
+/** Renders a border around a rect
+ * \param thickness The thickness of the border
+ * \param rect The rect to create a border around
+ * \param color The color of the border
+*/
+void FE_RenderBorder(int thickness, SDL_Rect r, SDL_Color color);
+
+
 #endif

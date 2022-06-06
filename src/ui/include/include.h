@@ -2,6 +2,7 @@
 #define _H_INCLUDE_UI
 
 #include "ui.h"
+#include "grid.h"
 #include "container.h"
 #include "uiobject.h"
 #include "checkbox.h"

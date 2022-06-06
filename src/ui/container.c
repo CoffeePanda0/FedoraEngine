@@ -8,8 +8,6 @@ static const int BorderWidth = 12;
 static const int BorderHeight = 30;
 static const int Padding = 10;
 
-bool FE_UI_ControlContainerLocked = false;
-
 Vector2D FE_GetCentre(SDL_Rect r, SDL_Rect container)
 {
     return vec2(container.x + (container.w - r.w) / 2, container.y + (container.h - r.h) / 2);
@@ -60,6 +58,8 @@ static inline int calc_location(FE_UI_LOCATION location, SDL_Rect *r, SDL_Rect *
         return container->x + Padding;
     else if (location == FE_LOCATION_RIGHT)
         return container->x + container->w - r->w - Padding;
+    else if (location == FE_LOCATION_NONE)
+        return r->x;
     return 0;
 }
 
@@ -99,6 +99,11 @@ void FE_UI_AddChild(FE_UI_Container *container, FE_UI_Type type, void *element, 
             child_r = &((FE_UI_Textbox *)element)->r;
             newx = calc_location(location, child_r, &container->inner_rect);
             FE_UI_MoveTextbox(element, newx, newy);
+            break;
+        case FE_UI_GRID:
+            child_r = &((FE_UI_Grid *)element)->r;
+            newx = calc_location(location, child_r, &container->inner_rect);
+            FE_UI_MoveGrid(element, newx, newy);
             break;
         default:
             warn("Unknown UI element type (UI_AddChild)");
@@ -144,6 +149,9 @@ void FE_UI_DestroyContainer(FE_UI_Container *c, bool free_children, bool global)
                     break;
                 case FE_UI_TEXTBOX:
                     FE_UI_DestroyTextbox((FE_UI_Textbox *)c->children[i].element, false);
+                    break;
+                case FE_UI_GRID:
+                    FE_UI_DestroyGrid((FE_UI_Grid *)c->children[i].element, false);
                     break;
                 default:
                     warn("Unknown UI element type (UI_DestroyContainer)");
@@ -206,6 +214,9 @@ void FE_UI_RenderContainer(FE_UI_Container *c)
                 break;
             case FE_UI_TEXTBOX:
                 FE_UI_RenderTextbox((FE_UI_Textbox *)c->children[i].element);
+                break;
+            case FE_UI_GRID:
+                FE_UI_RenderGrid((FE_UI_Grid *)c->children[i].element);
                 break;
             default:
                 warn("Unknown UI element type (UI_RenderContainer)");

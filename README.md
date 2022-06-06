@@ -10,7 +10,8 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 - Resource Manager  
 - Fully featured lighting system  
 - Parallax support  
-- Custom UI (Labels, Textboxes, Buttons, Checkboxes, MessageBoxes, HUD objects)  
+- Keybinds and customisable inputs in game  
+- Custom UI Library (Labels, Textboxes, Buttons, Checkboxes, MessageBoxes, HUD, Grids)  
 - Game Objects and sprites  
 - Custom physics engine    
 - Timers  
@@ -19,7 +20,6 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 - Custom Dialogue system  
 - Viewing logs in game console  
 - Custom map system (including full map editor)  
-- Circles(tm)  
 - Animation system  
 - Particle system  
 

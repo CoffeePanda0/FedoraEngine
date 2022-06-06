@@ -128,3 +128,29 @@ int FE_RenderRect(SDL_Rect *rect, SDL_Color color) // Renders a rect (filled) to
     SDL_SetRenderDrawBlendMode(PresentGame->Renderer, b);
     return 1;
 }
+
+void FE_RenderBorder(int thickness, SDL_Rect r, SDL_Color color)
+{
+    Uint8 prev_r, prev_g, prev_b, prev_a;
+
+    SDL_GetRenderDrawColor(PresentGame->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);
+    SDL_SetRenderDrawColor(PresentGame->Renderer, color.r, color.g, color.b, 255);
+
+    /* Border top */
+    SDL_Rect top = (SDL_Rect){r.x, r.y, r.w, thickness};
+    SDL_RenderFillRect(PresentGame->Renderer, &top);
+
+    /* Border bottom */
+    SDL_Rect bottom = (SDL_Rect){r.x, r.y + r.h - thickness, r.w, thickness};
+    SDL_RenderFillRect(PresentGame->Renderer, &bottom);
+
+    /* Border left */
+    SDL_Rect left = (SDL_Rect){r.x, r.y, thickness, r.h};
+    SDL_RenderFillRect(PresentGame->Renderer, &left);
+
+    /* Border right */
+    SDL_Rect right = (SDL_Rect){r.x + r.w - thickness, r.y, thickness, r.h};
+    SDL_RenderFillRect(PresentGame->Renderer, &right);
+
+    SDL_SetRenderDrawColor(PresentGame->Renderer, prev_r, prev_g, prev_b, prev_a);
+}

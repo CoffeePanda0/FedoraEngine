@@ -106,7 +106,7 @@ static void CheckHover(FE_UI_Button *b)
     }
 }
 
-void FE_UI_CheckHover() // checks all buttons to see which (if any) are being hovered over
+void FE_UI_CheckButtonHover() // checks all buttons to see which (if any) are being hovered over
 {
     // Check all present game buttons first
     if (!FE_UI_ControlContainerLocked) {

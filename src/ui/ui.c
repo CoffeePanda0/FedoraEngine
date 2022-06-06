@@ -6,6 +6,8 @@
 #include "../core/lib/string.h"
 #include "../include/init.h"
 
+bool FE_UI_ControlContainerLocked = false;
+
 void FE_UI_InitUI()
 {
     PresentGame->UIConfig.ActiveElements = xmalloc(sizeof(FE_UIList));
@@ -16,6 +18,7 @@ void FE_UI_InitUI()
     PresentGame->UIConfig.ActiveElements->Labels = 0;
     PresentGame->UIConfig.ActiveElements->Checkboxes = 0;
     PresentGame->UIConfig.ActiveElements->Textboxes = 0;
+    PresentGame->UIConfig.ActiveElements->Grids = 0;
     PresentGame->UIConfig.UIFont = PresentGame->font;
 }
 
@@ -33,6 +36,8 @@ void FE_UI_AddElement(FE_UI_Type type, void *element)
         FE_List_Add(&PresentGame->UIConfig.ActiveElements->Checkboxes, element);
     else if (type == FE_UI_TEXTBOX)
         FE_List_Add(&PresentGame->UIConfig.ActiveElements->Textboxes, element);
+    else if (type == FE_UI_GRID)
+        FE_List_Add(&PresentGame->UIConfig.ActiveElements->Grids, element);
     else {
         warn("FE_UI_AddElement: Unknown UI element type");
         return;
@@ -60,6 +65,8 @@ void FE_UI_ClearElements(FE_UIList *Elements)
         FE_UI_DestroyCheckbox((FE_UI_Checkbox *)l->data, false);
     for (FE_List *l = Elements->Textboxes; l; l = l->next)
         FE_UI_DestroyTextbox((FE_UI_Textbox *)l->data, false);
+    for (FE_List *l = Elements->Grids; l; l = l->next)
+        FE_UI_DestroyGrid((FE_UI_Grid *)l->data, false);
 
     FE_List_Destroy(&Elements->Labels);
     FE_List_Destroy(&Elements->Buttons);
@@ -67,6 +74,7 @@ void FE_UI_ClearElements(FE_UIList *Elements)
     FE_List_Destroy(&Elements->Objects);
     FE_List_Destroy(&Elements->Checkboxes);
     FE_List_Destroy(&Elements->Textboxes);
+    FE_List_Destroy(&Elements->Grids);
     
     Elements->Labels = 0;
     Elements->Buttons = 0;
@@ -74,6 +82,7 @@ void FE_UI_ClearElements(FE_UIList *Elements)
     Elements->Objects = 0;
     Elements->Checkboxes = 0;
     Elements->Textboxes = 0;
+    Elements->Grids = 0;
     
     Elements->Count = 0;
 
@@ -94,6 +103,8 @@ void FE_UI_Render()
             FE_UI_RenderButton((FE_UI_Button *)l->data);
         for (FE_List *l = PresentGame->UIConfig.ActiveElements->Checkboxes; l; l = l->next)
             FE_UI_RenderCheckbox((FE_UI_Checkbox *)l->data);
+        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Grids; l; l = l->next)
+            FE_UI_RenderGrid((FE_UI_Grid *)l->data);
         for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next)
             FE_UI_RenderContainer((FE_UI_Container *)l->data);
     }
@@ -115,6 +126,8 @@ bool FE_UI_HandleClick(SDL_Event *event)
             if (FE_UI_CheckboxClick(x,y))
                 return true;
             if (FE_UI_TextboxClick(x,y))
+                return true;
+            if (FE_UI_GridClick())
                 return true;
         } else {
             if (FE_Messagebox_Click(x,y))
@@ -164,7 +177,8 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
         break;
 
         case SDL_MOUSEMOTION:
-            FE_UI_CheckHover();
+            FE_UI_CheckButtonHover();
+            FE_UI_CheckGridHover();
         break;
         
         case SDL_MOUSEBUTTONDOWN:
@@ -194,9 +208,4 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
         break;
     }
     return false;
-}
-
-void FE_UI_Update()
-{
-    FE_UI_CheckHover();
 }

@@ -2,7 +2,7 @@ src := $(wildcard *.c */*.c */*/*.c */*/*/*.c)
 obj = $(src:.c=.o)
 out = FedoraEngine
 
-include win.mk
+include linux.mk
 
 all: $(out)
 

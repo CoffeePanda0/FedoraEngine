@@ -26,6 +26,7 @@ typedef struct FE_UIList {
     FE_List *Checkboxes;
     FE_List *Objects;
     FE_List *Textboxes;
+    FE_List *Grids;
     size_t Count;
 } FE_UIList;
 

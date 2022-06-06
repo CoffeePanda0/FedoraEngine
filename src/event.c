@@ -42,12 +42,12 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                 
 
                 if (keyboard_state[SDL_SCANCODE_M]) {
-                    if (PresentGame->MapConfig.AmbientLight < 255) {
+                    if (PresentGame->MapConfig.AmbientLight <= 252) {
                         PresentGame->MapConfig.AmbientLight += 3;
                     }
                 }
                 if (keyboard_state[SDL_SCANCODE_N]) {
-                    if (PresentGame->MapConfig.AmbientLight > 0) {
+                    if (PresentGame->MapConfig.AmbientLight >= 3) {
                         PresentGame->MapConfig.AmbientLight -= 3;
                     }
                 }

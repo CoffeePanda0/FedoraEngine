@@ -55,10 +55,8 @@ void FE_UI_RenderButton(FE_UI_Button *b);
 bool FE_UI_ButtonClick(int x, int y);
 
 
-/** Checks if the mouse is hovering over a button on screen
- * \return true if the mouse is hovering over the button, false otherwise
-*/
-void FE_UI_CheckHover();
+/* Checks if the mouse is hovering over a button on screen */
+void FE_UI_CheckButtonHover();
 
 
 /** Moves a button to a new position
