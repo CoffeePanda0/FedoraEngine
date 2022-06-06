@@ -55,18 +55,19 @@ typedef struct FE_EndFlag {
 } FE_EndFlag;
 
 
-/** Loads map from file into memory
+/** Loads map from file
  * 
  *\param name Name of map to load.
- *\returns 1 on success, -1 on failure.
+ *\returns the loaded map
  */
-int FE_LoadMap(const char *name);
+FE_LoadedMap *FE_LoadMap(const char *name);
 
 
-/** Renders the map tiles, background and end flag
+/** Renders the map tiles
+ *\param m The map to render 
 *\param camera The camera to render the map from
 */
-void FE_RenderMap(FE_Camera *camera);
+void FE_RenderMap(FE_LoadedMap *m, FE_Camera *camera);
 
 
 /** Renders the currently loaded map background
@@ -75,9 +76,11 @@ void FE_RenderMap(FE_Camera *camera);
 void FE_RenderMapBackground(FE_Camera *camera);
 
 
-/* Closes and frees resources from currently used map */
-void FE_CloseMap();
+/* Closes and frees resources from a map */
+void FE_CloseMap(FE_LoadedMap *map);
 
+/* Destroys the currently loaded map */
+void FE_CloseLoadedMap();
 
 /** Checks if a rect is colliding above the map tiles
  *\param r The rectangle to check for collision
@@ -105,6 +108,18 @@ Vector2D FE_CheckMapCollisionRight(SDL_Rect *r);
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
 */
 Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r);
+
+
+/** Renders the currently loaded map
+ *\param camera The camera to render from
+*/
+void FE_RenderLoadedMap(FE_Camera *camera);
+
+
+/** Sets the world map
+ *\param m The loaded map
+*/
+void FE_Game_SetMap(FE_LoadedMap *m);
 
 
 #endif

@@ -18,14 +18,13 @@ static size_t selectedbackground; // the index of the currently selected backgro
 static bool mode = true; // true = map, false = bg
 static uint16_t rotation = 0; // persistent rotation when placing new tiles
 
-static FE_LoadedMap newmap; // Current map for rendering from
+static FE_LoadedMap *newmap; // Current map for rendering from
 
 /* UI objects for layout */
 static FE_Camera *camera;
 static FE_UI_Label *coord;
 
 static FE_Texture *spawntexture;
-static FE_Texture *endtexture;
 
 static bool saving = false;
 
@@ -34,7 +33,7 @@ static bool drag_delete = false;
 
 static int map_max_width = 4096;
 static int map_max_height = 1024;
-// TODO: loading previous maps, tile bg, change tilesize/gravity, nice UI, click anywhere in tile to delete, allow multiple atlas
+// TODO: tile bg, change tilesize/gravity, nice UI, allow multiple atlas
 
 void FE_RenderEditor()
 {
@@ -46,36 +45,25 @@ void FE_RenderEditor()
 
 	/* render background, applying zoom */
 	SDL_Rect bgrect = (SDL_Rect){0,0,0,0};
-	FE_QueryTexture(newmap.bg, &bgrect.w ,&bgrect.h);
+	FE_QueryTexture(newmap->bg, &bgrect.w ,&bgrect.h);
 	bgrect.w *= camera->zoom;
 	bgrect.h *= camera->zoom;
 	bgrect.x -= camera->x * camera->zoom;
 	bgrect.y -= camera->y * camera->zoom;
-	SDL_RenderCopy(PresentGame->Renderer, newmap.bg->Texture, NULL, &bgrect);
+	SDL_RenderCopy(PresentGame->Renderer, newmap->bg->Texture, NULL, &bgrect);
 
-	// render all tiles
-	for (size_t i = 0; i < newmap.tilecount; i++) {
-		SDL_Rect r = (SDL_Rect){newmap.tiles[i].position.x, newmap.tiles[i].position.y, newmap.tilesize, newmap.tilesize};
-        SDL_Rect src = {newmap.tiles[i].texture_x, newmap.tiles[i].texture_y, newmap.atlas->texturesize, newmap.atlas->texturesize};
-		FE_RenderCopyEx(camera, false, newmap.atlas->atlas, &src, &r, newmap.tiles[i].rotation, SDL_FLIP_NONE);
-	}
+	FE_RenderMap(newmap, camera);
 
 	// render spawn
-	if (!FE_VecNULL(newmap.PlayerSpawn)) {
-		SDL_Rect spawnrect = (SDL_Rect){newmap.PlayerSpawn.x, newmap.PlayerSpawn.y, newmap.tilesize, newmap.tilesize};
+	if (!FE_VecNULL(newmap->PlayerSpawn)) {
+		SDL_Rect spawnrect = (SDL_Rect){newmap->PlayerSpawn.x, newmap->PlayerSpawn.y, newmap->tilesize, newmap->tilesize};
 		FE_RenderCopy(camera, false, spawntexture, NULL, &spawnrect);
 	}
 
-	// render end flag
-	if (!(newmap.EndFlag.x == -1 && newmap.EndFlag.y == -1)) {
-		SDL_Rect endflagrect = (SDL_Rect){newmap.EndFlag.x, newmap.EndFlag.y, newmap.tilesize, newmap.tilesize};
-		FE_RenderCopy(camera, false, endtexture, NULL, &endflagrect);
-	}
-
 	// render grid on map with camera
-	for (int i = 0; i < map_max_width + PresentGame->WindowWidth; i += newmap.tilesize)
+	for (int i = 0; i < map_max_width + PresentGame->WindowWidth; i += newmap->tilesize)
 		FE_RenderDrawLine(camera, i, 0, i, map_max_height + PresentGame->WindowWidth, COLOR_WHITE);
-	for (int i = 0; i < map_max_height + PresentGame->WindowHeight; i += newmap.tilesize)
+	for (int i = 0; i < map_max_height + PresentGame->WindowHeight; i += newmap->tilesize)
 		FE_RenderDrawLine(camera, 0, i, map_max_width + PresentGame->WindowWidth, i, COLOR_WHITE);
 
 
@@ -83,12 +71,11 @@ void FE_RenderEditor()
 	FE_RenderRect(&(SDL_Rect){0, 0, PresentGame->WindowWidth, 42}, COLOR_WHITE);
 	FE_UI_Render();
 
-
 	// render thumbnail previewing currently selected texture
 	SDL_Rect thumbnail = {475, 6, 32, 32};
 	if (mode) {
-		SDL_Rect src = {selectedtexture_position.x, selectedtexture_position.y, newmap.atlas->texturesize, newmap.atlas->texturesize};
-		SDL_RenderCopy(PresentGame->Renderer, newmap.atlas->atlas->Texture, &src, &thumbnail);
+		SDL_Rect src = {selectedtexture_position.x, selectedtexture_position.y, newmap->atlas->texturesize, newmap->atlas->texturesize};
+		SDL_RenderCopy(PresentGame->Renderer, newmap->atlas->atlas->Texture, &src, &thumbnail);
 	} else
 		SDL_RenderCopy(PresentGame->Renderer, editor_backgrounds[selectedtexture]->Texture, NULL, &thumbnail);
 
@@ -98,8 +85,8 @@ void FE_RenderEditor()
 
 static void GridSnap(int *x, int *y)
 {
-	*x = (*x / newmap.tilesize) * newmap.tilesize;
-	*y = (*y / newmap.tilesize) * newmap.tilesize;
+	*x = (*x / newmap->tilesize) * newmap->tilesize;
+	*y = (*y / newmap->tilesize) * newmap->tilesize;
 }
 
 static void UpdateCoordinates() // updates the label position on screen
@@ -112,15 +99,15 @@ static void UpdateCoordinates() // updates the label position on screen
 static void DeleteTile(int x, int y)
 {
 	// verify tile exists
-	if (newmap.tilecount == 0)
+	if (newmap->tilecount == 0)
 		return;
 
 	GridSnap(&x, &y);
 
 	// find index of tile
 	int index = -1;
-	for (size_t i = 0; i < newmap.tilecount; i++) {
-		if (newmap.tiles[i].position.x == x && newmap.tiles[i].position.y == y) {
+	for (size_t i = 0; i < newmap->tilecount; i++) {
+		if (newmap->tiles[i].position.x == x && newmap->tiles[i].position.y == y) {
 			index = i;
 			break;
 		}
@@ -130,17 +117,17 @@ static void DeleteTile(int x, int y)
 		return;
 
 	// delete tile from newmap
-	if (newmap.tilecount > 1) {
-		FE_Map_Tile *temp = newmap.tiles;
+	if (newmap->tilecount > 1) {
+		FE_Map_Tile *temp = newmap->tiles;
 		
-		newmap.tiles = xmalloc(sizeof(FE_Map_Tile) * (--newmap.tilecount));
-		mmemcpy(newmap.tiles, temp, sizeof(FE_Map_Tile) * index);
-		mmemcpy(newmap.tiles + index, temp + index + 1, sizeof(FE_Map_Tile) * (newmap.tilecount - index));
+		newmap->tiles = xmalloc(sizeof(FE_Map_Tile) * (--newmap->tilecount));
+		mmemcpy(newmap->tiles, temp, sizeof(FE_Map_Tile) * index);
+		mmemcpy(newmap->tiles + index, temp + index + 1, sizeof(FE_Map_Tile) * (newmap->tilecount - index));
 		free(temp);
 	} else {
-		free(newmap.tiles);
-		newmap.tiles = 0;
-		newmap.tilecount = 0;
+		free(newmap->tiles);
+		newmap->tiles = 0;
+		newmap->tilecount = 0;
 	}
 
 }
@@ -161,18 +148,18 @@ static void AddTile(int x, int y)
 	last_texture = selectedtexture;
 
 	// check if tile in that location already exists, and it it does then deletes it
-	for (size_t i = 0; i < newmap.tilecount; i++) {
-		if (newmap.tiles[i].position.x == x && newmap.tiles[i].position.y == y) {
+	for (size_t i = 0; i < newmap->tilecount; i++) {
+		if (newmap->tiles[i].position.x == x && newmap->tiles[i].position.y == y) {
 			DeleteTile(x,y);
 		}
 	}
 	
 	// Add tile to newmap
-	if (newmap.tilecount == 0)
-		newmap.tiles = xmalloc(sizeof(FE_Map_Tile));
+	if (newmap->tilecount == 0)
+		newmap->tiles = xmalloc(sizeof(FE_Map_Tile));
 	else
-		newmap.tiles = xrealloc(newmap.tiles, sizeof(FE_Map_Tile) * (newmap.tilecount + 1));
-	newmap.tiles[newmap.tilecount++] = (FE_Map_Tile){selectedtexture_position.x, selectedtexture_position.y, rotation, vec2(x, y)};
+		newmap->tiles = xrealloc(newmap->tiles, sizeof(FE_Map_Tile) * (newmap->tilecount + 1));
+	newmap->tiles[newmap->tilecount++] = (FE_Map_Tile){selectedtexture_position.x, selectedtexture_position.y, rotation, vec2(x, y)};
 
 }
 
@@ -181,7 +168,7 @@ static void SetSpawn(int x, int y)
 	// snap x and y to a grid using tile size
 	GridSnap(&x, &y);
 
-	newmap.PlayerSpawn = vec2(x, y);
+	newmap->PlayerSpawn = vec2(x, y);
 	info("Editor: Spawn set to (%d, %d)", x, y);
 }
 
@@ -189,7 +176,7 @@ static void SetEnd(int x, int y)
 {
 	GridSnap(&x, &y);
 
-	newmap.EndFlag = vec2(x, y);
+	newmap->EndFlag = vec2(x, y);
 	info("Editor: Spawn end flag to (%d, %d)", x, y);
 }
 
@@ -199,17 +186,17 @@ static void RotateTile(int x, int y)
 	GridSnap(&x, &y);
 
 	// check if tile already exists
-	for (size_t i = 0; i < newmap.tilecount; i++) {
-		if (newmap.tiles[i].position.x == x && newmap.tiles[i].position.y == y) {
-			if (newmap.tiles[i].rotation == 0)
+	for (size_t i = 0; i < newmap->tilecount; i++) {
+		if (newmap->tiles[i].position.x == x && newmap->tiles[i].position.y == y) {
+			if (newmap->tiles[i].rotation == 0)
 				rotation = 90;
-			else if (newmap.tiles[i].rotation == 90)
+			else if (newmap->tiles[i].rotation == 90)
 				rotation = 180;
-			else if (newmap.tiles[i].rotation == 180)
+			else if (newmap->tiles[i].rotation == 180)
 				rotation = 270;
-			else if (newmap.tiles[i].rotation == 270)
+			else if (newmap->tiles[i].rotation == 270)
 				rotation = 0;
-			newmap.tiles[i].rotation = rotation;
+			newmap->tiles[i].rotation = rotation;
 			return;
 		}
 	}
@@ -220,15 +207,15 @@ static void Save()
 	// Convert the map to the save format
 	FE_Map save = {
 		"",
-		newmap.gravity,
+		newmap->gravity,
 		ATLAS,
-		newmap.atlas->texturesize,
+		newmap->atlas->texturesize,
 		editor_backgrounds[selectedbackground]->path,
-		newmap.tilecount,
-		newmap.tilesize,
-		newmap.tiles,
-		newmap.PlayerSpawn,
-		newmap.EndFlag,
+		newmap->tilecount,
+		newmap->tilesize,
+		newmap->tiles,
+		newmap->PlayerSpawn,
+		newmap->EndFlag,
 	};
 	saving = Editor_CallSave(&save);
 	saving = false;
@@ -239,7 +226,7 @@ static void ChangeSelection(size_t sel)
 	rotation = 0;
 	if (mode) { // change selected tile
 		selectedtexture = sel;
-		selectedtexture_position = FE_GetTexturePosition(newmap.atlas, selectedtexture);
+		selectedtexture_position = FE_GetTexturePosition(newmap->atlas, selectedtexture);
 	} else { // change selected bg
 		if (bgcount -1 < sel)
 			return;
@@ -345,7 +332,7 @@ void FE_EventEditorHandler()
 			if (mode)
 				AddTile(mouse_x + camera->x, mouse_y + camera->y);
 			else
-				newmap.bg = editor_backgrounds[selectedbackground];
+				newmap->bg = editor_backgrounds[selectedbackground];
 		} else if (drag_delete) {
 			int mouse_x, mouse_y;
 			SDL_GetMouseState(&mouse_x, &mouse_y);
@@ -374,24 +361,9 @@ void FE_CleanEditor()
 		FE_DestroyResource(spawntexture->path);
 	spawntexture = 0;
 
-	if (endtexture)
-		FE_DestroyResource(endtexture->path);
-	endtexture = 0;
+	if (newmap && PresentGame->MapConfig.Loaded)
+		FE_CloseMap(newmap);
 
-	// free texturepaths
-	if (newmap.atlas) {
-		FE_DestroyResource(newmap.atlas->atlas->path);
-		free(newmap.atlas);
-	}
-	newmap.atlas = 0;
-
-	if (newmap.tiles) {
-		free(newmap.tiles);
-		newmap.tilecount = 0;
-	}
-	newmap.tiles = 0;
-	newmap.PlayerSpawn = VEC_NULL;
-	newmap.EndFlag = VEC_NULL;
 	initialised = false;
 }
 
@@ -417,36 +389,42 @@ static void CreateUI()
 	FE_UI_AddElement(FE_UI_LABEL, coord);
 	
 	spawntexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/spawn.png");
-	endtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
 }
 
-void FE_StartEditor() // cleans up from other game modes
+void FE_StartEditor(char *path)
 {
 	FE_CleanAll();
 
     PresentGame->GameState = GAME_STATE_EDITOR;
+	
+	CreateUI();
+	camera = FE_CreateCamera();
+	camera->x = 0; camera->y = 0;
+	camera->x_bound = map_max_width; camera->y_bound = map_max_height;
 
 	if ((bgcount = Editor_LoadBackgrounds()) == 0) {
 		warn("Unable to start map editor - No backgrounds found");
 		Exit();
 		return;
 	}
-	
-	CreateUI();
-
-	newmap.bg = editor_backgrounds[0];
 	mode = true;
 
-	camera = FE_CreateCamera();
-	camera->x = 0; camera->y = 0;
-	camera->x_bound = map_max_width; camera->y_bound = map_max_height;
+	if (!path) {
+		newmap = xmalloc(sizeof(FE_LoadedMap));
+		newmap->bg = editor_backgrounds[0];
+		newmap->PlayerSpawn = VEC_NULL;
+		newmap->EndFlag = VEC_NULL;
+		newmap->tilesize = 64;
+		newmap->gravity = 70;
+		newmap->atlas = FE_LoadTextureAtlas(ATLAS);
+		newmap->tilecount = 0;
+		newmap->tiles = 0;
+	} else {
+		newmap = FE_LoadMap(path);
+		if (!newmap)
+			return;
+	}
 
-	info("Editor: Started editor");
-
-	newmap.PlayerSpawn = VEC_NULL;
-	newmap.EndFlag = VEC_NULL;
-	newmap.tilesize = 64;
-	newmap.gravity = 70;
-	newmap.atlas = FE_LoadTextureAtlas(ATLAS);
 	initialised = true;
+	info("Editor: Started editor");
 }

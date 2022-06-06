@@ -122,7 +122,7 @@ void FE_Init(FE_InitConfig *InitConfig)
 
 void FE_CleanAll() // Cleans all resources possible without exiting
 {
-	FE_CloseMap();
+	FE_CloseLoadedMap();
 	FE_Trigger_Clean();
 	FE_CleanLighting();
 	FE_Parallax_Clean();

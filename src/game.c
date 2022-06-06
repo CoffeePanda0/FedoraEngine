@@ -14,14 +14,16 @@ void FE_StartGame(const char *mapname)
 	FE_CleanAll();
 
 	// Map setup
-	if (FE_LoadMap(map) == -1) {
+	FE_LoadedMap *m = 0;
+	if (!(m = FE_LoadMap(map))) {
 		warn("Failed to start game");
 		free(map);
 		FE_Menu_LoadMenu("Main");
 		return;
+	} else {
+		FE_Game_SetMap(m);
 	}
 	free(map);
-
     FE_Parallax_Load("forest");
 
 	// camera setup
@@ -64,7 +66,7 @@ void FE_RenderGame()
 	SDL_RenderClear(PresentGame->Renderer);
 	FE_RenderMapBackground(GameCamera);
 	FE_RenderParticles(GameCamera);
-	FE_RenderMap(GameCamera);
+	FE_RenderLoadedMap(GameCamera);
 	FE_Trigger_Render(GameCamera);
 	FE_RenderGameObjects(GameCamera);
 	FE_Trigger_Render(GameCamera);

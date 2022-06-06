@@ -17,7 +17,7 @@ static void LoadArgs(int argc, char *argv[])
 		if (mstrcmp(argv[1], "--editor") == 0 || mstrcmp(argv[1], "-e") == 0) {
 			/* If command --editor or -e, skip the menu and load directly into editor */
 			PresentGame->GameState = GAME_STATE_EDITOR;
-			FE_StartEditor();
+			FE_StartEditor(NULL);
 		} else if (mstrcmp(argv[1], "--map") == 0 || mstrcmp(argv[1], "-m") == 0) {
 			/* If command --map or -m, skip the menu and load directly into given map */
 			if (argc > 2)

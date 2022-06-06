@@ -4,6 +4,31 @@ static FE_Texture *MenuTexture;
 static FE_Camera *Camera;
 static FE_ParticleSystem *Particles;
 
+static void LoadEditor(char *m)
+{
+    if (m) {
+        FE_StartEditor(FE_Messagebox_GetText());
+    } else {
+        FE_Messagebox_Show("Load Editor", "Enter Map name", MESSAGEBOX_TEXTBOX);
+        FE_Messagebox_AddCallback(&LoadEditor, "editor");
+    }
+}
+
+static void FE_MenuPage_Editor()
+{
+    FE_UI_Container *container = FE_UI_CreateContainer(midx(400), midy(500), 400, 500, "Map Editor", false);
+    FE_UI_AddElement(FE_UI_CONTAINER, container);
+
+    FE_UI_Button *new_btn = FE_UI_CreateButton("New Map", 0, 0, BUTTON_LARGE, &FE_StartEditor, NULL);
+    FE_UI_Button *load_btn = FE_UI_CreateButton("Load Map", 0, 0, BUTTON_LARGE, &LoadEditor, 0);
+    FE_UI_Button *back_btn = FE_UI_CreateButton("Back", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Main");
+
+    FE_UI_AddChild(container, FE_UI_BUTTON, new_btn, FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_BUTTON, load_btn, FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_BUTTON, back_btn, FE_LOCATION_CENTRE);
+
+}
+
 static void LoadMap_()
 {
     FE_StartGame(FE_Messagebox_GetText());
@@ -95,7 +120,7 @@ void FE_MenuPage_Main()
     FE_UI_AddElement(FE_UI_CONTAINER, container);
 
     FE_UI_Button *start_btn = FE_UI_CreateButton("Load Map", 0, 0, BUTTON_LARGE, &LoadMap, NULL);
-    FE_UI_Button *editor_btn = FE_UI_CreateButton("Map Editor", 0, 0, BUTTON_LARGE, &FE_StartEditor, NULL);
+    FE_UI_Button *editor_btn = FE_UI_CreateButton("Map Editor", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Editor");
     FE_UI_Button *key_btn = FE_UI_CreateButton("Keybinds", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Keyeditor");
     FE_UI_Button *quit_btn = FE_UI_CreateButton("Quit", 0, 0, BUTTON_LARGE, &FE_Clean, NULL);
 
@@ -146,6 +171,8 @@ void FE_Menu_LoadMenu(const char *page)
         FE_MenuPage_Main();
     else if ((mstrcmp(page, "Keyeditor") == 0))
         FE_MenuPage_KeyEditor();
+    else if ((mstrcmp(page, "Editor") == 0))
+        FE_MenuPage_Editor();
 
 }
 

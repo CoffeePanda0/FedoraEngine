@@ -11,8 +11,10 @@
 /* Renders all map editor elements */
 void FE_RenderEditor();
 
-/* Initialises and displays the map editor */
-void FE_StartEditor();
+/** Initialises and displays the map editor
+ *\param path The path of the map to edit, or NULL to create a new map
+*/
+void FE_StartEditor(char *path);
 
 /* Handles all events for the map editor */
 void FE_EventEditorHandler();
