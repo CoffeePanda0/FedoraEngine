@@ -62,7 +62,7 @@ int FE_DestroyTexture(FE_Texture *texture)
 
 int FE_QueryTexture(FE_Texture *t, int *w, int *h)
 {
-    if (!t) return -1;
+    if (!t || !t->Texture || !t->path) return -1;
 
     return SDL_QueryTexture(t->Texture, NULL, NULL, w, h);
 }
@@ -118,11 +118,39 @@ FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)
 	FE_TextureAtlas *atlas = xmalloc(sizeof(FE_TextureAtlas));
 
 	char *path = mstradd(ATLAS_PATH, name);
-	atlas->atlas = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
+	atlas->atlas = FE_TextureFromFile(path);
+    atlas->path = mstrdup(name);
 	free(path);
 
-	FE_QueryTexture(atlas->atlas, &atlas->width, &atlas->height);
+	SDL_QueryTexture(atlas->atlas, NULL, NULL, &atlas->width, &atlas->height);
 	atlas->texturesize = 64;
-
 	return atlas;
+}
+
+void FE_RenderAtlasTexture(FE_TextureAtlas *atlas, size_t index, SDL_Rect *dst)
+{
+    if (!atlas) {
+        warn("NULL atlas being passed (FE_RenderAtlasTexture)");
+        return;
+    }
+
+    if (atlas->height < atlas->texturesize || atlas->width < atlas->texturesize || atlas->texturesize == 0)
+        return;
+    
+    Vector2D pos = FE_GetTexturePosition(atlas, index);
+    SDL_RenderCopy(PresentGame->Renderer, atlas->atlas, &(SDL_Rect){pos.x, pos.y, atlas->texturesize, atlas->texturesize}, dst);
+}
+
+void FE_DestroyTextureAtlas(FE_TextureAtlas *atlas)
+{
+    if (!atlas) {
+        warn("NULL atlas being passed (FE_DestroyTextureAtlas)");
+        return;
+    }
+
+    if (atlas->path)
+        free(atlas->path);
+    if (atlas->atlas)
+        SDL_DestroyTexture(atlas->atlas);
+    free(atlas);
 }

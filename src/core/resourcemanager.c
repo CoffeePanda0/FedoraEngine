@@ -25,6 +25,12 @@ static void DestroyResource(FE_Resource *res)
         FE_DestroyTexture(t);
         break;
     }
+    case FE_RESOURCE_TYPE_ATLAS:
+    {
+        FE_TextureAtlas *atlas = (FE_TextureAtlas *)res->data;
+        FE_DestroyTextureAtlas(atlas);
+        break;
+    }
     default:
     {
         warn("Unknown resource type");
@@ -72,6 +78,11 @@ static void *LoadResource(FE_RESOURCE_TYPE type, char *filepath)
         FE_Texture *t = xmalloc(sizeof(FE_Texture));
         t->path = mstrdup(filepath);
         t->Texture = FE_TextureFromFile(filepath);
+        return t;
+    }
+    case FE_RESOURCE_TYPE_ATLAS:
+    {
+        FE_TextureAtlas *t = FE_LoadTextureAtlas(filepath);
         return t;
     }
     case FE_RESOURCE_TYPE_SOUND:

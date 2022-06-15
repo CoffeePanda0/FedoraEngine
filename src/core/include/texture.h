@@ -62,7 +62,9 @@ SDL_Texture *FE_CreateRenderTexture(int w, int h);
 void FE_CloseTextureManager();
 
 typedef struct FE_TextureAtlas {
-    FE_Texture *atlas;
+    SDL_Texture *atlas;
+    char *path;
+
     int width, height;
     uint16_t texturesize;
 } FE_TextureAtlas;
@@ -81,5 +83,20 @@ Vector2D FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index);
  * \returns A pointer to the atlas
 */
 FE_TextureAtlas *FE_LoadTextureAtlas(const char *name);
+
+
+/** Destroys a texture atlas
+ * \param atlas The atlas to destroy
+*/
+void FE_DestroyTextureAtlas(FE_TextureAtlas *atlas);
+
+
+/** Renders a texture from an atlas
+ * \param atlas The atlas to render from
+ * \param index The index of the texture to render
+ * \param dst The destination to render to
+*/
+void FE_RenderAtlasTexture(FE_TextureAtlas *atlas, size_t index, SDL_Rect *dst);
+
 
 #endif

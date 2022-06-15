@@ -37,17 +37,15 @@ FE_LoadedMap *FE_LoadMap(const char *name)
     // load texture atlas
     char *atlas_path = 0;
     if (!(atlas_path = FE_File_ReadStr(f))) goto err;
-    m->atlas = FE_LoadTextureAtlas(atlas_path);
+    m->atlas = FE_LoadResource(FE_RESOURCE_TYPE_ATLAS, atlas_path);
     free(atlas_path);
 
 
     if (fread(&m->atlas->texturesize, sizeof(Uint16), 1, f) != 1) goto err;
-    FE_QueryTexture(m->atlas->atlas, &m->atlas->width, &m->atlas->height);
 
     // load background image
     char *bg_path = 0;
     if (!(bg_path = FE_File_ReadStr(f))) goto err;
-
     m->bg = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, bg_path);
     free(bg_path);
 
@@ -132,7 +130,8 @@ void FE_RenderMap(FE_LoadedMap *m, FE_Camera *camera)
             continue;
 		SDL_Rect r = {m->tiles[i].position.x, m->tiles[i].position.y, m->tilesize, m->tilesize};
         SDL_Rect src = {m->tiles[i].texture_x, m->tiles[i].texture_y, m->atlas->texturesize, m->atlas->texturesize};
-		FE_RenderCopyEx(camera, false, m->atlas->atlas, &src, &r, m->tiles[i].rotation, SDL_FLIP_NONE);
+        r = FE_ApplyZoom(&r, camera, false);
+		SDL_RenderCopyEx(PresentGame->Renderer, m->atlas->atlas, &src, &r, m->tiles[i].rotation, NULL, SDL_FLIP_NONE);
 	} 
 
     // render finish flag
@@ -173,8 +172,7 @@ void FE_CloseMap(FE_LoadedMap *map)
     map->name = 0;
     map->PlayerSpawn = VEC_NULL;
     if (map->atlas) {
-        FE_DestroyResource(map->atlas->atlas->path);
-        free(map->atlas);
+        FE_DestroyResource(map->atlas->path);
     }
     map->atlas = 0;
     

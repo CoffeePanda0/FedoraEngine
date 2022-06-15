@@ -75,7 +75,7 @@ void FE_RenderEditor()
 	SDL_Rect thumbnail = {475, 6, 32, 32};
 	if (mode) {
 		SDL_Rect src = {selectedtexture_position.x, selectedtexture_position.y, newmap->atlas->texturesize, newmap->atlas->texturesize};
-		SDL_RenderCopy(PresentGame->Renderer, newmap->atlas->atlas->Texture, &src, &thumbnail);
+		SDL_RenderCopy(PresentGame->Renderer, newmap->atlas->atlas, &src, &thumbnail);
 	} else
 		SDL_RenderCopy(PresentGame->Renderer, editor_backgrounds[selectedtexture]->Texture, NULL, &thumbnail);
 
@@ -416,7 +416,7 @@ void FE_StartEditor(char *path)
 		newmap->EndFlag = VEC_NULL;
 		newmap->tilesize = 64;
 		newmap->gravity = 70;
-		newmap->atlas = FE_LoadTextureAtlas(ATLAS);
+		newmap->atlas = FE_LoadResource(FE_RESOURCE_TYPE_ATLAS, ATLAS);
 		newmap->tilecount = 0;
 		newmap->tiles = 0;
 	} else {

@@ -73,8 +73,7 @@ int FE_RenderCopyEx(FE_Camera *camera, bool locked, FE_Texture *texture, SDL_Rec
         s = *src;
 
     if (FE_Camera_Inbounds(&RenderRect, &(SDL_Rect){0,0, PresentGame->WindowWidth, PresentGame->WindowHeight})) {
-        const SDL_Point center = (SDL_Point){RenderRect.w/2, RenderRect.h/2};
-        return SDL_RenderCopyEx(PresentGame->Renderer, texture->Texture, &s, &RenderRect, angle, &center, flip);
+        return SDL_RenderCopyEx(PresentGame->Renderer, texture->Texture, &s, &RenderRect, angle, NULL, flip);
     } else
         return 0;
 }
