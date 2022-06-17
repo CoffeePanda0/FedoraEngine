@@ -2,7 +2,7 @@
 #define H_VECTOR2D
 
 #include <SDL.h>
-#include "../lib/bool.h"
+#include <stdbool.h>
 
 typedef struct Vector2D {
     float x, y;

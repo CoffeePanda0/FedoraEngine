@@ -20,8 +20,9 @@ void FE_Key_Clean();
 /** Assigns a key to an input.
  * \param input The input to assign the key to.
  * \param keycode The keycode to assign.
+ * \return 1 on success, 0 on failure.
  */
-void FE_Key_Assign(char *input, uint8_t keycode);
+int FE_Key_Assign(char *input, uint8_t keycode);
 
 
 /* Saves the current keymap to file. */

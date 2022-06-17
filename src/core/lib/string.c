@@ -52,6 +52,16 @@ int mstrcmp(const char *str1, const char *str2)
 	return (unsigned int)(*s1 > *s2) - (*s1 < *s2);
 }
 
+int mstrncmp(const char *str1, const char *str2, size_t n)
+{
+	assert(str1 != NULL && str2 != NULL);
+	register const unsigned char *s1 = (const unsigned char*)str1;
+	register const unsigned char *s2 = (const unsigned char*)str2;
+
+	while (*s1 == *s2 && *s1 != '\0' && n > 0) {s1++; s2++; n--;}
+	return (unsigned int)(*s1 > *s2) - (*s1 < *s2);
+}
+
 int mmemcmp(const void *str1, const void *str2, size_t len)
 {
 	assert(str1 != NULL && str2 != NULL);
@@ -154,7 +164,7 @@ char **mstrwrap(char *str, size_t col_width, size_t *line_count)
 	size_t len = mstrlen(str);
 
 	// Make sure we have a valid string to prevent infinite loop
-	if (len > col_width) {
+	if (len < col_width) {
 		*line_count = 1;
 		char **res = _MSTRING_MALLOC(sizeof(char*));
 		res[0] = mstrdup(str);
@@ -177,10 +187,10 @@ char **mstrwrap(char *str, size_t col_width, size_t *line_count)
 		}
 
 		char *s = mstrndup(str + sorted_chars, col_width);
-		
+
 		// check if there is a space in the string. If so, wrap the line at the word
 		char *p = mstrlastchr(s, ' ');
-		if (p && (size_t)(p - s) > col_width / 2) {
+		if (p && (size_t)(p - s) > col_width / 1.5) {
 			res[*line_count - 1] = mstrndup(s, p - s);
 			sorted_chars += mstrlen(res[*line_count - 1]);
 			free(s);

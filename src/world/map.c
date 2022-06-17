@@ -131,7 +131,7 @@ void FE_RenderMap(FE_LoadedMap *m, FE_Camera *camera)
 		SDL_Rect r = {m->tiles[i].position.x, m->tiles[i].position.y, m->tilesize, m->tilesize};
         SDL_Rect src = {m->tiles[i].texture_x, m->tiles[i].texture_y, m->atlas->texturesize, m->atlas->texturesize};
         r = FE_ApplyZoom(&r, camera, false);
-		SDL_RenderCopyEx(PresentGame->Renderer, m->atlas->atlas, &src, &r, m->tiles[i].rotation, NULL, SDL_FLIP_NONE);
+        SDL_RenderCopyEx(PresentGame->Renderer, m->atlas->atlas, &src, &r, m->tiles[i].rotation, NULL, SDL_FLIP_NONE);
 	} 
 
     // render finish flag

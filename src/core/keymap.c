@@ -3,6 +3,7 @@
 #include "include/utils.h"
 #include "../ext/hashtbl.h"
 #include "../include/init.h"
+#include "../ui/include/messagebox.h"
 
 #define KEYMAP_FILE "game/keymap.txt"
 
@@ -57,11 +58,23 @@ static void DestroyKey(char *key, void *val)
 }
 
 // Assigns a key to an input
-void FE_Key_Assign(char *input, uint8_t keycode)
+int FE_Key_Assign(char *input, uint8_t keycode)
 {
+    // Check if keycode is already assigned
+    for (size_t i = 0; i < keymap.size; i++) {
+        if (!keymap.slots[i].key) continue;
+        if (((entry *)keymap.slots[i].val)->keycode == keycode && strcmp(keymap.slots[i].key, input) != 0) {
+            char msg[128];
+            sprintf(msg, "Key '%s' is already assigned to %s", (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(keycode)), keymap.slots[i].key);
+            FE_Messagebox_Show("Key Already Assigned", msg, MESSAGEBOX_TEXT);
+            return 0; // enter or space also overlap with other keys
+        }
+    }
+
     entry *e = xmalloc(sizeof(entry));
     e->keycode = keycode;
     htset(&keymap, mstrdup(input), e);
+    return 1;
 }
 
 void FE_Key_Clean()

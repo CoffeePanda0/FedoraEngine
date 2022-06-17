@@ -4,7 +4,7 @@
 #include <SDL.h>
 
 #include "../lib/string.h"
-#include "../lib/bool.h"
+#include <stdbool.h>
 
 #include "fedoraengine.h"
 #include "linkedlist.h"

@@ -108,7 +108,7 @@ void FE_UpdateCamera(FE_Camera *camera)
     int win_width = (PresentGame->WindowWidth / camera->zoom);
     
     // Centre the player X on the screen (accounting for zoom)
-    r->x = (win_width / 2) - r->w;
+    r->x = (win_width / 2) - (r->w * camera->zoom);
     camera->x = initial_x - r->x;
 
     // Check X bounds
@@ -122,7 +122,7 @@ void FE_UpdateCamera(FE_Camera *camera)
     }
 
     // Centre the player Y on the screen (accounting for zoom)
-    r->y = ((win_height / 2) - r->h);
+    r->y = ((win_height / 2) - (r->h * camera->zoom));
     camera->y = initial_y - r->y;
  
     // Check Y bounds

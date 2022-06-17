@@ -95,7 +95,7 @@ FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, int h, char *value) // M
     temp->data = NULL;
     return temp;
 }
-// todo set textbox callbakc to be messagebox callback
+
 char *FE_UI_GetTextboxContent(FE_UI_Textbox *tb) // Returns the content of a textbox
 {
     if (!tb) {

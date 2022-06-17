@@ -5,6 +5,6 @@
 #include <stdlib.h>
 #include <SDL.h>
 #include "../core/lib/string.h"
-#include "../core/lib/bool.h"
+#include <stdbool.h>
 
 #endif

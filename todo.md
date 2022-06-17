@@ -2,11 +2,9 @@
 In order of rough completion plans
 
 - Extra high velocities can cause clipping
-- Camera funky centering  
 - Add jump animation and falling animation logic  
 - Tie movement speed to walking animaiton speed  
 - Add zooming to editor  
-- Pause UI  
 - Make "virtual Y" based on the lowest tile 
 - Map editor - change tilesize and map size  
 - Pushable physobjects  

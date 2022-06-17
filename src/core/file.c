@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "include/utils.h"
 #include "lib/string.h"
-#include "lib/bool.h"
+#include <stdbool.h>
 
 #ifdef WIN32
 #include <io.h>

@@ -2,7 +2,8 @@
 #define H_CAMERA
 
 #include <SDL.h>
-#include "../../core/lib/bool.h"
+#include <stdbool.h>
+
 
 typedef struct FE_Camera {
     float x, y;

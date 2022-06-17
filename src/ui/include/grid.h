@@ -18,6 +18,8 @@ typedef struct {
 
     SDL_Color color;
     int border_width;
+    int tile_w;
+    int tile_h;
 
     FE_TextureAtlas *atlas;
 

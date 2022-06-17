@@ -23,6 +23,16 @@ int mstrcmp(const char *str1, const char *str2);
 
 
 /**
+ * @brief Compares N bytes of strings
+ * @param str1 The first string to compare
+ * @param str2 The second string to compare
+ * @param n The number of bytes to compare
+ * @return 0 if strings are equal, or otherwise depending on whether str1 <> str2
+ */
+int mstrncmp(const char *str1, const char *str2, size_t n);
+
+
+/**
  * @brief Compares two blocks of memory
  * @param str1 The first block to compare
  * @param str2 

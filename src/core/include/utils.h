@@ -2,7 +2,7 @@
 #define H_UTILS
 
 #include "mem.h"
-#include "../lib/bool.h"
+#include <stdbool.h>
 #include <stdio.h>
 
 enum dietypes {

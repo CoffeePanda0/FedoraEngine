@@ -26,7 +26,10 @@ static void GenerateTexture(FE_UI_Label *l)
     SDL_Texture **layer_textures = 0;
     
     // Check if the text is too long to fit on one line
-    size_t max_chars = l->linewidth / l->font->size;
+    int char_width = 0;
+    TTF_SizeText(l->font->font, "o", &char_width, NULL);
+    size_t max_chars = l->linewidth / char_width;
+
     // Split newtext into lines based on max_chars
     char **lines = mstrwrap(l->text, max_chars, &surface_count);
 

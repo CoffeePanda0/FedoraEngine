@@ -183,13 +183,13 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
         // Render Border for cols
         for (size_t i = 0; i < grid->cols; i++) {
             if (i == 0 || i == grid->cols) continue;
-            SDL_Rect r = {(grid->tiles[i].r.w * i), 0, grid->border_width, grid->r.h};
+            SDL_Rect r = {((grid->tile_w + grid->border_width)* i), 0, grid->border_width, grid->r.h};
             SDL_RenderFillRect(PresentGame->Renderer, &r);
         }
         // Render Border for rows
         for (size_t i = 0; i < grid->rows; i++) {
             if (i == 0 || i == grid->rows) continue;
-            SDL_Rect r = {0, (grid->tiles[i].r.h * i), grid->r.w, grid->border_width};
+            SDL_Rect r = {0, ((grid->tile_h + grid->border_width)* i), grid->r.w, grid->border_width};
             SDL_RenderFillRect(PresentGame->Renderer, &r);
         }
 
@@ -198,6 +198,8 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
         grid->buffer_dirty = false;
     }
 
+    SDL_RenderCopy(PresentGame->Renderer, grid->buffer_texture, NULL, &grid->r);
+
     // Render transulcent square behind hovered tile
     if (!FE_VecNULL(grid->hovered)) {
         SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_BLEND);
@@ -205,13 +207,12 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
         SDL_GetRenderDrawColor(PresentGame->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);
         SDL_SetRenderDrawColor(PresentGame->Renderer, grid->hover_color.r, grid->hover_color.g, grid->hover_color.b, grid->hover_color.a);
 
-        SDL_Rect r = {grid->r.x + (grid->hovered.x * grid->tiles[0].r.w) + grid->border_width * grid->hovered.x, grid->r.y + (grid->hovered.y * grid->tiles[0].r.h) + grid->border_width * grid->hovered.y, grid->tiles[0].r.w, grid->tiles[0].r.h};
+        SDL_Rect r = {grid->r.x + (grid->hovered.x * grid->tile_w) + ((grid->hovered.x +1 )* grid->border_width), grid->r.y + (grid->hovered.y * grid->tile_h) + ((grid->hovered.y +1 )* grid->border_width), grid->tile_w , grid->tile_h};
         SDL_RenderFillRect(PresentGame->Renderer, &r);
 
         SDL_SetRenderDrawColor(PresentGame->Renderer, prev_r, prev_g, prev_b, prev_a);
     }
     
-    SDL_RenderCopy(PresentGame->Renderer, grid->buffer_texture, NULL, &grid->r);
     FE_UI_CheckGridHover();
 }
 
@@ -238,9 +239,12 @@ FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int 
     grid->hovered = VEC_NULL;
     grid->hover_color = (SDL_Color){255, 255, 255, 150};
 
-    grid->border_width = 5;
+    grid->border_width = 6;
     grid->buffer_dirty = true;
     grid->buffer_texture = 0;
+    grid->tile_w = tile_w - grid->border_width;
+    grid->tile_h = tile_h - grid->border_width;
+
     // Calculate rows and cols
     grid->cols = ceil(w / tile_w);
     grid->rows = 0;
@@ -258,7 +262,7 @@ FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int 
         }
         grid->tiles[idx].empty = true;
         grid->tiles[idx].texture_index = 0;
-        grid->tiles[idx].r = (SDL_Rect){(cur_col * tile_w) + grid->border_width , (cur_row * tile_w) + grid->border_width , tile_w - grid->border_width, tile_h - grid->border_width};
+        grid->tiles[idx].r = (SDL_Rect){(grid->tile_w * cur_col) + ((cur_col + 1) * grid->border_width), (grid->tile_h * cur_row) + ((cur_row + 1) * grid->border_width), grid->tile_w, grid->tile_h};
         if (++cur_col >= grid->cols) {
             cur_col = 0;
             cur_row++;

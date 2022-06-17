@@ -197,6 +197,11 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
                 return true;
             }
 
+            if (PresentGame->UIConfig.MBShown && (event->key.keysym.sym == 32 || event->key.keysym.sym == 13)) {
+                FE_Messagebox_Destroy();
+                return true;
+            }
+
             /* Handle fullscreen */
             if (keyboard_state[SDL_SCANCODE_F]) {
                 PresentGame->FullScreen = !PresentGame->FullScreen;

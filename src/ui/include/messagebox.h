@@ -47,6 +47,10 @@ void FE_Messagebox_Destroy();
 char *FE_Messagebox_GetText();
 
 
+/* Triggers the callback on messagebox closed */
+void FE_Messagebox_HandleCallBack();
+
+
 /** Adds a callback to the confirm button of the messagebox
  * \param func The function to call
  * \param data The params to call func with

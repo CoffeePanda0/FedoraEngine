@@ -15,7 +15,7 @@ static char *input_content;
 
 static FE_UI_Textbox *previous_active;
 
-static void HandleCallBack()
+void FE_Messagebox_HandleCallBack()
 {
     FE_Messagebox_Destroy();
     PresentGame->UIConfig.MBShown = false;
@@ -76,17 +76,17 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
     };
 
     // title
-    MB->title = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, title, MB_WIDTH, VEC_EMPTY, PresentGame->UIConfig.UIFontColor);
+    MB->title = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, title, 1000, VEC_EMPTY, PresentGame->UIConfig.UIFontColor);
     MB->title->r.x = FE_GetCentre(MB->title->r, MB->displayrect).x;
     MB->title->r.y = MB->displayrect.y + 10;
 
     // content
-    MB->content = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, body, (0.8 * MB_WIDTH), VEC_EMPTY, PresentGame->UIConfig.UIFontColor);
+    MB->content = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, body, MB_WIDTH, VEC_EMPTY, PresentGame->UIConfig.UIFontColor);
     MB->content->r.x = FE_GetCentre(MB->content->r, MB->displayrect).x;
     MB->content->r.y = MB->title->r.y + 48;
 
     // create button
-    MB->button = FE_UI_CreateButton("OK", 0, 0, BUTTON_SMALL, &HandleCallBack, NULL);
+    MB->button = FE_UI_CreateButton("OK", 0, 0, BUTTON_SMALL, &FE_Messagebox_HandleCallBack, NULL);
     FE_UI_MoveButton(MB->button, FE_GetCentre(MB->button->r, MB->displayrect).x, MB->displayrect.y + MB_HEIGHT - MB->button->r.h - 20);
     FE_UI_AddElement(FE_UI_BUTTON, MB->button);
 
@@ -96,7 +96,7 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
         FE_UI_ForceActiveTextbox(MB->textbox);
         FE_UI_MoveTextbox(MB->textbox, FE_GetCentre(MB->textbox->r, MB->displayrect).x, MB->content->r.y + MB->content->r.h + 10);
         FE_UI_AddElement(FE_UI_TEXTBOX, MB->textbox);
-        FE_UI_AddTextboxCallback(MB->textbox, &HandleCallBack, NULL);
+        FE_UI_AddTextboxCallback(MB->textbox, &FE_Messagebox_HandleCallBack, NULL);
     }
 
     PresentGame->UIConfig.MBShown = true;

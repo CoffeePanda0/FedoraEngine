@@ -2,7 +2,7 @@
 #define H_PLAYER
 
 #include <SDL.h>
-#include "../../core/lib/bool.h"
+#include <stdbool.h>
 #include "../../core/include/vector2d.h"
 #include "animation.h"
 #include "../../world/include/camera.h"

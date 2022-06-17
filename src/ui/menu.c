@@ -1,4 +1,5 @@
 #include "../include/game.h"
+#include "../neweditor/editor.h"
 
 static FE_Texture *MenuTexture;
 static FE_Camera *Camera;
@@ -53,8 +54,8 @@ static void KeyChange(char *key)
             }
         }
     }
-    FE_Key_Assign(key, scancode);
-    FE_Menu_LoadMenu("Keyeditor");
+    if (FE_Key_Assign(key, scancode))
+        FE_Menu_LoadMenu("Keyeditor");
 }
 
 static FE_UI_Label *GenKeyLabel(const char *input)
@@ -63,7 +64,7 @@ static FE_UI_Label *GenKeyLabel(const char *input)
     char *key = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(FE_Key_Get(input)));
     sprintf(label, "%s: %s", (char*)input, key);
     
-    FE_UI_Label *l = FE_UI_CreateLabel(PresentGame->font, label, 100, vec2(0,0), COLOR_WHITE);
+    FE_UI_Label *l = FE_UI_CreateLabel(PresentGame->font, label, 300, vec2(0,0), COLOR_WHITE);
     free(label);
     return l;
 }

@@ -1,7 +1,7 @@
 #ifndef H_TIMER
 #define H_TIMER
 
-#include "../../core/lib/bool.h"
+#include <stdbool.h>
 
 typedef struct FE_Timer {
     unsigned long duration; // How long the timer will last in milliseconds

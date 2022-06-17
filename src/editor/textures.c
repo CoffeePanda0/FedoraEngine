@@ -1,6 +1,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
-#include "../core/lib/bool.h"
+#include <stdbool.h>
 #include "../core/lib/string.h"
 #include "editor.h"
 
