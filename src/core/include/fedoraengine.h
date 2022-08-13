@@ -2,7 +2,8 @@
 #define H_FEDORAENGINE
 
 #include <stdint.h>
-#include "vector2d.h"
+#include <stdbool.h>
+#include "../../physics/include/vector.h"
 #include "../../ui/include/font.h"
 #include "../../core/include/linkedlist.h"
 
@@ -50,7 +51,7 @@ typedef struct FE_Timing {
 typedef struct FE_MapConfig {
     bool Loaded;
     uint16_t MapWidth, MapHeight, MinimumX;
-    Vector2D PlayerSpawn;
+    vec2 PlayerSpawn;
     float Gravity;
     Uint8 AmbientLight;
 } FE_MapConfig;

@@ -3,7 +3,7 @@
 
 #include <SDL.h>
 #include <stdbool.h>
-#include "../../core/include/vector2d.h"
+#include "../../physics/include/vector.h"
 #include "animation.h"
 #include "../../world/include/camera.h"
 #include "../../world/include/physics.h"
@@ -55,7 +55,7 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
  *\param camera - The current camera in use
  *\param position - The force to be applied in each direction to the player
 */
-void FE_MovePlayer(FE_Player *player, Vector2D movement);
+void FE_MovePlayer(FE_Player *player, vec2 movement);
 
 
 /** The main update loop needed to update the player's properties and for the camera to follow

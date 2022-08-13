@@ -83,7 +83,7 @@ SDL_Texture *FE_CreateRenderTexture(int w, int h)
     return t;
 }
 
-Vector2D FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
+vec2 FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
 {
     if (!atlas) {
         warn("NULL atlas being passed (FE_GetTexturePoisition)");
@@ -105,7 +105,7 @@ Vector2D FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
     if (col == 0)
         col = atlas_cols;
 
-    return vec2(col * atlas->texturesize, row * atlas->texturesize);
+    return vec(col * atlas->texturesize, row * atlas->texturesize);
 }
 
 FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)
@@ -137,7 +137,7 @@ void FE_RenderAtlasTexture(FE_TextureAtlas *atlas, size_t index, SDL_Rect *dst)
     if (atlas->height < atlas->texturesize || atlas->width < atlas->texturesize || atlas->texturesize == 0)
         return;
     
-    Vector2D pos = FE_GetTexturePosition(atlas, index);
+    vec2 pos = FE_GetTexturePosition(atlas, index);
     SDL_RenderCopy(PresentGame->Renderer, atlas->atlas, &(SDL_Rect){pos.x, pos.y, atlas->texturesize, atlas->texturesize}, dst);
 }
 

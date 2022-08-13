@@ -5,7 +5,7 @@
 static FE_List *triggers;
 static FE_Texture *default_texture;
 
-FE_Trigger *FE_Trigger_Create(Vector2D position, int range, void (*event)(), void *event_data, bool visible)
+FE_Trigger *FE_Trigger_Create(vec2 position, int range, void (*event)(), void *event_data, bool visible)
 {
 	FE_Trigger *t = xmalloc(sizeof(FE_Trigger));
 	t->position = position;

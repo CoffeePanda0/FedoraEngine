@@ -110,14 +110,14 @@ void Editor_Save(FE_Map *mapsave)
         if (fwrite(&mapsave->tiles[i].texture_x, sizeof(Uint16), 1, f) != 1) goto err;
         if (fwrite(&mapsave->tiles[i].texture_y, sizeof(Uint16), 1, f) != 1) goto err;
         if (fwrite(&mapsave->tiles[i].rotation, sizeof(Uint16), 1, f) != 1) goto err;
-        if (fwrite(&mapsave->tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
+        if (fwrite(&mapsave->tiles[i].position, sizeof(vec2), 1, f) != 1) goto err;
     }
 
     // Write player spawnq
-    if (fwrite(&mapsave->PlayerSpawn, sizeof(Vector2D), 1, f) != 1) goto err;
+    if (fwrite(&mapsave->PlayerSpawn, sizeof(vec2), 1, f) != 1) goto err;
 
     // Write end flag
-    if (fwrite(&mapsave->EndFlag, sizeof(Vector2D), 1, f) != 1) goto err;
+    if (fwrite(&mapsave->EndFlag, sizeof(vec2), 1, f) != 1) goto err;
     
     info("Editor: Saved map to %s", mapsave->name);
     

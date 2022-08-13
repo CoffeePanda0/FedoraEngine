@@ -61,7 +61,7 @@ void FE_UI_RenderContainer(FE_UI_Container *c);
  * \param container The container to centre within
  * \return A vector containing the position for r to be centred
 */
-Vector2D FE_GetCentre(SDL_Rect r, SDL_Rect container);
+vec2 FE_GetCentre(SDL_Rect r, SDL_Rect container);
 
 
 /** Adds an invisible height spacer for a container

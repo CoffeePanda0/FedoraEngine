@@ -124,7 +124,7 @@ bool FE_UI_GridClick()
     if (!FE_UI_ControlContainerLocked) {
         for (FE_List *l = PresentGame->UIConfig.ActiveElements->Grids; l; l = l->next) {
             FE_UI_Grid *grid = l->data;
-            if (!FE_VecNULL(grid->hovered)) {
+            if (!vec2_null(grid->hovered)) {
                 HandleCallback(grid);
                 return true;
             }
@@ -137,7 +137,7 @@ bool FE_UI_GridClick()
         for (size_t i = 0; i < container->children_count; i++) {
             if (container->children[i].type == FE_UI_GRID) {
                 FE_UI_Grid *grid = container->children[i].element;
-                if (!FE_VecNULL(grid->hovered)) {
+                if (!vec2_null(grid->hovered)) {
                     HandleCallback(grid);
                     return true;
                 }
@@ -201,7 +201,7 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
     SDL_RenderCopy(PresentGame->Renderer, grid->buffer_texture, NULL, &grid->r);
 
     // Render transulcent square behind hovered tile
-    if (!FE_VecNULL(grid->hovered)) {
+    if (!vec2_null(grid->hovered)) {
         SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_BLEND);
         Uint8 prev_r, prev_g, prev_b, prev_a;
         SDL_GetRenderDrawColor(PresentGame->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);

@@ -47,7 +47,7 @@ static void GenerateParticle(FE_ParticleSystem *p, size_t index)
     p->particles[index] = particle;
 }
 
-FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, Vector2D max_size, Vector2D initial_velocity, bool camera_locked)
+FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked)
 {
     FE_ParticleSystem *p = xmalloc(sizeof(FE_ParticleSystem));
     p->emission_area = emissionarea;

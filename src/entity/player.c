@@ -22,7 +22,7 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     p->jump_elapsed = 0;
 
     // physics object
-    p->PhysObj = FE_CreatePhysObj(PLAYER_MASS, maxspeed, body, true);
+    p->PhysObj = FE_CreatePhysObj(PLAYER_MASS, body, true);
 
     // light
     SDL_Rect l_r = {body.x, body.y, 256, 256};
@@ -80,13 +80,16 @@ void FE_RenderPlayer(FE_Player *player, FE_Camera *camera)
 
 }
 
-void FE_MovePlayer(FE_Player *player, Vector2D movement)
+void FE_MovePlayer(FE_Player *player, vec2 movement)
 {
     if (!player)
         return;
 
-    Vector2D mov_vec = vec2(movement.x * FE_DT_MULTIPLIER, movement.y * FE_DT_MULTIPLIER);
-    FE_ApplyForce(player->PhysObj, mov_vec);
+    vec2 mov_vec = vec(movement.x * FE_DT_MULTIPLIER, movement.y * FE_DT_MULTIPLIER);
+
+    int lim = 10;
+    if (!(player->PhysObj->velocity.x > lim) && player->PhysObj->velocity.x > -lim)
+        FE_ApplyForce(player->PhysObj, mov_vec); 
 }
 
 
@@ -101,8 +104,8 @@ static bool OnGround(FE_Player *player)
         if (player->PhysObj->velocity.y != 0) // if velocity is 0, player will never be on ground
             return false;
         
-        Vector2D GroundCollision = FE_CheckMapCollisionAbove(&player->PhysObj->body);
-        if (FE_VecNULL(GroundCollision))
+        vec2 GroundCollision = FE_CheckMapCollisionAbove(&player->PhysObj->body);
+        if (vec2_null(GroundCollision))
             return false;
         else
             return true;
@@ -118,13 +121,13 @@ void FE_UpdatePlayer(FE_Player *player)
     player->render_rect = player->PhysObj->body;
     player->on_ground = OnGround(player);
 
-    static Vector2D last_position = VEC_NULL;
+    static vec2 last_position = VEC_NULL;
 
     // Update the light position, keeping player centered
     if (last_position.x != player->PhysObj->body.x || last_position.y != player->PhysObj->body.y) {
         if (player->Light) {
             FE_MoveLight(player->Light, player->PhysObj->body.x + player->PhysObj->body.w/2 - player->Light->Rect.w/2, player->PhysObj->body.y + player->PhysObj->body.h/2 - player->Light->Rect.h/2);
-            last_position = vec2(player->PhysObj->body.x, player->PhysObj->body.y);
+            last_position = vec(player->PhysObj->body.x, player->PhysObj->body.y);
         }
     }
     
@@ -157,11 +160,11 @@ void FE_UpdatePlayerJump(FE_Player *player)
     player->jump_elapsed += FE_DT;
 
     if (player->PhysObj->velocity.y == 0) {
-        FE_ApplyForce(player->PhysObj, vec2(0, -min_jump));
+        FE_ApplyForce(player->PhysObj, vec(0, -min_jump * player->PhysObj->mass));
         return;
     }
 
-    FE_ApplyForce(player->PhysObj, vec2(0, -3 * FE_DT_MULTIPLIER));
+    FE_ApplyForce(player->PhysObj, vec(0, -3 * FE_DT_MULTIPLIER * player->PhysObj->mass));
 
     if (player->PhysObj->velocity.y <= -player->jumpforce || player->jump_elapsed > 0.15) {
         player->PhysObj->velocity.y = -player->jumpforce;

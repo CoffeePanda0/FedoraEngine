@@ -1,23 +1,38 @@
 #ifndef H_PHYSICS
 #define H_PHYSICS
 
-#include "../../core/include/vector2d.h"
+#include "../../physics/include/vector.h"
 
 #define DRAG 1.2f
-#define FRICTION 0.3f
+#define FRICTION 0.5f
 #define BOUNCE 0.3f
 
 typedef struct FE_PhysObj {
-    Uint16 mass;
-    Vector2D velocity;
-    Vector2D maxvelocity;
+    float mass;
+    float inv_mass;
+
+    vec2 force;
+    vec2 velocity;
 
     SDL_Rect body;
-    Vector2D position;
+    vec2 position;
     
     bool moveable;
 } FE_PhysObj;
 
+typedef struct {
+    vec2 min;
+    vec2 max;
+} FE_AABB;
+
+typedef struct {
+    
+    float penetration;
+
+    FE_PhysObj *a;
+    FE_PhysObj *b;
+
+} FE_CollisionInfo;
 
 /* The main update loop that carries out all physics calculations */
 void FE_RunPhysics();
@@ -27,17 +42,16 @@ void FE_RunPhysics();
  *\param o The object to apply the force to
  *\param force The force to apply
 */
-void FE_ApplyForce(FE_PhysObj *o, Vector2D force);
+void FE_ApplyForce(FE_PhysObj *o, vec2 force);
 
 
 /** Mallocs and creates a new physics object
  * \param mass The mass of the object
- * \param maxvelocity The maximum velocity of the object
  * \param body The body of the object
  * \param moveable Whether the object is moveable by other objects
  * \return The new object
 */
-FE_PhysObj *FE_CreatePhysObj(Uint16 mass, Uint16 maxvelocity, SDL_Rect body, bool moveable);
+FE_PhysObj *FE_CreatePhysObj(Uint16 mass, SDL_Rect body, bool moveable);
 
 
 /** Adds a given physics interactable to the physics system.

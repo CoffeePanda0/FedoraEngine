@@ -64,9 +64,9 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
     // Handle essential inputs here to prevent first click issue
     if (!ui_handled) {
         if (keyboard_state[FE_Key_Get("LEFT")])
-            FE_MovePlayer(player, vec2(-player->movespeed, 0));
+            FE_MovePlayer(player, vec(-player->movespeed, 0));
         if (keyboard_state[FE_Key_Get("RIGHT")])
-            FE_MovePlayer(player, vec2(player->movespeed, 0));
+            FE_MovePlayer(player, vec(player->movespeed, 0));
         if (keyboard_state[FE_Key_Get("JUMP")]) {
             if (!player->jump_started) {
                 FE_StartPlayerJump(player);

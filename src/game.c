@@ -32,9 +32,8 @@ void FE_StartGame(const char *mapname)
 	GameCamera->minzoom = 1.0f;
 
 	// player setup
-	GamePlayer = FE_CreatePlayer(1, 8, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
+	GamePlayer = FE_CreatePlayer(40, 8, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
 	GameCamera->follow = &GamePlayer->render_rect;
-
 
 	// test particle system
 	SnowParticles = FE_CreateParticleSystem(
@@ -44,8 +43,8 @@ void FE_StartGame(const char *mapname)
 		10000, // Max lifetime
 		true, // Particles to respawn once they go off screen
 		"rain.png", // Texture
-		(Vector2D){15, 15}, // Max size of each particle
-		(Vector2D){3, 3}, // Set initial velocity so particle doesn't float until they accelerate
+		(vec2){15, 15}, // Max size of each particle
+		(vec2){3, 3}, // Set initial velocity so particle doesn't float until they accelerate
 		false
 	);
 
@@ -54,6 +53,8 @@ void FE_StartGame(const char *mapname)
 
 	FE_CreateGameObject((SDL_Rect){1200, 1200, 64, 128}, "torch.png", "", ENEMY, 0, false);
 	FE_CreateLight((SDL_Rect){870,1050,712,512}, "torchglow.png");
+
+	FE_CreateGameObject((SDL_Rect){1200, 1200, 64, 128}, "torch.png", "", ENEMY, 50, true);
 
 	PresentGame->GameState = GAME_STATE_PLAY;
 }
@@ -71,6 +72,7 @@ void FE_RenderGame()
 	FE_RenderGameObjects(GameCamera);
 	FE_Trigger_Render(GameCamera);
 	FE_RenderPlayer(GamePlayer, GameCamera);
+
 	if (PresentGame->DebugConfig.LightingEnabled)
 		FE_RenderLighting(GameCamera, world);
 	FE_UI_Render();

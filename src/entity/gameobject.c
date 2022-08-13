@@ -24,7 +24,7 @@ FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *n
 	obj->type = type;
 
 	/* create physics object */
-	FE_PhysObj *p = FE_CreatePhysObj(mass, 128, r, moveable);
+	FE_PhysObj *p = FE_CreatePhysObj(mass, r, moveable);
 
 	FE_AddPhysInteractable(p);
 

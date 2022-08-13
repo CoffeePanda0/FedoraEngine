@@ -14,6 +14,5 @@
 #include "texture.h"
 #include "timing.h"
 #include "utils.h"
-#include "vector2d.h"
 
 #endif

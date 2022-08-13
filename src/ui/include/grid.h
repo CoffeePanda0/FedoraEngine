@@ -26,7 +26,7 @@ typedef struct {
     SDL_Texture *buffer_texture;
     bool buffer_dirty;
 
-    Vector2D hovered;
+    vec2 hovered;
     SDL_Color hover_color;
 
     size_t cols;

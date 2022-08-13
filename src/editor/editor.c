@@ -9,7 +9,7 @@
 static bool initialised = false;
 
 static size_t selectedtexture; // The currently selected texture
-static Vector2D selectedtexture_position; // the position of the selected texture in the atlas
+static vec2 selectedtexture_position; // the position of the selected texture in the atlas
 
 FE_Texture **editor_backgrounds; // The background atlas (stores 10)
 static size_t bgcount; // amount of background textures loaded
@@ -55,7 +55,7 @@ void FE_RenderEditor()
 	FE_RenderMap(newmap, camera);
 
 	// render spawn
-	if (!FE_VecNULL(newmap->PlayerSpawn)) {
+	if (!vec2_null(newmap->PlayerSpawn)) {
 		SDL_Rect spawnrect = (SDL_Rect){newmap->PlayerSpawn.x, newmap->PlayerSpawn.y, newmap->tilesize, newmap->tilesize};
 		FE_RenderCopy(camera, false, spawntexture, NULL, &spawnrect);
 	}
@@ -137,14 +137,14 @@ static void AddTile(int x, int y)
 	// snap x and y to a grid using tile size
 	GridSnap(&x, &y);
 
-	static Vector2D last_click = VEC_NULL;
+	static vec2 last_click = VEC_NULL;
 	static size_t last_texture = 0;
 
 	// no point replacing same tile when mouse held
 	if (last_click.x == x && last_click.y == y && last_texture == selectedtexture)
 		return;
 
-	last_click = vec2(x,y);
+	last_click = vec(x,y);
 	last_texture = selectedtexture;
 
 	// check if tile in that location already exists, and it it does then deletes it
@@ -159,7 +159,7 @@ static void AddTile(int x, int y)
 		newmap->tiles = xmalloc(sizeof(FE_Map_Tile));
 	else
 		newmap->tiles = xrealloc(newmap->tiles, sizeof(FE_Map_Tile) * (newmap->tilecount + 1));
-	newmap->tiles[newmap->tilecount++] = (FE_Map_Tile){selectedtexture_position.x, selectedtexture_position.y, rotation, vec2(x, y)};
+	newmap->tiles[newmap->tilecount++] = (FE_Map_Tile){selectedtexture_position.x, selectedtexture_position.y, rotation, vec(x, y)};
 
 }
 
@@ -168,7 +168,7 @@ static void SetSpawn(int x, int y)
 	// snap x and y to a grid using tile size
 	GridSnap(&x, &y);
 
-	newmap->PlayerSpawn = vec2(x, y);
+	newmap->PlayerSpawn = vec(x, y);
 	info("Editor: Spawn set to (%d, %d)", x, y);
 }
 
@@ -176,7 +176,7 @@ static void SetEnd(int x, int y)
 {
 	GridSnap(&x, &y);
 
-	newmap->EndFlag = vec2(x, y);
+	newmap->EndFlag = vec(x, y);
 	info("Editor: Spawn end flag to (%d, %d)", x, y);
 }
 
@@ -385,7 +385,7 @@ static void CreateUI()
 	FE_UI_AddElement(FE_UI_BUTTON, FE_UI_CreateButton("Clear", 60, 7, BUTTON_TINY, &FE_StartEditor, NULL));
 	FE_UI_AddElement(FE_UI_CHECKBOX, FE_UI_CreateCheckbox("Tiles", 150, 7, mode, &ChangeMode, NULL));
 
-	coord = FE_UI_CreateLabel(NULL, "X: 0 Y: 0", 128, vec2(340, 6), COLOR_BLACK);
+	coord = FE_UI_CreateLabel(NULL, "X: 0 Y: 0", 128, vec(340, 6), COLOR_BLACK);
 	FE_UI_AddElement(FE_UI_LABEL, coord);
 	
 	spawntexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/spawn.png");
@@ -419,6 +419,9 @@ void FE_StartEditor(char *path)
 		newmap->atlas = FE_LoadResource(FE_RESOURCE_TYPE_ATLAS, ATLAS);
 		newmap->tilecount = 0;
 		newmap->tiles = 0;
+	} else if (strlen(path) == 0) {
+		Exit();
+		return;
 	} else {
 		newmap = FE_LoadMap(path);
 		if (!newmap)

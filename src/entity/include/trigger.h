@@ -2,7 +2,7 @@
 #define H_TRIGGER
 
 typedef struct {
-	Vector2D position; // The position in the world of the trigger
+	vec2 position; // The position in the world of the trigger
 	SDL_Rect range;
 	void (*event)(); // The function to call once the rect reaches the trigger
     void *event_data;
@@ -24,7 +24,7 @@ typedef struct {
  * \param visible Whether or not the trigger is visible or invisible
  * \returns The created trigger
 */
-FE_Trigger *FE_Trigger_Create(Vector2D position, int range, void (*event)(), void *event_data, bool visible);
+FE_Trigger *FE_Trigger_Create(vec2 position, int range, void (*event)(), void *event_data, bool visible);
 
 
 /** Renders all visible triggers to the screen

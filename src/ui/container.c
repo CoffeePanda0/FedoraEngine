@@ -8,9 +8,9 @@ static const int BorderWidth = 12;
 static const int BorderHeight = 30;
 static const int Padding = 10;
 
-Vector2D FE_GetCentre(SDL_Rect r, SDL_Rect container)
+vec2 FE_GetCentre(SDL_Rect r, SDL_Rect container)
 {
-    return vec2(container.x + (container.w - r.w) / 2, container.y + (container.h - r.h) / 2);
+    return vec(container.x + (container.w - r.w) / 2, container.y + (container.h - r.h) / 2);
 }
 
 

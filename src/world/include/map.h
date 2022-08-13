@@ -1,7 +1,7 @@
 #ifndef H_MAP
 #define H_MAP
 
-#include "../../core/include/vector2d.h"
+#include "../../physics/include/vector.h"
 #include "../../core/include/texture.h"
 
 typedef struct FE_Map_Tile {
@@ -9,7 +9,7 @@ typedef struct FE_Map_Tile {
     uint16_t texture_y;
     
     Uint16 rotation;
-    Vector2D position;
+    vec2 position;
 } FE_Map_Tile;
 
 /* The Map format when written to file */
@@ -27,8 +27,8 @@ typedef struct FE_Map {
     Uint16 tilesize;
     FE_Map_Tile *tiles;
 
-    Vector2D PlayerSpawn;
-    Vector2D EndFlag;
+    vec2 PlayerSpawn;
+    vec2 EndFlag;
 } FE_Map;
 
 
@@ -45,8 +45,8 @@ typedef struct FE_LoadedMap {
     Uint16 tilesize;
     FE_Map_Tile *tiles;
 
-    Vector2D PlayerSpawn;
-    Vector2D EndFlag;
+    vec2 PlayerSpawn;
+    vec2 EndFlag;
 } FE_LoadedMap;
 
 typedef struct FE_EndFlag {
@@ -86,28 +86,28 @@ void FE_CloseLoadedMap();
  *\param r The rectangle to check for collision
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
 */
-Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r);
+vec2 FE_CheckMapCollisionAbove(SDL_Rect *r);
 
 
 /** Checks if a rect is colliding below the map tiles
  * \param r The rectangle to check for collision
  * \returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
  */
-Vector2D FE_CheckMapCollisionBelow(SDL_Rect *r);
+vec2 FE_CheckMapCollisionBelow(SDL_Rect *r);
 
 
 /** Checks if a rect is colliding with the right-hand side of the rect
  *\param r The rectangle to check for collision
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
 */
-Vector2D FE_CheckMapCollisionRight(SDL_Rect *r);
+vec2 FE_CheckMapCollisionRight(SDL_Rect *r);
 
 
 /** Checks if a rect is colliding with the left-hand side of the rect
  *\param r The rectangle to check for collision
  *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
 */
-Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r);
+vec2 FE_CheckMapCollisionLeft(SDL_Rect *r);
 
 
 /** Renders the currently loaded map

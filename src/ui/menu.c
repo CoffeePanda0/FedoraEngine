@@ -64,7 +64,7 @@ static FE_UI_Label *GenKeyLabel(const char *input)
     char *key = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(FE_Key_Get(input)));
     sprintf(label, "%s: %s", (char*)input, key);
     
-    FE_UI_Label *l = FE_UI_CreateLabel(PresentGame->font, label, 300, vec2(0,0), COLOR_WHITE);
+    FE_UI_Label *l = FE_UI_CreateLabel(PresentGame->font, label, 300, vec(0,0), COLOR_WHITE);
     free(label);
     return l;
 }
@@ -163,8 +163,8 @@ void FE_Menu_LoadMenu(const char *page)
 		10000, // Max lifetime
 		true, // Particles to respawn once they go off screen
 		"snow.png", // Texture
-		(Vector2D){15, 15}, // Max size of each particle
-		(Vector2D){10, 3}, // Set initial velocity so particle doesn't float until they accelerate
+		(vec2){15, 15}, // Max size of each particle
+		(vec2){10, 3}, // Set initial velocity so particle doesn't float until they accelerate
 		true
 	);
 

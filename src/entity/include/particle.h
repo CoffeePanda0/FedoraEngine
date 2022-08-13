@@ -2,13 +2,13 @@
 #define H_PARTICLE
 
 #include <SDL.h>
-#include "../../core/include/vector2d.h"
+#include "../../physics/include/vector.h"
 
 typedef struct FE_Particle {
-    Vector2D velocity; // Velocity of the particle
+    vec2 velocity; // Velocity of the particle
 
     SDL_Rect body; // Body of the particle
-    Vector2D position; // Position of the particle
+    vec2 position; // Position of the particle
     
     Uint16 rotation; // Rotation of the particle
 
@@ -25,11 +25,11 @@ typedef struct FE_ParticleSystem {
     FE_Particle *particles; // Array of particles to render
     FE_Texture *texture; // Texture of the particles (add support for multiple textures later on)
 
-    Vector2D initial_velocity; // Initial velocity of the particles
+    vec2 initial_velocity; // Initial velocity of the particles
     Uint16 particle_life; // Life of the particles in ms
 
     SDL_Rect emission_area; // Area to emit particles from
-    Vector2D max_size; // Max size of the particles
+    vec2 max_size; // Max size of the particles
 
     Uint16 max_particles; // Maximum number of particles
     Uint16 num_particles; // Number of particles currently active
@@ -53,7 +53,7 @@ typedef struct FE_ParticleSystem {
 * \param initial_velocity - Initial velocity of the particles
 * \param camera_locked - If the particle system is not moved by the camera when the player moves
 */
-FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, Vector2D max_size, Vector2D initial_velocity, bool camera_locked);
+FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked);
 
 
 /** Destroys a particle system, frees the pointer

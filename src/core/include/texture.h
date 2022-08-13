@@ -2,7 +2,7 @@
 #define H_TEXTURE
 
 #include <SDL.h>
-#include "vector2d.h"
+#include "../../physics/include/vector.h"
 
 #define COLOR_BLACK (SDL_Color){0, 0, 0, 255}
 #define COLOR_WHITE (SDL_Color){255, 255, 255, 255}
@@ -75,7 +75,7 @@ typedef struct FE_TextureAtlas {
  * \param index The index of the texture to search for
  * \returns The location of the texture
 */
-Vector2D FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index);
+vec2 FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index);
 
 
 /** Returns a texture atlas

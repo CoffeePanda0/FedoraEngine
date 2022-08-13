@@ -14,6 +14,9 @@ static FE_Texture *flagtexture;
 
 FE_LoadedMap *FE_LoadMap(const char *name)
 {
+    if (!name || strlen(name) < 1)
+        return 0;
+    
     FE_LoadedMap *m = xmalloc(sizeof(FE_LoadedMap));
 
     // Combine map directory and map file path
@@ -60,7 +63,7 @@ FE_LoadedMap *FE_LoadMap(const char *name)
         if (fread(&m->tiles[i].texture_x, sizeof(Uint16), 1, f) != 1) goto err;
         if (fread(&m->tiles[i].texture_y, sizeof(Uint16), 1, f) != 1) goto err;
         if (fread(&m->tiles[i].rotation, sizeof(Uint16), 1, f) != 1) goto err;
-        if (fread(&m->tiles[i].position, sizeof(Vector2D), 1, f) != 1) goto err;
+        if (fread(&m->tiles[i].position, sizeof(vec2), 1, f) != 1) goto err;
 
         // calculate map height and width
         if ((Uint16)m->tiles[i].position.x + m->tilesize > PresentGame->MapConfig.MapWidth) PresentGame->MapConfig.MapWidth = m->tiles[i].position.x + m->tilesize;
@@ -79,11 +82,11 @@ FE_LoadedMap *FE_LoadMap(const char *name)
     PresentGame->MapConfig.Gravity = m->gravity;
 
     // read player spawn
-    if (fread(&m->PlayerSpawn, sizeof(Vector2D), 1, f) != 1) goto err;
+    if (fread(&m->PlayerSpawn, sizeof(vec2), 1, f) != 1) goto err;
     PresentGame->MapConfig.PlayerSpawn = m->PlayerSpawn;
     
     // read end flag
-    if (fread(&m->EndFlag, sizeof(Vector2D), 1, f) != 1) goto err;
+    if (fread(&m->EndFlag, sizeof(vec2), 1, f) != 1) goto err;
 
     fclose(f);
     return m;
@@ -135,7 +138,7 @@ void FE_RenderMap(FE_LoadedMap *m, FE_Camera *camera)
 	} 
 
     // render finish flag
-    if (!FE_VecNULL(m->EndFlag)) {
+    if (!vec2_null(m->EndFlag)) {
         SDL_Rect r = (SDL_Rect){m->EndFlag.x, m->EndFlag.y, m->tilesize, m->tilesize};
         FE_RenderCopy(camera, false, flagtexture, NULL, &r);
     }
@@ -171,7 +174,7 @@ void FE_CloseMap(FE_LoadedMap *map)
         free(map->name);
     map->name = 0;
     map->PlayerSpawn = VEC_NULL;
-    if (map->atlas) {
+    if (map->atlas && map->atlas->path) {
         FE_DestroyResource(map->atlas->path);
     }
     map->atlas = 0;
@@ -277,7 +280,7 @@ static size_t RightTileRange(size_t left, SDL_Rect *r) /* calculates the right-m
     return map->tilecount -1;
 }
 
-Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
+vec2 FE_CheckMapCollisionLeft(SDL_Rect *r)
 {
     if (!InBounds(r)) return VEC_NULL;
 
@@ -297,12 +300,12 @@ Vector2D FE_CheckMapCollisionLeft(SDL_Rect *r)
         if (out.h < 10 || out.w == 0)
             continue;
         if (tilerect.x < r->x && out.w > 0)
-            return vec2(map->tiles[i].position.x + map->tilesize, map->tiles[i].position.y);
+            return vec(map->tiles[i].position.x + map->tilesize, map->tiles[i].position.y);
     } 
     return VEC_NULL;
 }
 
-Vector2D FE_CheckMapCollisionRight(SDL_Rect *r)
+vec2 FE_CheckMapCollisionRight(SDL_Rect *r)
 {
     if (!InBounds(r)) return VEC_NULL;
 
@@ -329,7 +332,7 @@ Vector2D FE_CheckMapCollisionRight(SDL_Rect *r)
     return VEC_NULL;
 }
 
-Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
+vec2 FE_CheckMapCollisionAbove(SDL_Rect *r)
 {
     if (!InBounds(r)) return VEC_NULL;
     
@@ -337,7 +340,7 @@ Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
     size_t left_tile = LeftTileRange(r);
     size_t right_tile = RightTileRange(left_tile, r);
 
-    Vector2D position = VEC_NULL;
+    vec2 position = VEC_NULL;
 
     // check if each tile is colliding from above with the rect
     for (size_t i = left_tile; i < right_tile; i++) {
@@ -359,7 +362,7 @@ Vector2D FE_CheckMapCollisionAbove(SDL_Rect *r)
     return position;
 }
 
-Vector2D FE_CheckMapCollisionBelow(SDL_Rect *r)
+vec2 FE_CheckMapCollisionBelow(SDL_Rect *r)
 {
     if (!InBounds(r)) return VEC_NULL;
 
@@ -376,7 +379,7 @@ Vector2D FE_CheckMapCollisionBelow(SDL_Rect *r)
             continue;
 
         if (collrect.h > 0 && (r->y > tilerect.y + (tilerect.h / 2)))
-            return vec2(map->tiles[i].position.x, map->tiles[i].position.y + map->tilesize);
+            return vec(map->tiles[i].position.x, map->tiles[i].position.y + map->tilesize);
     }
     return VEC_NULL;
 

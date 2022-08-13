@@ -3,7 +3,7 @@
 
 #include <SDL.h>
 #include <stdbool.h>
-#include "../../core/include/vector2d.h"
+#include "../../physics/include/vector.h"
 #include "font.h"
 
 typedef struct {
@@ -29,7 +29,7 @@ typedef struct {
  * \param color The color of the text
  * \return The label created
 */
-FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, Vector2D position, SDL_Color color);
+FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, vec2 position, SDL_Color color);
 
 
 /** Updates an existing label's text
