@@ -6,6 +6,9 @@ typedef struct FE_Light {
     FE_Texture *Texture;
     uint8_t intensity;
     
+    int16_t x_offset;
+    int16_t y_offset;
+
     bool enabled;
 } FE_Light;
 
@@ -14,25 +17,26 @@ typedef struct FE_Light {
  * \param camera The camera to render from
  * \param world The world to render
 */
-void FE_RenderLighting(FE_Camera *camera, SDL_Texture *world);
+void FE_Light_Render(FE_Camera *camera, SDL_Texture *world);
 
 
 /** Creates a new light effect and adds it to the world
- * \param rect The rectangle to render the light effect in (location and size)
+ * \param rect The rectangle to render the light effect around
+ * \param radius The radius of the light effect
  * \param texture The texture to render the light effect with
  * \returns The new light effect
 */
-FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture);
+FE_Light *FE_Light_Create(SDL_Rect rect, int radius, const char *texture);
 
 
 /** Destroys a light and frees memory
  * \param light The light to destroy
 */
-void FE_DestroyLight(FE_Light *light);
+void FE_Light_Destroy(FE_Light *light);
 
 
 /* Destroys the lighting system */
-void FE_CleanLighting();
+void FE_Light_Clean();
 
 
 /** Moves a light to a new location. Use this instead of modifiying the light directly.
@@ -40,12 +44,20 @@ void FE_CleanLighting();
  * \param x The new x location
  * \param y The new y location
 */
-void FE_MoveLight(FE_Light *light, int x, int y);
+void FE_Light_Move(FE_Light *light, int x, int y);
 
 
 /** Toggles a light on or off
  * \param light The light to toggle
 */
-void FE_ToggleLight(FE_Light *light);
+void FE_Light_Toggle(FE_Light *light);
+
+
+/** Sets the intensity of a light
+ * \param light The light to set the intensity of
+ * \param intensity The new intensity
+*/
+void FE_Light_SetIntensity(FE_Light *light, uint8_t intensity);
+
 
 #endif

@@ -7,12 +7,16 @@
 
 static FE_List *FE_GameObjects = 0; // list of all gameobjects
 
-FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *name, enum FE_ObjectType type, int mass, bool moveable)
+FE_GameObject *FE_GameObject_Create(SDL_Rect r, const char *texture_path, int mass)
 {
+	if (!texture_path) {
+		warn("NULL texture_path passed to FE_GameObject_Create");
+		return 0;
+	}
+	
 	/* fill data from passed parameters */
 	struct FE_GameObject *obj;
 	obj = xmalloc(sizeof(*obj));
-	obj->name = name;
 
 	// combine asset path and texture path
 	char *path = xmalloc(mstrlen(AssetPath) + mstrlen(texture_path) + 1);
@@ -21,10 +25,8 @@ FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *n
 	obj->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
 	free(path);
 	
-	obj->type = type;
-
 	/* create physics object */
-	FE_PhysObj *p = FE_CreatePhysObj(mass, r, moveable);
+	FE_PhysObj *p = FE_CreatePhysObj(mass, r);
 
 	FE_AddPhysInteractable(p);
 
@@ -34,7 +36,7 @@ FE_GameObject *FE_CreateGameObject(SDL_Rect r, const char *texture_path, char *n
 }
 
 
-void FE_RenderGameObjects(FE_Camera *c)
+void FE_GameObject_Render(FE_Camera *c)
 {
 	for (FE_List *o = FE_GameObjects; o; o = o->next) {
 		FE_GameObject *obj = o->data;
@@ -42,7 +44,7 @@ void FE_RenderGameObjects(FE_Camera *c)
 	}
 }
 
-void FE_CleanGameObjects() // Destroys all game objects
+void FE_GameObject_Clean() // Destroys all game objects
 {
 	// destroy all game objects inside every node
 	for (FE_List *o = FE_GameObjects; o; o = o->next) {
@@ -55,7 +57,7 @@ void FE_CleanGameObjects() // Destroys all game objects
 	FE_List_Destroy(&FE_GameObjects);
 }
 
-int FE_DestroyGameObject(FE_GameObject *obj)
+int FE_GameObject_Destroy(FE_GameObject *obj)
 {
 	// free gameobject data
 	FE_RemovePhysInteractable(obj->phys);

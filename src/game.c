@@ -38,7 +38,7 @@ void FE_StartGame(const char *mapname)
 	// test particle system
 	SnowParticles = FE_CreateParticleSystem(
 		(SDL_Rect){0, -20, PresentGame->MapConfig.MapWidth, 20}, // Position for the whole screen, slightly above the top to create more random
-		250, // Emission rate
+		350, // Emission rate
 		3000, // Max particles
 		10000, // Max lifetime
 		true, // Particles to respawn once they go off screen
@@ -51,10 +51,9 @@ void FE_StartGame(const char *mapname)
 	world = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
 	FE_ResetDT();
 
-	FE_CreateGameObject((SDL_Rect){1200, 1200, 64, 128}, "torch.png", "", ENEMY, 0, false);
-	FE_CreateLight((SDL_Rect){870,1050,712,512}, "torchglow.png");
-
-	FE_CreateGameObject((SDL_Rect){1200, 1200, 64, 128}, "torch.png", "", ENEMY, 50, true);
+	FE_Prefab_Create("candle", 1000, 1250);
+	FE_Prefab_Create("candle", 2000, 1250);
+	FE_Prefab_Create("candle", 3000, 1250);
 
 	PresentGame->GameState = GAME_STATE_PLAY;
 }
@@ -69,12 +68,12 @@ void FE_RenderGame()
 	FE_RenderParticles(GameCamera);
 	FE_RenderLoadedMap(GameCamera);
 	FE_Trigger_Render(GameCamera);
-	FE_RenderGameObjects(GameCamera);
+	FE_GameObject_Render(GameCamera);
 	FE_Trigger_Render(GameCamera);
 	FE_RenderPlayer(GamePlayer, GameCamera);
 
 	if (PresentGame->DebugConfig.LightingEnabled)
-		FE_RenderLighting(GameCamera, world);
+		FE_Light_Render(GameCamera, world);
 	FE_UI_Render();
 	SDL_RenderPresent(PresentGame->Renderer);
 }
@@ -100,6 +99,7 @@ void FE_GameLoop()
 	FE_UpdateParticles(); // todo can we multithread this?
 	FE_UpdatePlayer(GamePlayer);
 	FE_UpdateAnimations();
+	FE_Prefab_Update();
 	FE_UpdateCamera(GameCamera);
 	PresentGame->Timing.UpdateTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.UpdateTime) / SDL_GetPerformanceFrequency()) * 1000;
 

@@ -99,6 +99,7 @@ void *mmemmove(void *dest, const void *src, size_t n)
 
 size_t mstrlen(const char *str)
 {
+	assert(str != NULL);
     const char *s;
     for (s = str; *s; ++s);
     return (s - str);
@@ -217,6 +218,7 @@ char *mstrsep(char **sp, char *sep)
 char *mstradd(const char *str, const char *add)
 {
 	assert(str != NULL && add != NULL);
+		
 	char *newstr = _MSTRING_MALLOC(mstrlen(str) + mstrlen(add) + 1);
 	mstrcpy(newstr, str);
 	mstrcat(newstr, add);

@@ -25,7 +25,6 @@ static int ConfigParser(void *user, const char *section, const char *name, const
     static char *dir = 0;
     static short last_layer = 0;
 
-    #define MATCH(s, n) mstrcmp(section, s) == 0 && mstrcmp(name, n) == 0
     if (MATCH("CONFIG", "name")) { // load each layer name
         last_layer = 0;
         if (dir) free(dir);

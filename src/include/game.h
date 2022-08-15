@@ -15,6 +15,7 @@
 #include "../entity/include/player.h"
 #include "../entity/include/particle.h"
 #include "../entity/include/trigger.h"
+#include "../entity/include/prefab.h"
 
 #include "../world/include/include.h"
 #include "../editor/editor.h"

@@ -36,7 +36,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.Renderer = NULL,
 		.GameActive = false,
 		.GameState = GAME_STATE_MENU,
-		.MapConfig = {false, ic->WindowWidth, ic->WindowHeight, 0, VEC_EMPTY, 0.0f, 50},
+		.MapConfig = {false, ic->WindowWidth, ic->WindowHeight, 0, VEC_EMPTY, 0.0f, 20},
 		.AudioConfig = {50, false},
 		.Timing = {0,0,0},
 		.DebugConfig = {false, true, false},
@@ -123,14 +123,15 @@ void FE_Init(FE_InitConfig *InitConfig)
 void FE_CleanAll() // Cleans all resources possible without exiting
 {
 	FE_CloseLoadedMap();
+	FE_Prefab_Clean();
 	FE_Trigger_Clean();
-	FE_CleanLighting();
+	FE_Light_Clean();
 	FE_Parallax_Clean();
 	FE_UI_ClearElements(PresentGame->UIConfig.ActiveElements);
 	FE_Dialogue_Free();
 	FE_CleanEditor();
 	FE_CleanCameras();
-	FE_CleanGameObjects();
+	FE_GameObject_Clean();
 	FE_CleanAudio();
 	FE_CleanTimers();
 	FE_CleanAnimations();

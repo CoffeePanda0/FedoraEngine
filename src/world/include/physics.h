@@ -17,7 +17,6 @@ typedef struct FE_PhysObj {
     SDL_Rect body;
     vec2 position;
     
-    bool moveable;
 } FE_PhysObj;
 
 typedef struct {
@@ -51,7 +50,7 @@ void FE_ApplyForce(FE_PhysObj *o, vec2 force);
  * \param moveable Whether the object is moveable by other objects
  * \return The new object
 */
-FE_PhysObj *FE_CreatePhysObj(Uint16 mass, SDL_Rect body, bool moveable);
+FE_PhysObj *FE_CreatePhysObj(Uint16 mass, SDL_Rect body);
 
 
 /** Adds a given physics interactable to the physics system.

@@ -8,28 +8,40 @@ static bool light_layer_dirty = true;
 
 static FE_List *lights;
 
-void FE_MoveLight(FE_Light *light, int x, int y)
+void FE_Light_SetIntensity(FE_Light *light, uint8_t intensity)
 {
-    if (!light) {
-        warn("NULL light passed! (FE_MoveLight)");
-        return;
-    }
-    light->Rect.x = x;
-    light->Rect.y = y;
+    light->intensity = intensity;
     light_layer_dirty = true;
 }
 
-void FE_ToggleLight(FE_Light *light)
+void FE_Light_Move(FE_Light *light, int x, int y)
 {
     if (!light) {
-        warn("NULL light passed! (FE_ToggleLight)");
+        warn("NULL light passed! (FE_Light_Move)");
+        return;
+    }
+    // set the light to the new position, taking into account the light's radius
+    light->Rect = (SDL_Rect) {
+        x + light->x_offset - (light->Rect.w / 2),
+        y + light->y_offset - (light->Rect.h / 2),
+        light->Rect.w,
+        light->Rect.h
+    };
+
+    light_layer_dirty = true;
+}
+
+void FE_Light_Toggle(FE_Light *light)
+{
+    if (!light) {
+        warn("NULL light passed! (FE_Light_Toggle)");
         return;
     }
     light->enabled = !light->enabled;
     light_layer_dirty = true;
 }
 
-FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture)
+FE_Light *FE_Light_Create(SDL_Rect rect, int radius, const char *texture)
 {
     if (!light_layer) {
         light_layer = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
@@ -37,9 +49,18 @@ FE_Light *FE_CreateLight(SDL_Rect rect, const char *texture)
 
     // Create new light object
     FE_Light *light = xmalloc(sizeof(FE_Light));
-    light->Rect = rect;
+    light->x_offset = rect.w / 2;
+    light->y_offset = rect.h / 2;
+
+    light->Rect = (SDL_Rect) {
+        rect.x + light->x_offset - (light->Rect.w / 2),
+        rect.y + light->y_offset - (light->Rect.h / 2),
+        radius * 2,
+        radius * 2
+    };
+
     light->enabled = true;
-    light->intensity = 255;
+    light->intensity = 225;
 
     // Create absoloute path
     char *path = mstradd(LIGHT_DIRECTORY, texture);
@@ -68,7 +89,7 @@ static void CheckIfLightDirty(FE_Camera *camera)
     }
 }
 
-void FE_RenderLighting(FE_Camera *camera, SDL_Texture *world)
+void FE_Light_Render(FE_Camera *camera, SDL_Texture *world)
 {
 	Uint8 brightness = PresentGame->MapConfig.AmbientLight;
     SDL_Rect vis_rect = SCREEN_RECT(camera);
@@ -109,7 +130,7 @@ void FE_RenderLighting(FE_Camera *camera, SDL_Texture *world)
     SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_NONE);
 }
 
-void FE_DestroyLight(FE_Light *light)
+void FE_Light_Destroy(FE_Light *light)
 {
     FE_List_Remove(&lights, light);
     FE_DestroyResource(light->Texture->path);
@@ -117,7 +138,7 @@ void FE_DestroyLight(FE_Light *light)
     light_layer_dirty = true;
 }
 
-void FE_CleanLighting()
+void FE_Light_Clean()
 {
     if (light_layer)    
         SDL_DestroyTexture(light_layer);

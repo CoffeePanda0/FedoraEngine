@@ -205,5 +205,7 @@ char *mstrmult(const char *str, size_t n);
  */
 char *mstrrand(size_t len);
 
+// return true or false if the two strings match
+#define MATCH(s, n) mstrcmp(section, s) == 0 && mstrcmp(name, n) == 0
 
 #endif

@@ -12,8 +12,8 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 - Parallax support  
 - Keybinds and customisable inputs in game  
 - Custom UI Library (Labels, Textboxes, Buttons, Checkboxes, MessageBoxes, HUD, Grids)  
-- Game Objects and sprites  
-- Custom physics engine    
+- Easy-to-create prefabs, Game Objects and sprites  
+- Basic physics engine    
 - Timers  
 - Basic hard-coded menus  
 - Audio controls  

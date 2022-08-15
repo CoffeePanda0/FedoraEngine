@@ -22,11 +22,10 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     p->jump_elapsed = 0;
 
     // physics object
-    p->PhysObj = FE_CreatePhysObj(PLAYER_MASS, body, true);
+    p->PhysObj = FE_CreatePhysObj(PLAYER_MASS, body);
 
     // light
-    SDL_Rect l_r = {body.x, body.y, 256, 256};
-    p->Light = FE_CreateLight(l_r, "light.png");
+    p->Light = FE_Light_Create(body, 128, "light.png");
 
     // bool values
     p->on_ground = false;
@@ -126,7 +125,7 @@ void FE_UpdatePlayer(FE_Player *player)
     // Update the light position, keeping player centered
     if (last_position.x != player->PhysObj->body.x || last_position.y != player->PhysObj->body.y) {
         if (player->Light) {
-            FE_MoveLight(player->Light, player->PhysObj->body.x + player->PhysObj->body.w/2 - player->Light->Rect.w/2, player->PhysObj->body.y + player->PhysObj->body.h/2 - player->Light->Rect.h/2);
+            FE_Light_Move(player->Light, player->PhysObj->body.x, player->PhysObj->body.y);
             last_position = vec(player->PhysObj->body.x, player->PhysObj->body.y);
         }
     }

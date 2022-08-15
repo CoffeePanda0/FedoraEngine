@@ -11,6 +11,8 @@ static void FE_Gravity() // Applies gravity to all objects
         for (FE_List *t = FE_PhysObjects; t; t = t->next) {
             FE_PhysObj *obj = (FE_PhysObj *)t->data;
 
+            if (obj->mass == 0) continue; // Don't apply gravity to objects with no mass
+
             float new_velocity = obj->velocity.y;
             new_velocity = obj->velocity.y + (obj->velocity.y + PresentGame->MapConfig.Gravity) * FE_DT;
 
@@ -25,7 +27,7 @@ static void FE_Gravity() // Applies gravity to all objects
     } 
 }
 
-FE_PhysObj *FE_CreatePhysObj(Uint16 mass, SDL_Rect body, bool moveable)
+FE_PhysObj *FE_CreatePhysObj(Uint16 mass, SDL_Rect body)
 {
     FE_PhysObj *o = xmalloc(sizeof(FE_PhysObj));
     o->mass = mass;
@@ -34,7 +36,6 @@ FE_PhysObj *FE_CreatePhysObj(Uint16 mass, SDL_Rect body, bool moveable)
     o->body = body;
     o->force = VEC_NULL;
     o->position = vec(body.x, body.y);
-    o->moveable = moveable;
 
     return o;
 }
@@ -96,7 +97,7 @@ static void Friction()
     for (FE_List *t = FE_PhysObjects; t; t = t->next) {
         FE_PhysObj *obj = (FE_PhysObj *)t->data;
 
-        if (obj->velocity.x == 0)
+        if (obj->velocity.x == 0 || obj->mass == 0)
             continue;
 
         // don't bother with negligble amounts
@@ -145,6 +146,9 @@ void ClearForce(FE_PhysObj *o)
 static void MapCollision(FE_PhysObj *o)
 {
     bool action = false;
+
+    if (o->mass == 0)
+        return;
 
     /* Check screen / map boundries */
     if (o->position.x < 0) {
@@ -222,16 +226,17 @@ static void AABB_Collision(FE_PhysObj *p1, FE_PhysObj *p2)
     if (!FE_AABB_Collision(&p1->body, &p2->body)) return;
 
     // todo
-}
-           
+}   
+
 void FE_RunPhysics()
 {
-    float dt = FE_DT;
-
     FE_Gravity();
 
     for (FE_List *l = FE_PhysObjects; l; l = l->next) {
         FE_PhysObj *body = l->data;
+        
+        if (body->mass == 0) continue;
+
         IntegrateAcceleration(body);
         IntegrateVelocity(body);
 

@@ -55,7 +55,7 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                     PresentGame->DebugConfig.ShowTiming = !PresentGame->DebugConfig.ShowTiming;
 
                 if (keyboard_state[SDL_SCANCODE_L] && event.key.repeat == 0)
-                    FE_ToggleLight(player->Light);
+                    FE_Light_Toggle(player->Light);
 
             break;
         }
