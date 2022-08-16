@@ -130,7 +130,7 @@ void FE_UpdatePlayer(FE_Player *player)
         }
     }
     
-    if (player->PhysObj->velocity.x < 0.15 && player->PhysObj->velocity.x > -0.15) // don't animate small amounts
+    if (player->PhysObj->velocity.x < 0.2 && player->PhysObj->velocity.x > -0.2) // don't animate small amounts
         player->moving = false;
     else {
         player->moving = true;

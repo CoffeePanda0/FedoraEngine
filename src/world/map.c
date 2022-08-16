@@ -195,7 +195,7 @@ void FE_CloseMap(FE_LoadedMap *map)
 
 static bool InBounds(SDL_Rect *r)// checks if rect is in map bounds
 {
-    if (!PresentGame->MapConfig.Loaded )
+    if (!PresentGame->MapConfig.Loaded)
         return false;
 
      if (!r)
@@ -258,6 +258,7 @@ static size_t RightTileRange(size_t left, SDL_Rect *r) /* calculates the right-m
     static uint16_t prev_x[5];
     static uint16_t prev_mid[5];
     static uint8_t arr_pt = 0;
+    
     for (size_t i = 0; i < 5; i++) {
         if (r->x == prev_x[i]) {
             return prev_mid[i];

@@ -102,6 +102,7 @@ FE_Prefab *FE_Prefab_Create(const char *name, int x, int y)
         return 0;
     }
     buffer_prefab->obj = FE_GameObject_Create(buffer_rect, texture_path, mass);
+
     if (buffer_prefab->has_light) {
         if (!light_effect) light_effect = mstrdup("");
         buffer_prefab->light = FE_Light_Create(buffer_prefab->obj->phys->body, light_radius, light_effect);

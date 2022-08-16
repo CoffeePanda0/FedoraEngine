@@ -250,6 +250,8 @@ void FE_RunPhysics()
     /* Check each of the physics objects for collision with each other */
     for (FE_List *l = FE_PhysObjects; l; l = l->next) {
         for (FE_List *l2 = l->next; l2; l2 = l2->next) {
+            FE_PhysObj *body = l->data;
+            if (body->mass == 0) continue;
             AABB_Collision(l->data, l2->data);
         }
     }

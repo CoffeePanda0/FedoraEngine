@@ -53,6 +53,7 @@ FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emissio
     p->emission_area = emissionarea;
     p->max_particles = max_particles;
     p->emission_rate = emission_rate; 
+    p->inv_rate = 1.0f / emission_rate;
     p->respawns = respawns;
     p->max_size = max_size;
     p->initial_velocity = initial_velocity;
@@ -93,18 +94,18 @@ void FE_UpdateParticles()
 
         uint16_t to_emit = 0; // The amount of particles to emit this frame
         if (p->respawns) {
-            float rate = (1.0f / p->emission_rate);
             p->emission_rate_timer += FE_DT;
-            if (p->emission_rate_timer > rate) {
+            if (p->emission_rate_timer > p->inv_rate) {
                 if (p->num_particles < p->max_particles) {
                     // Calculate how many particles to emit this frame based on FPS
-                    to_emit = (uint16_t)(p->emission_rate / FE_FPS);
+                    to_emit = (uint16_t)(p->emission_rate * FE_DT);
                     to_emit = clamp(to_emit, 1, p->max_particles - p->num_particles);
                 }
                 p->emission_rate_timer = 0;
             }
         }
 
+        // check each particle inside the system
         for (size_t i = 0; i < p->max_particles; i++) {
             FE_Particle *particle = &p->particles[i];    
             if (particle->is_dead) { // if we are already due to emit a new particle, use this one
@@ -161,12 +162,7 @@ void FE_RenderParticles(FE_Camera *camera)
             if (p->particles[i].is_dead)
                 continue;
 
-            if (p->camera_locked) {
-                FE_RenderCopyEx(camera, true, p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, SDL_FLIP_NONE);
-            } else {
-                FE_RenderCopyEx(camera, false, p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, SDL_FLIP_NONE);
-            }
-
+            FE_RenderCopyEx(camera, p->camera_locked, p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, SDL_FLIP_NONE);
         }
     }
 }

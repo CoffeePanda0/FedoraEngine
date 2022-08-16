@@ -35,6 +35,7 @@ typedef struct FE_ParticleSystem {
     Uint16 num_particles; // Number of particles currently active
 
     Uint16 emission_rate; // Number of particles to emit per second
+    float inv_rate; // Inverse of emission rate
     float emission_rate_timer; // Timer for the emission rate
 
     bool respawns; // If the particle system is dead (no particles left) then it will be removed from the world

@@ -24,7 +24,7 @@ int FE_UI_GetFreeTile(FE_UI_Grid *grid)
     return -1;
 }
 
-void FE_UI_UpdateTile(FE_UI_Grid *grid, size_t texture_index, size_t index)
+void FE_UI_UpdateTile(FE_UI_Grid *grid, FE_Texture *texture, size_t index)
 {
     if (!grid) {
         warn("NULL passed to grid");
@@ -40,7 +40,7 @@ void FE_UI_UpdateTile(FE_UI_Grid *grid, size_t texture_index, size_t index)
         grid->tiles_set++;
     }
 
-    tile->texture_index = texture_index;
+    tile->texture = texture;
     grid->buffer_dirty = true;
 }
 
@@ -55,13 +55,13 @@ void FE_UI_UpdateGridBorder(FE_UI_Grid *grid, SDL_Color color, int thickness)
     grid->buffer_dirty = true;
 }
 
-void FE_UI_AddTile(FE_UI_Grid *grid, size_t texture_index)
+void FE_UI_AddTile(FE_UI_Grid *grid, FE_Texture *texture)
 {
     if (FE_UI_GridFull(grid)) {
         info("Unable to add tile - Grid is full");
         return;
     }
-    FE_UI_UpdateTile(grid, texture_index, FE_UI_GetFreeTile(grid));
+    FE_UI_UpdateTile(grid, texture, FE_UI_GetFreeTile(grid));
     grid->buffer_dirty = true;
 }
 
@@ -169,7 +169,7 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
         for (size_t i = 0; i < grid->tile_count; i++) {
             FE_UI_Tile *t = &grid->tiles[i];
             if (t->empty) continue;
-            FE_RenderAtlasTexture(grid->atlas, t->texture_index, &t->r);
+            SDL_RenderCopy(PresentGame->Renderer, t->texture->Texture, NULL, &t->r);
         }
 
         // Render outside border
@@ -226,7 +226,7 @@ void FE_UI_MoveGrid(FE_UI_Grid *grid, int x, int y)
     grid->buffer_dirty = true;
 }
 
-FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int tile_w, int tile_h, char *atlas, void (*onclick)())
+FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int tile_w, int tile_h, void (*onclick)())
 {
     // Create new grid
     FE_UI_Grid *grid = xmalloc(sizeof(FE_UI_Grid));
@@ -234,7 +234,6 @@ FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int 
     grid->tile_count = tile_count;
     grid->onclick = onclick;
     grid->color = COLOR_WHITE;
-    grid->atlas = FE_LoadResource(FE_RESOURCE_TYPE_ATLAS, atlas);
 
     grid->hovered = VEC_NULL;
     grid->hover_color = (SDL_Color){255, 255, 255, 150};
@@ -261,7 +260,7 @@ FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int 
             break;
         }
         grid->tiles[idx].empty = true;
-        grid->tiles[idx].texture_index = 0;
+        grid->tiles[idx].texture = 0;
         grid->tiles[idx].r = (SDL_Rect){(grid->tile_w * cur_col) + ((cur_col + 1) * grid->border_width), (grid->tile_h * cur_row) + ((cur_row + 1) * grid->border_width), grid->tile_w, grid->tile_h};
         if (++cur_col >= grid->cols) {
             cur_col = 0;
@@ -274,6 +273,10 @@ FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int 
 void FE_UI_DestroyGrid(FE_UI_Grid *grid, bool global)
 {
     // Destroy tiles
+    for (size_t i = 0; i < grid->tile_count; i++) {
+        FE_UI_Tile *t = &grid->tiles[i];
+        FE_DestroyResource(t->texture->path);
+    }
     grid->tile_count = 0;
     free(grid->tiles);
     grid->tiles = 0;
@@ -282,8 +285,6 @@ void FE_UI_DestroyGrid(FE_UI_Grid *grid, bool global)
         SDL_DestroyTexture(grid->buffer_texture);
         grid->buffer_texture = 0;
     }
-
-    FE_DestroyResource(grid->atlas->path);
 
     if (global) {
         FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Grids, grid);

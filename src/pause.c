@@ -49,7 +49,7 @@ static void PauseUI()
     FE_UI_AddContainerSpacer(container, 100);
     FE_UI_AddChild(container, FE_UI_BUTTON, quit_btn, FE_LOCATION_CENTRE);
 
-    BGTexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/pause.png");
+    BGTexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/menu.jpg");
 }
 
 void FE_PauseGame()

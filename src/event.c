@@ -24,38 +24,40 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
 
         switch (event.type) {
             case SDL_KEYDOWN:
-                if (keyboard_state[SDL_SCANCODE_ESCAPE] && event.key.repeat == 0) {
-                    FE_PauseGame();
-                    break;
-                }
-                if (keyboard_state[SDL_SCANCODE_GRAVE] && event.key.repeat == 0) {
-                    SDL_StartTextInput();
-                    PresentGame->StartedInput = true;
-                    FE_Console_Show();
-                    break;
-                }
+                if (event.key.repeat == 0) {
+                    if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
+                        FE_PauseGame();
+                        break;
+                    }
+                    else if (keyboard_state[SDL_SCANCODE_GRAVE]) {
+                        SDL_StartTextInput();
+                        PresentGame->StartedInput = true;
+                        FE_Console_Show();
+                        break;
+                    }
                 
-                if (keyboard_state[FE_Key_Get("ZOOM IN")] && event.key.repeat == 0)
-                    FE_Camera_SmoothZoom(camera, 0.5, 250);
-                if (keyboard_state[FE_Key_Get("ZOOM OUT")] && event.key.repeat == 0)
-                    FE_Camera_SmoothZoom(camera, -0.5, 250);
-                
+                    if (keyboard_state[FE_Key_Get("ZOOM IN")])
+                        FE_Camera_SmoothZoom(camera, 0.5, 250);
+                    else if (keyboard_state[FE_Key_Get("ZOOM OUT")])
+                        FE_Camera_SmoothZoom(camera, -0.5, 250);
+                    
+                    if (keyboard_state[SDL_SCANCODE_I])
+                        PresentGame->DebugConfig.ShowTiming = !PresentGame->DebugConfig.ShowTiming;
+
+                    if (keyboard_state[SDL_SCANCODE_L])
+                        FE_Light_Toggle(player->Light);
+                }
 
                 if (keyboard_state[SDL_SCANCODE_M]) {
                     if (PresentGame->MapConfig.AmbientLight <= 252) {
                         PresentGame->MapConfig.AmbientLight += 3;
                     }
                 }
-                if (keyboard_state[SDL_SCANCODE_N]) {
+                else if (keyboard_state[SDL_SCANCODE_N]) {
                     if (PresentGame->MapConfig.AmbientLight >= 3) {
                         PresentGame->MapConfig.AmbientLight -= 3;
                     }
                 }
-                if (keyboard_state[SDL_SCANCODE_I] && event.key.repeat == 0)
-                    PresentGame->DebugConfig.ShowTiming = !PresentGame->DebugConfig.ShowTiming;
-
-                if (keyboard_state[SDL_SCANCODE_L] && event.key.repeat == 0)
-                    FE_Light_Toggle(player->Light);
 
             break;
         }

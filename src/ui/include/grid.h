@@ -4,7 +4,7 @@
 typedef struct {
     bool empty;
     SDL_Rect r;
-    size_t texture_index;
+    FE_Texture *texture;
 } FE_UI_Tile;
 
 typedef struct {
@@ -20,8 +20,6 @@ typedef struct {
     int border_width;
     int tile_w;
     int tile_h;
-
-    FE_TextureAtlas *atlas;
 
     SDL_Texture *buffer_texture;
     bool buffer_dirty;
@@ -49,17 +47,17 @@ int FE_UI_GetFreeTile(FE_UI_Grid *grid);
 
 /** Updates a tile in the grid
  * \param grid The grid to update
- * \param texture The texture index to set the tile to
+ * \param texture The texture to set the tile to
  * \param index The index of the tile to update
  */
-void FE_UI_UpdateTile(FE_UI_Grid *grid, size_t texture_index, size_t index);
+void FE_UI_UpdateTile(FE_UI_Grid *grid, FE_Texture *texture, size_t index);
 
 
 /** Adds a tile to the first free slot in the grid
  * \param grid The grid to add to
- * \param texture The texture index to set the tile to
+ * \param texture The texture to set the tile to
  */
-void FE_UI_AddTile(FE_UI_Grid *grid, size_t texture_index);
+void FE_UI_AddTile(FE_UI_Grid *grid, FE_Texture *texture);
 
 
 /** Clears a tile in the grid, setting it to empty
@@ -91,11 +89,10 @@ void FE_UI_MoveGrid(FE_UI_Grid *grid, int x, int y);
  * \param tile_count The number of tiles in the grid
  * \param tile_w The width of each tile
  * \param tile_h The height of each tile
- * \param atlas The name of the texture atlas
  * \param onclick The function to call when a tile is clicked
  * \return The new grid
  */
-FE_UI_Grid *FE_UI_CreateGrid(int x, int y ,int w, int h, size_t tile_count, int tile_w, int tile_h, char *atlas, void (*onclick)());
+FE_UI_Grid *FE_UI_CreateGrid(int x, int y ,int w, int h, size_t tile_count, int tile_w, int tile_h, void (*onclick)());
 
 
 /** Destroys a grid
