@@ -5,7 +5,7 @@
 
 static FE_Font *TitleFont;
 static const int BorderWidth = 12;
-static const int BorderHeight = 30;
+static const int BorderHeight = 64;
 static const int Padding = 10;
 
 vec2 FE_GetCentre(SDL_Rect r, SDL_Rect container)
@@ -34,7 +34,7 @@ FE_UI_Container *FE_UI_CreateContainer(int x, int y, int w, int h, char *title, 
     c->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/container_outer.png");
     c->title = FE_UI_CreateLabel(TitleFont, title, w, VEC_EMPTY, PresentGame->UIConfig.UIFontColor);
     c->title->r.x = FE_GetCentre(c->title->r, c->body).x;
-    c->title->r.y = c->body.y + c->title->r.h - BorderHeight;
+    c->title->r.y = FE_GetCentre(c->title->r, (SDL_Rect){x, y, w - BorderWidth, BorderHeight}).y;
 
     c->inner_rect = (SDL_Rect){
         .x = c->body.x + BorderWidth,
@@ -175,6 +175,7 @@ void FE_UI_DestroyContainer(FE_UI_Container *c, bool free_children, bool global)
 
     // Free the container
     free(c);
+    FE_UI_ControlContainerLocked = false;
 }
 
 void FE_UI_AddContainerSpacer(FE_UI_Container *container, int h)

@@ -4,7 +4,7 @@
 typedef struct {
     bool empty;
     SDL_Rect r;
-    FE_Texture *texture;
+    SDL_Texture *texture;
 } FE_UI_Tile;
 
 typedef struct {
@@ -50,14 +50,14 @@ int FE_UI_GetFreeTile(FE_UI_Grid *grid);
  * \param texture The texture to set the tile to
  * \param index The index of the tile to update
  */
-void FE_UI_UpdateTile(FE_UI_Grid *grid, FE_Texture *texture, size_t index);
+void FE_UI_UpdateTile(FE_UI_Grid *grid, SDL_Texture *texture, size_t index);
 
 
 /** Adds a tile to the first free slot in the grid
  * \param grid The grid to add to
  * \param texture The texture to set the tile to
  */
-void FE_UI_AddTile(FE_UI_Grid *grid, FE_Texture *texture);
+void FE_UI_AddTile(FE_UI_Grid *grid, SDL_Texture *texture);
 
 
 /** Clears a tile in the grid, setting it to empty

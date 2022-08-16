@@ -67,6 +67,8 @@ typedef struct FE_TextureAtlas {
 
     int width, height;
     uint16_t texturesize;
+
+    size_t max_index;
 } FE_TextureAtlas;
 
 
@@ -97,6 +99,14 @@ void FE_DestroyTextureAtlas(FE_TextureAtlas *atlas);
  * \param dst The destination to render to
 */
 void FE_RenderAtlasTexture(FE_TextureAtlas *atlas, size_t index, SDL_Rect *dst);
+
+
+/** Creates an SDL_Texture from a tile inside an atlas
+ * \param atlas The atlas to create the texture from
+ * \param index The index of the texture to create
+ * \returns The new texture
+ */
+SDL_Texture *FE_TextureFromAtlas(FE_TextureAtlas *atlas, size_t index);
 
 
 #endif

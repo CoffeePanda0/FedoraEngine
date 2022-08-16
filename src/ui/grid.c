@@ -24,7 +24,7 @@ int FE_UI_GetFreeTile(FE_UI_Grid *grid)
     return -1;
 }
 
-void FE_UI_UpdateTile(FE_UI_Grid *grid, FE_Texture *texture, size_t index)
+void FE_UI_UpdateTile(FE_UI_Grid *grid, SDL_Texture *texture, size_t index)
 {
     if (!grid) {
         warn("NULL passed to grid");
@@ -55,7 +55,7 @@ void FE_UI_UpdateGridBorder(FE_UI_Grid *grid, SDL_Color color, int thickness)
     grid->buffer_dirty = true;
 }
 
-void FE_UI_AddTile(FE_UI_Grid *grid, FE_Texture *texture)
+void FE_UI_AddTile(FE_UI_Grid *grid, SDL_Texture *texture)
 {
     if (FE_UI_GridFull(grid)) {
         info("Unable to add tile - Grid is full");
@@ -115,7 +115,7 @@ static void HandleCallback(FE_UI_Grid *grid)
     // Calculate the index of the tile that was clicked
     int index = grid->hovered.x + grid->hovered.y * grid->cols;
     if (grid->onclick)
-        grid->onclick(grid->tiles[index]);
+        grid->onclick(index);
 }
 
 bool FE_UI_GridClick()
@@ -169,7 +169,7 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
         for (size_t i = 0; i < grid->tile_count; i++) {
             FE_UI_Tile *t = &grid->tiles[i];
             if (t->empty) continue;
-            SDL_RenderCopy(PresentGame->Renderer, t->texture->Texture, NULL, &t->r);
+            SDL_RenderCopy(PresentGame->Renderer, t->texture, NULL, &t->r);
         }
 
         // Render outside border
@@ -223,6 +223,16 @@ void FE_UI_MoveGrid(FE_UI_Grid *grid, int x, int y)
         return;
     }
 
+    grid->r.x = x;
+    grid->r.y = y;
+
+    // Move tiles
+    for (size_t i = 0; i < grid->tile_count; i++) {
+        FE_UI_Tile *t = &grid->tiles[i];
+        t->r.x = x + (t->r.x - grid->r.x);
+        t->r.y = y + (t->r.y - grid->r.y);
+    }
+
     grid->buffer_dirty = true;
 }
 
@@ -257,13 +267,13 @@ FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int 
     for (size_t idx = 0; idx < tile_count; idx++) {
         if (cur_row >= grid->rows) {
             warn("Grid is too small to fit all tiles");
-            break;
+            return 0;
         }
         grid->tiles[idx].empty = true;
         grid->tiles[idx].texture = 0;
         grid->tiles[idx].r = (SDL_Rect){(grid->tile_w * cur_col) + ((cur_col + 1) * grid->border_width), (grid->tile_h * cur_row) + ((cur_row + 1) * grid->border_width), grid->tile_w, grid->tile_h};
         if (++cur_col >= grid->cols) {
-            cur_col = 0;
+            cur_col = 0; // todo - all tiles are slightly off-center
             cur_row++;
         }
     }
@@ -275,7 +285,8 @@ void FE_UI_DestroyGrid(FE_UI_Grid *grid, bool global)
     // Destroy tiles
     for (size_t i = 0; i < grid->tile_count; i++) {
         FE_UI_Tile *t = &grid->tiles[i];
-        FE_DestroyResource(t->texture->path);
+        if (!t->empty)
+            SDL_DestroyTexture(t->texture);
     }
     grid->tile_count = 0;
     free(grid->tiles);

@@ -5,6 +5,12 @@
 #include "../core/include/file.h"
 #include "../ext/ini.h"
 
+#ifdef _WIN32
+	#include "../ext/dirent.h" // for finding textures in dir
+#else
+	#include <dirent.h> // for finding textures in dir
+#endif
+
 #define PARALLAX_DIRECTORY "game/map/parallax/"
 
 static const int layer_width = 1920;
@@ -17,6 +23,34 @@ static FE_Map_Parallax *parallax;
 static size_t parallax_layers;
 static float parallax_speed = 1.0f;
 static bool parallax_dirty = false;
+
+
+FE_StrArr *FE_Parallax_Count()
+{
+    FE_StrArr *arr = FE_StrArr_Create();
+
+    // calculate amount of subdirectories with a parallax.ini file inside
+    DIR *dir = opendir(PARALLAX_DIRECTORY);
+    if (dir == NULL)
+        error("Could not open parallax directory");
+
+    struct dirent *ent;
+    while ((ent = readdir(dir)) != NULL) {
+        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
+            continue;
+
+        char *path = xmalloc(strlen(PARALLAX_DIRECTORY) + strlen(ent->d_name) + 14);
+        sprintf(path, "%s%s/parallax.ini", PARALLAX_DIRECTORY, ent->d_name);
+
+        if (FE_File_DirectoryExists(path)) {
+            FE_StrArr_Add(arr, ent->d_name);
+        }
+        
+        free(path);
+    }
+    closedir(dir);
+    return arr;
+}
 
 static int ConfigParser(void *user, const char *section, const char *name, const char *value)
 {

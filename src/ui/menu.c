@@ -20,13 +20,14 @@ static void FE_MenuPage_Editor()
     FE_UI_Container *container = FE_UI_CreateContainer(midx(400), midy(500), 400, 500, "Map Editor", false);
     FE_UI_AddElement(FE_UI_CONTAINER, container);
 
-    FE_UI_Button *new_btn = FE_UI_CreateButton("New Map", 0, 0, BUTTON_LARGE, &FE_StartEditor, NULL);
+    FE_UI_Button *new_btn = FE_UI_CreateButton("New Map", 0, 0, BUTTON_LARGE, &FE_Editor_Init, NULL);
     FE_UI_Button *load_btn = FE_UI_CreateButton("Load Map", 0, 0, BUTTON_LARGE, &LoadEditor, 0);
     FE_UI_Button *back_btn = FE_UI_CreateButton("Back", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Main");
 
     FE_UI_AddChild(container, FE_UI_BUTTON, new_btn, FE_LOCATION_CENTRE);
     FE_UI_AddChild(container, FE_UI_BUTTON, load_btn, FE_LOCATION_CENTRE);
     FE_UI_AddChild(container, FE_UI_BUTTON, back_btn, FE_LOCATION_CENTRE);
+
 
 }
 

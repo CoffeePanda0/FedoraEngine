@@ -28,6 +28,31 @@ SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a fi
     }
 }
 
+SDL_Texture *FE_TextureFromAtlas(FE_TextureAtlas *atlas, size_t index)
+{
+    // Generates an SDL texture from a texture atlas
+    if (!atlas) {
+        warn("TextureManager: Passing NULL to FE_TextureFromAtlas");
+        return FE_TextureFromRGBA(COLOR_PINK);
+    }
+    if (index >= atlas->max_index) {
+        warn("TextureManager: Index %zu is out of bounds", index);
+        return FE_TextureFromRGBA(COLOR_PINK);
+    }
+
+    // Calculate the position of the texture in the atlas
+    vec2 pos = FE_GetTexturePosition(atlas, index);
+    SDL_Rect rect = {pos.x, pos.y, atlas->texturesize, atlas->texturesize};
+
+    // create new texture to draw to
+    SDL_Texture *t = FE_CreateRenderTexture(atlas->texturesize, atlas->texturesize);
+    SDL_SetRenderTarget(PresentGame->Renderer, t);
+    SDL_RenderCopy(PresentGame->Renderer, atlas->atlas, &rect, NULL);
+    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
+
+    return t;
+}
+
 SDL_Texture* FE_TextureFromRGBA(SDL_Color color) // Returns a plain texture from a color
 {
     SDL_Surface* s = SDL_CreateRGBSurface(0,1,1,32,0,0,0,0);
@@ -124,6 +149,12 @@ FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)
 
 	SDL_QueryTexture(atlas->atlas, NULL, NULL, &atlas->width, &atlas->height);
 	atlas->texturesize = 64;
+    
+    // calculate max number of textures
+    int atlas_cols = atlas->width / atlas->texturesize;
+    int atlas_rows = atlas->height / atlas->texturesize;
+    atlas->max_index = atlas_cols * atlas_rows;
+
 	return atlas;
 }
 

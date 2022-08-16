@@ -14,5 +14,6 @@
 #include "texture.h"
 #include "timing.h"
 #include "utils.h"
+#include "strarr.h"
 
 #endif

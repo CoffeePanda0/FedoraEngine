@@ -50,7 +50,7 @@ FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE 
     }
 
     // create label from text
-    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, text, COLOR_BLUE); 
+    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, text, (SDL_Color){106,113,111, 255});
     b->label = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
@@ -67,7 +67,11 @@ FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE 
         b->r.w = b->label_rect.w + 30;
         // recentre label
         b->label_rect.x = x + (b->r.w - b->label_rect.w) / 2;
+    } else {
+        b->r.w += 30;
+        b->label_rect.x = x + (b->r.w - b->label_rect.w) / 2;
     }
+
 
     return b;
 }

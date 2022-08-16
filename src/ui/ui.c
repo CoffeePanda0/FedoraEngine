@@ -24,6 +24,10 @@ void FE_UI_InitUI()
 
 void FE_UI_AddElement(FE_UI_Type type, void *element)
 {
+    if (!element) {
+        warn("FE_UI_AddElement: element is null");
+        return;
+    }
     if (type == FE_UI_LABEL)
         FE_List_Add(&PresentGame->UIConfig.ActiveElements->Labels, element);
     else if (type == FE_UI_BUTTON)
@@ -213,4 +217,10 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
         break;
     }
     return false;
+}
+
+void FE_UI_Func_NotImplemented()
+{
+    FE_Messagebox_Show("Message", "Function not implemented", MESSAGEBOX_TEXT);
+    info("Non-implemented function called");
 }
