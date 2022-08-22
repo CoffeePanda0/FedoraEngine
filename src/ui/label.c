@@ -30,6 +30,11 @@ static void GenerateTexture(FE_UI_Label *l)
     TTF_SizeText(l->font->font, "o", &char_width, NULL);
     size_t max_chars = l->linewidth / char_width;
 
+    if (max_chars < 1) {
+        warn("Label is too long to fit on one line");
+        return;
+    }
+
     // Split newtext into lines based on max_chars
     char **lines = mstrwrap(l->text, max_chars, &surface_count);
 
@@ -80,11 +85,7 @@ FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, ve
     newlabel->color = color;
     newlabel->r = (SDL_Rect){position.x, position.y, 0, 0};
 
-    if (!font) {
-        info("Passing NULL font to FE_CreateLabel. Using default font");
-        newlabel->font = PresentGame->font;
-    } else
-        newlabel->font = font;
+    newlabel->font = font ? font : PresentGame->font;
 
     if (!newlabel->font) {
         warn("Unable to create label - No font loaded");

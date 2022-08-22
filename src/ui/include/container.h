@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include "label.h"
 #include "ui.h"
+#include "button.h"
 #include "../../core/include/texture.h"
 
 typedef struct {
@@ -13,7 +14,7 @@ typedef struct {
     FE_Texture *texture;
 
     FE_UI_Label *title;
-
+    
     size_t children_count;
     FE_UI_Element *children;
     int last_child_bottom; // Used for calculating Y position
@@ -69,6 +70,16 @@ vec2 FE_GetCentre(SDL_Rect r, SDL_Rect container);
  * \param height The height of the spacer
  */
 void FE_UI_AddContainerSpacer(FE_UI_Container *container, int h);
+
+
+/** Adds a close button to a container
+ * \param container The container to add the close button to
+ */
+void FE_UI_AddContainerClose(FE_UI_Container *c);
+
+
+/* Closes the current open container for ESCAPE key */
+bool FE_UI_CloseOpenContainer();
 
 
 #endif

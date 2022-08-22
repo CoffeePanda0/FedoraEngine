@@ -8,6 +8,8 @@ static const int BorderWidth = 12;
 static const int BorderHeight = 64;
 static const int Padding = 10;
 
+static FE_UI_Container *close_container = 0; // container with close button for key close
+
 vec2 FE_GetCentre(SDL_Rect r, SDL_Rect container)
 {
     return vec(container.x + (container.w - r.w) / 2, container.y + (container.h - r.h) / 2);
@@ -19,6 +21,26 @@ static void CloseContainer(void *data)
     FE_UI_Container *c = data;
     FE_UI_ControlContainerLocked = false;
     FE_UI_DestroyContainer(c, true, true);
+}
+
+bool FE_UI_CloseOpenContainer()
+{
+    if (!close_container)
+        return false;
+    CloseContainer(close_container);
+    return true;
+}
+
+void FE_UI_AddContainerClose(FE_UI_Container *c)
+{
+    // Add close so it doesn't affect the padding of the children
+    FE_UI_Element close_elem;
+    close_elem.type = FE_UI_BUTTON;
+    close_elem.element = FE_UI_CreateButton("X", c->body.x + c->body.w - 32, c->body.y, BUTTON_CLOSE, &CloseContainer, c);
+
+    c->children = xrealloc(c->children, sizeof(FE_UI_Element) * (c->children_count + 1));
+    c->children[c->children_count++] = close_elem;
+    close_container = c;
 }
 
 FE_UI_Container *FE_UI_CreateContainer(int x, int y, int w, int h, char *title, bool lockcontrols)
@@ -45,7 +67,7 @@ FE_UI_Container *FE_UI_CreateContainer(int x, int y, int w, int h, char *title, 
 
     c->last_child_bottom = c->inner_rect.y + Padding;
 
-    FE_UI_ControlContainerLocked = lockcontrols;
+    FE_UI_ControlContainerLocked = lockcontrols;    
 
     return c;
 }
@@ -176,6 +198,7 @@ void FE_UI_DestroyContainer(FE_UI_Container *c, bool free_children, bool global)
     // Free the container
     free(c);
     FE_UI_ControlContainerLocked = false;
+    close_container = 0;
 }
 
 void FE_UI_AddContainerSpacer(FE_UI_Container *container, int h)

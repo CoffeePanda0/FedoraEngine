@@ -85,10 +85,6 @@ int FE_RenderDrawLine(FE_Camera *camera, int x1, int y1, int x2, int y2, SDL_Col
         return -1;
     }
 
-    // return if line is out of bounds
-    if (x1 + camera->x < 0 || x1 > PresentGame->WindowWidth + camera->x || y1 + camera->y < 0 || y1 > PresentGame->WindowHeight + camera->y)
-        return 0;
-
     // change the color of the renderer and restore it after drawing the line
     Uint8 prev_r, prev_g, prev_b, prev_a;
     SDL_GetRenderDrawColor(PresentGame->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);

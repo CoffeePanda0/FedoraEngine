@@ -13,8 +13,8 @@
 
 #define PARALLAX_DIRECTORY "game/map/parallax/"
 
-static const int layer_width = 1920;
-static const int layer_height = 1080; 
+static int layer_width = 1920;
+static int layer_height = 1080; 
 
 static float last_x;
 static float last_y;
@@ -23,7 +23,7 @@ static FE_Map_Parallax *parallax;
 static size_t parallax_layers;
 static float parallax_speed = 1.0f;
 static bool parallax_dirty = false;
-
+static float layer_scale = 1.0f;
 
 FE_StrArr *FE_Parallax_Count()
 {
@@ -63,9 +63,11 @@ static int ConfigParser(void *user, const char *section, const char *name, const
         last_layer = 0;
         if (dir) free(dir);
         dir = mstradd(value, "/");
-    } else if (MATCH("CONFIG", "ratio")) { // load each layer name
+    } else if (MATCH("CONFIG", "ratio")) { // load each layer ratio movement
         parallax_speed = atof(value);
-    } else if (MATCH("LAYERS", "path")) { // load each layer name
+    } else if (MATCH("CONFIG", "scale")) { // load the factor to scale the bg by
+        layer_scale = atof(value);
+    } else if (MATCH("LAYERS", "path")) { // load each layer path
         char *path = mstradd(dir, value);
         FE_Parallax_Add(path, 1.0f);
         free(path);
@@ -84,6 +86,7 @@ static int ConfigParser(void *user, const char *section, const char *name, const
 
 void FE_Parallax_Load(const char *name)
 {
+    FE_Parallax_Clean();
     // Check that parallax directory exists
     char *full_path = xmalloc(mstrlen(name) + mstrlen(PARALLAX_DIRECTORY) + 2);
     snprintf(full_path, mstrlen(name) + mstrlen(PARALLAX_DIRECTORY) + 2, "%s%s/", PARALLAX_DIRECTORY, name);
@@ -104,9 +107,8 @@ void FE_Parallax_Load(const char *name)
     free(full_path);
     free(ini_path);
 
-    if (parallax_layers > 0)
-        info("Loaded parallax '%s'", name);
-    else
+
+    if (parallax_layers < 1)
         warn("Parallax %s has no layers", name);
 }
 
@@ -123,13 +125,19 @@ void FE_Parallax_Add(const char *layer_name, float scale)
     else
         parallax = xrealloc(parallax, sizeof(FE_Map_Parallax) * (parallax_layers + 1));
     
+
     char *path = mstradd(PARALLAX_DIRECTORY, layer_name);
     parallax[parallax_layers].texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     free(path);
 
+    SDL_QueryTexture(parallax[0].texture->Texture, NULL, NULL, &layer_width, &layer_height);
+
+    layer_width *= layer_scale;
+    layer_height *= layer_scale;
+
     parallax[parallax_layers].scale = scale;
 
-    int ypos = PresentGame->MapConfig.MapHeight - layer_height;
+    int ypos = PresentGame->MapConfig.Loaded ? PresentGame->MapConfig.MapHeight - layer_height : 0;
     parallax[parallax_layers].r1 = (SDL_Rect){0, ypos, layer_width, layer_height};
     parallax[parallax_layers++].r2 = (SDL_Rect){-layer_width, ypos, layer_width, layer_height};
     parallax_dirty = true;
@@ -145,9 +153,13 @@ void FE_Parallax_Clean()
     free(parallax);
 
     parallax = 0;
-    parallax_dirty = true;
+    parallax_dirty = false;
     parallax_layers = 0;
     parallax_speed = 1.0f;
+    last_x = 0;
+    last_y = 0;
+    layer_width = 0;
+    layer_height = 0;
 }
 
 static void FE_Parallax_Render(FE_Camera *camera)
@@ -164,6 +176,7 @@ static void FE_Parallax_Render(FE_Camera *camera)
         SDL_SetTextureBlendMode(buff, SDL_BLENDMODE_BLEND);
     }
 
+
     if (last_x != camera->x || last_y != camera->y || parallax_dirty) {
         last_x = camera->x; last_y = camera->y;
 
@@ -177,7 +190,7 @@ static void FE_Parallax_Render(FE_Camera *camera)
                 .w = layer_width * camera->zoom,
                 .h = layer_height * camera->zoom
             };
-            
+
             // Apply scale to the camera position (second rect for infinite scrolling)
             SDL_Rect dst2 = {
                 .x = (parallax[i].r2.x - (camera->x * scale)) * camera->zoom,
@@ -215,23 +228,39 @@ void FE_RenderMapBG(FE_Camera *camera, FE_LoadedMap *map)
         This is not hugely efficient and will use a lot of SDL_Render time.
         NOTE: BG width must be at least screen size
         We render to a buffer so that we can just copy the texture if not dirty to improve render time
+        Map is not required for a parallax background
     */
+
+    if (!camera) {
+        warn("Passing NULL camera on rendering BG");
+        return;
+    }
 
     if (parallax) {
         FE_Parallax_Render(camera);
         return;
     }
-    
-    if (!map || !camera) {
-        warn("Passing NULL on rendering BG");
+
+    if (!map) {
+        warn("Passing NULL map on rendering BG");
         return;
     }
-
+    
     SDL_Rect vis_rect = SCREEN_RECT(camera);
 
     static SDL_Texture *buffer = 0;
-    static SDL_Rect r1 = {0, 800, layer_width, layer_height};
-    static SDL_Rect r2 = {-layer_width, 800, layer_width, layer_height};
+
+    static bool set = false;
+    static SDL_Rect r1 = {0, 0, 0, 0};
+    static SDL_Rect r2 = {0, 0, 0, 0};
+
+    if (!set) {
+        r1.w = layer_width; r1.h = layer_height;
+        r2.w = layer_width; r2.h = layer_height;
+        r2.x = -layer_width;
+        set = true;
+    }
+
 
     if (!buffer)
         buffer = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
@@ -240,7 +269,7 @@ void FE_RenderMapBG(FE_Camera *camera, FE_LoadedMap *map)
     SDL_SetRenderTarget(PresentGame->Renderer, buffer);
 
     if (last_x != camera->x || last_y != camera->y) {
-        // todo: this code is a monster and should not be reckoned with
+        // note: this code is a monster and should not be reckoned with
         last_x = camera->x;
         last_y = camera->y;
 

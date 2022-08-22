@@ -14,6 +14,10 @@ FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE 
     b->r.y = y;
 
     switch (t) {
+        case BUTTON_CLOSE:
+            b->r.w = 32;
+            b->r.h = 32;
+            break;
         case BUTTON_TINY:
             b->r.w = BUTTON_SMALL_W / 3;
             b->r.h = BUTTON_SMALL_H;
@@ -68,7 +72,8 @@ FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE 
         // recentre label
         b->label_rect.x = x + (b->r.w - b->label_rect.w) / 2;
     } else {
-        b->r.w += 30;
+        if (t != BUTTON_CLOSE)
+            b->r.w += 30;
         b->label_rect.x = x + (b->r.w - b->label_rect.w) / 2;
     }
 

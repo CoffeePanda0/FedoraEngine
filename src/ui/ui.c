@@ -214,6 +214,12 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
                 return true;
             }
 
+            /* Close open containers */
+            if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
+                if (FE_UI_CloseOpenContainer())
+                    return true;
+            }
+
         break;
     }
     return false;

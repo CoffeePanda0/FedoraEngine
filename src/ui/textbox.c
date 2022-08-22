@@ -88,7 +88,7 @@ FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, int h, char *value) // M
     // make box label
     temp->label = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, value, w, vec(x + 5,y + 5), COLOR_WHITE);
 
-    temp->content = mstrdup(value);
+    temp->content = value ? mstrdup(value) : mstrdup("");
 
     temp->active = false;
     temp->onenter = NULL;

@@ -41,11 +41,14 @@ void FE_CleanCameras()
         return;
 
     for (size_t i = 0; i < y_listlen(cameras); i++) {
-        if (cameras[i])
+        if (cameras[i]) 
             free(cameras[i]);
     }
     y_listfree(cameras);
     cameras = 0;
+    zooming = false;
+    zoom_rate = 0;
+    newzoom = 0;
 }
 
 void FE_FreeCamera(FE_Camera *camera)
@@ -58,6 +61,7 @@ void FE_FreeCamera(FE_Camera *camera)
     for (size_t i = 0; i < y_listlen(cameras); i++) {
         if (cameras[i] == camera) {
             y_listerase(cameras, i);
+            zooming = false;
             return;
         }
     }
@@ -74,12 +78,18 @@ FE_Camera *FE_CreateCamera()
     c->zoom = 1;
     c->maxzoom = 5.0f;
     c->minzoom = 0.5f;
-    c->x_min = PresentGame->MapConfig.MinimumX;
-    c->y_min = 0;
-    c->x_bound = PresentGame->MapConfig.MapWidth;
-    c->y_bound = PresentGame->MapConfig.MapHeight;
+    if (PresentGame->MapConfig.Loaded) {
+        c->x_min = PresentGame->MapConfig.MinimumX;
+        c->x_bound = PresentGame->MapConfig.MapWidth;
+        c->y_bound = PresentGame->MapConfig.MapHeight;
+    } else {
+        c->x_min = 0;
+        c->x_bound = PresentGame->WindowWidth * 28;
+        c->y_bound = PresentGame->WindowHeight * 8;
+    }
     c->movement_locked = false;
     c->follow = 0;
+    c->y_min = 0;
 
     y_listpush(cameras, c);
     return c;
@@ -89,7 +99,6 @@ void FE_UpdateCamera(FE_Camera *camera)
 {
     if (zooming) {
         camera->zoom += (zoom_rate * FE_DT);
-
         if ((camera->zoom >= newzoom && zoom_rate > 0) || (camera->zoom <= newzoom && zoom_rate < 0)) {
             camera->zoom = newzoom;
             zooming = false;
@@ -102,34 +111,44 @@ void FE_UpdateCamera(FE_Camera *camera)
 
     SDL_Rect *r = camera->follow;
     
-    int initial_x = r->x;
-    int initial_y = r->y;
-    int win_height = (PresentGame->WindowHeight / camera->zoom);
-    int win_width = (PresentGame->WindowWidth / camera->zoom);
-    
-    // Centre the player X on the screen (accounting for zoom)
-    r->x = (win_width / 2) - (r->w * camera->zoom);
-    camera->x = initial_x - r->x;
-
-    // Check X bounds
-    if (camera->x <= camera->x_min) {
-        r->x = initial_x - camera->x_min;
-        camera->x = camera->x_min;
-    }
-    if (camera->x >= camera->x_bound - win_width) {
-        r->x = (initial_x - camera->x_bound + win_width);
+    if (r) {
+        int initial_x = r->x;
+        int initial_y = r->y;
+        int win_height = (PresentGame->WindowHeight / camera->zoom);
+        int win_width = (PresentGame->WindowWidth / camera->zoom);
+        
+        // Centre the player X on the screen (accounting for zoom)
+        r->x = (win_width / 2) - (r->w * camera->zoom);
         camera->x = initial_x - r->x;
-    }
 
-    // Centre the player Y on the screen (accounting for zoom)
-    r->y = ((win_height / 2) - (r->h * camera->zoom));
-    camera->y = initial_y - r->y;
- 
-    // Check Y bounds
-    if (camera->y + win_height >= camera->y_bound) {
-        r->y = (initial_y - camera->y_bound + win_height);
+        // Check X bounds
+        if (camera->x <= camera->x_min) {
+            r->x = initial_x - camera->x_min;
+            camera->x = camera->x_min;
+        }
+        if (camera->x >= camera->x_bound - win_width) {
+            r->x = (initial_x - camera->x_bound + win_width);
+            camera->x = initial_x - r->x;
+        }
+
+        // Centre the player Y on the screen (accounting for zoom)
+        r->y = ((win_height / 2) - (r->h * camera->zoom));
         camera->y = initial_y - r->y;
-    } 
+    
+        // Check Y bounds
+        if (camera->y + win_height >= camera->y_bound) {
+            r->y = (initial_y - camera->y_bound + win_height);
+            camera->y = initial_y - r->y;
+        } 
+    } else {
+        // Centre the camera on the screen (accounting for zoom)
+        int dif_x = (PresentGame->WindowWidth / 2) - camera->x;
+        int dif_y = (PresentGame->WindowHeight / 2) - camera->y;
+        dif_x = dif_x / camera->zoom;
+        dif_y = dif_y / camera->zoom;
+        camera->x += dif_x;
+        camera->y += dif_y;
+    }
 
 }
 

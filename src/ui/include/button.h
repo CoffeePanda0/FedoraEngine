@@ -16,6 +16,7 @@ typedef struct {
 } FE_UI_Button;
 
 typedef enum FE_BUTTON_TYPE {
+    BUTTON_CLOSE,
     BUTTON_TINY,
     BUTTON_SMALL,
     BUTTON_MEDIUM,
