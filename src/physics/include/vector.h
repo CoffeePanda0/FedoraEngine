@@ -28,5 +28,5 @@ void FE_DT_RECT(vec2 position, SDL_Rect *rect);
 #define vec2_dist(a, b) vec2_mag(vec2_sub(a, b))
 #define vec2_clamp(a, min, max) (vec2){fmaxf(min.x, fminf(max.x, a.x)), fmaxf(min.y, fminf(max.y, a.y))}
 #define vec2_null(a) (a.x == -1 && a.y == -1)
-
+#define vec2_cmp(a, b) ((a.x == b.x) && (a.y == b.y))
 #endif

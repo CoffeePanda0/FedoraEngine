@@ -54,7 +54,7 @@ FE_UI_Container *FE_UI_CreateContainer(int x, int y, int w, int h, char *title, 
 
     c->body = (SDL_Rect){x,y,w,h};
     c->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/container_outer.png");
-    c->title = FE_UI_CreateLabel(TitleFont, title, w, VEC_EMPTY, PresentGame->UIConfig.UIFontColor);
+    c->title = FE_UI_CreateLabel(TitleFont, title, w, 0, 0, PresentGame->UIConfig.UIFontColor);
     c->title->r.x = FE_GetCentre(c->title->r, c->body).x;
     c->title->r.y = FE_GetCentre(c->title->r, (SDL_Rect){x, y, w - BorderWidth, BorderHeight}).y;
 

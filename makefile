@@ -21,6 +21,6 @@ vg-m:
 	valgrind --leak-check=full --show-reachable=no --show-possibly-lost=no ./$(out) -m test
 
 vg:
-	valgrind --leak-check=full --show-reachable=no --show-possibly-lost=yes ./$(out)
+	valgrind --leak-check=full --show-reachable=no --show-possibly-lost=no ./$(out)
 
 -include $(src:.c=.d)

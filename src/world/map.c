@@ -3,6 +3,7 @@
 #include "../ui/include/ui.h"
 #include "../ui/include/menu.h"
 #include "../core/include/file.h"
+#include "../entity/include/prefab.h"
 
 #define TEXTURE_PATH "game/map/textures/"
 #define BG_PATH "game/map/backgrounds/"
@@ -34,6 +35,9 @@ FE_LoadedMap *FE_LoadMap(const char *name)
     // Read map name
     if (!(m->name = FE_File_ReadStr(f))) goto err;
     
+    // Read author
+    if (!(m->author = FE_File_ReadStr(f))) goto err;
+
     // read gravity
     if (fread(&m->gravity, sizeof(float), 1, f) != 1) goto err;
     
@@ -43,14 +47,29 @@ FE_LoadedMap *FE_LoadMap(const char *name)
     m->atlas = FE_LoadResource(FE_RESOURCE_TYPE_ATLAS, atlas_path);
     free(atlas_path);
 
-
     if (fread(&m->atlas->texturesize, sizeof(Uint16), 1, f) != 1) goto err;
 
     // load background image
+    if (fread(&m->static_bg, sizeof(bool), 1, f) != 1) goto err;
     char *bg_path = 0;
     if (!(bg_path = FE_File_ReadStr(f))) goto err;
-    m->bg = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, bg_path);
-    free(bg_path);
+    
+    char *parallax_path = 0;
+    if (!(parallax_path = FE_File_ReadStr(f))) goto err;
+    
+    if (m->static_bg) {
+        m->bg = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, bg_path);
+    } else {
+        m->bg = 0;
+        if (!parallax_path || mstrlen(parallax_path) == 0)
+            goto err;
+        FE_Parallax_Load(parallax_path);
+        free(parallax_path);
+    }
+    if (bg_path) free(bg_path);
+
+    // read ambient light
+    if (fread(&m->ambientlight, sizeof(uint8_t), 1, f) != 1) goto err;
 
     // Read Map tiles and sizes
     if (fread(&m->tilecount, sizeof(Uint16), 1, f) != 1) goto err;
@@ -79,7 +98,22 @@ FE_LoadedMap *FE_LoadMap(const char *name)
         if ((Uint16)m->tiles[i].position.y + m->tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = m->tiles[i].position.y + m->tilesize;
     }
 
+    // Read Prefabs
+    Uint16 prefabcount;
+    if (fread(&prefabcount, sizeof(Uint16), 1, f) != 1) goto err;
+    for (int i = 0; i < prefabcount; i++) {
+        uint16_t x = 0;
+        uint16_t y = 0;
+        char *_name = 0;
+        if (fread(&x, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fread(&y, sizeof(Uint16), 1, f) != 1) goto err;
+        if (!(_name = FE_File_ReadStr(f))) goto err;
+        FE_Prefab_Create(_name, x, y);
+        free(_name);
+    }
+
     PresentGame->MapConfig.Gravity = m->gravity;
+    PresentGame->MapConfig.AmbientLight = m->ambientlight;
 
     // read player spawn
     if (fread(&m->PlayerSpawn, sizeof(vec2), 1, f) != 1) goto err;
@@ -89,6 +123,9 @@ FE_LoadedMap *FE_LoadMap(const char *name)
     if (fread(&m->EndFlag, sizeof(vec2), 1, f) != 1) goto err;
 
     fclose(f);
+
+    info("Loaded map: %s by %s", m->name, m->author);
+
     return m;
     
 err:
@@ -129,13 +166,14 @@ void FE_RenderMap(FE_LoadedMap *m, FE_Camera *camera)
 
 	// render all tiles
     for (size_t i = 0; i < m->tilecount; i++) {
-        if (m->tiles[i].position.x + m->tilesize - camera->x < 0 || m->tiles[i].position.x - camera->x > PresentGame->WindowWidth)
-            continue;
 		SDL_Rect r = {m->tiles[i].position.x, m->tiles[i].position.y, m->tilesize, m->tilesize};
         SDL_Rect src = {m->tiles[i].texture_x, m->tiles[i].texture_y, m->atlas->texturesize, m->atlas->texturesize};
         r = FE_ApplyZoom(&r, camera, false);
-        SDL_RenderCopyEx(PresentGame->Renderer, m->atlas->atlas, &src, &r, m->tiles[i].rotation, NULL, SDL_FLIP_NONE);
-	} 
+        // check if we need to render the tile
+        if (FE_Camera_Inbounds(&r, &(SDL_Rect){0,0,PresentGame->WindowWidth, PresentGame->WindowHeight})) {
+            SDL_RenderCopyEx(PresentGame->Renderer, m->atlas->atlas, &src, &r, m->tiles[i].rotation, NULL, SDL_FLIP_NONE);
+        }
+	}
 
     // render finish flag
     if (!vec2_null(m->EndFlag)) {
@@ -172,6 +210,8 @@ void FE_CloseMap(FE_LoadedMap *map)
 
     if (map->name)
         free(map->name);
+    if (map->author)
+        free(map->author);
     map->name = 0;
     map->PlayerSpawn = VEC_NULL;
     if (map->atlas && map->atlas->path) {
@@ -179,7 +219,7 @@ void FE_CloseMap(FE_LoadedMap *map)
     }
     map->atlas = 0;
     
-    if (map->bg)
+    if (map->static_bg && map->bg)
         FE_DestroyResource(map->bg->path);
     map->bg = 0;
 

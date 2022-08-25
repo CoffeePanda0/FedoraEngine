@@ -1,5 +1,5 @@
 #include "../include/game.h"
-#include "../neweditor/editor.h"
+#include "../editor/editor.h"
 
 static FE_Texture *MenuTexture;
 static FE_Camera *Camera;
@@ -8,7 +8,7 @@ static FE_ParticleSystem *Particles;
 static void LoadEditor(char *m)
 {
     if (m) {
-        FE_StartEditor(FE_Messagebox_GetText());
+        FE_Editor_Init(FE_Messagebox_GetText());
     } else {
         FE_Messagebox_Show("Load Editor", "Enter Map name", MESSAGEBOX_TEXTBOX);
         FE_Messagebox_AddCallback(&LoadEditor, "editor");
@@ -65,7 +65,7 @@ static FE_UI_Label *GenKeyLabel(const char *input)
     char *key = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(FE_Key_Get(input)));
     sprintf(label, "%s: %s", (char*)input, key);
     
-    FE_UI_Label *l = FE_UI_CreateLabel(PresentGame->font, label, 300, vec(0,0), COLOR_WHITE);
+    FE_UI_Label *l = FE_UI_CreateLabel(PresentGame->font, label, 300, 0, 0, COLOR_WHITE);
     free(label);
     return l;
 }

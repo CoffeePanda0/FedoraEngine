@@ -75,7 +75,7 @@ bool FE_UI_TextboxClick(int x, int y)
     return false;
 }
 
-FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, int h, char *value) // Makes a new textbox and returns pointer to the node
+FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, char *value) // Makes a new textbox and returns pointer to the node
 {  
     // make box
     FE_UI_Textbox *temp = xmalloc(sizeof(FE_UI_Textbox));
@@ -83,10 +83,12 @@ FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, int h, char *value) // M
     temp->text = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, TEXTURE);
     temp->active_text = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, TEXTURE_ACTIVE);
 
-    temp->r = (SDL_Rect){x,y,w,h};
+    temp->r = (SDL_Rect){x,y,w,PresentGame->UIConfig.UIFont->size * 1.5};
     
     // make box label
-    temp->label = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, value, w, vec(x + 5,y + 5), COLOR_WHITE);
+    int y_ = FE_GetCentre((SDL_Rect){0,0,0, PresentGame->UIConfig.UIFont->size}, temp->r).y;
+    
+    temp->label = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, value, w, x, y_ -5, COLOR_WHITE);
 
     temp->content = value ? mstrdup(value) : mstrdup("");
 
@@ -193,6 +195,7 @@ void FE_UI_DestroyTextbox(FE_UI_Textbox *tb, bool global)
     }
 
     if (tb->content) free(tb->content);
+    tb->content = 0;
     FE_UI_DestroyLabel(tb->label, false);
 
     FE_DestroyResource(tb->text->path);
@@ -219,7 +222,7 @@ void FE_UI_MoveTextbox(FE_UI_Textbox *tb, int x, int y)
     tb->r.x = x;
     tb->r.y = y;
     tb->label->r.x = x + 5;
-    tb->label->r.y = y + 5;
+    tb->label->r.y = FE_GetCentre((SDL_Rect){0,0,0, PresentGame->UIConfig.UIFont->size}, tb->r).y - 5;
 }
 
 void FE_UI_RenderTextbox(FE_UI_Textbox *tb)
@@ -233,7 +236,7 @@ void FE_UI_RenderTextbox(FE_UI_Textbox *tb)
         SDL_RenderCopy(PresentGame->Renderer, tb->active_text->Texture, NULL, &tb->r);
 
         // draw a cursor at end of text
-        if (mstrlen(tb->content) > 0) {
+        if (tb->content && mstrlen(tb->content) > 0) {
             static float time = 0;
             if (time > 0.5f) {
                 time = -0.5f;

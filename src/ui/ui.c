@@ -222,7 +222,7 @@ bool FE_UI_HandleEvent(SDL_Event *event, const Uint8* keyboard_state)
 
         break;
     }
-    return false;
+    return FE_UI_ControlContainerLocked;
 }
 
 void FE_UI_Func_NotImplemented()

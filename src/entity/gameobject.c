@@ -61,7 +61,6 @@ int FE_GameObject_Destroy(FE_GameObject *obj)
 {
 	// free gameobject data
 	FE_RemovePhysInteractable(obj->phys);
-	free(obj->phys);
 	FE_DestroyResource(obj->texture->path);
 	
 	if (FE_List_Remove(&FE_GameObjects, obj) == -1) // remove from list

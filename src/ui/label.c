@@ -77,13 +77,13 @@ static void GenerateTexture(FE_UI_Label *l)
     l->r = (SDL_Rect){l->r.x, l->r.y, largest_w, h * surface_count};
 }
 
-FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, vec2 position, SDL_Color color)
+FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, int x, int y, SDL_Color color)
 {
     FE_UI_Label *newlabel = xmalloc(sizeof(FE_UI_Label));
     newlabel->text = text ? mstrdup(text) : mstrdup(" ");
     newlabel->linewidth = linewidth;
     newlabel->color = color;
-    newlabel->r = (SDL_Rect){position.x, position.y, 0, 0};
+    newlabel->r = (SDL_Rect){x, y, 0, 0};
 
     newlabel->font = font ? font : PresentGame->font;
 

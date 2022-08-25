@@ -6,6 +6,7 @@
 #include "gameobject.h"
 #include "particle.h"
 #include "../../world/include/lighting.h"
+#include "../../core/include/linkedlist.h"
 
 typedef struct {
     char *name;
@@ -43,6 +44,19 @@ void FE_Prefab_Clean();
 
 /* Updates the location of prefab attatchments when the body moves (lights and particles) */
 void FE_Prefab_Update();
+
+
+/** Generates a texture for the thumbnail of a prefab
+ * \param name The name of the prefab
+ * \returns the SDL_Texture
+*/
+SDL_Texture *FE_Prefab_Thumbnail(const char *name);
+
+
+/** Returns the list of prefabs
+ * \returns The list of prefabs
+*/
+FE_List *FE_Prefab_Get();
 
 
 #endif

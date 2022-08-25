@@ -21,11 +21,10 @@ typedef struct {
  *\param x The x coordinate of the textbox
  *\param y The y coordinate of the textbox
  *\param w The width of the textbox
- *\param h The height of the textbox
  *\param value The default value inside the textbox (can be NULL)
  *\returns A pointer to the created textbox
 */
-FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, int h, char *value);
+FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, char *value);
 
 
 /** Renders a textbox on screen

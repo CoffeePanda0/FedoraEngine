@@ -18,12 +18,15 @@ static int layer_height = 1080;
 
 static float last_x;
 static float last_y;
+static float last_zoom;
 
 static FE_Map_Parallax *parallax;
 static size_t parallax_layers;
 static float parallax_speed = 1.0f;
 static bool parallax_dirty = false;
 static float layer_scale = 1.0f;
+
+static char *parallax_name;
 
 FE_StrArr *FE_Parallax_Count()
 {
@@ -106,7 +109,7 @@ void FE_Parallax_Load(const char *name)
     }
     free(full_path);
     free(ini_path);
-
+    parallax_name = mstrdup(name);
 
     if (parallax_layers < 1)
         warn("Parallax %s has no layers", name);
@@ -151,15 +154,20 @@ void FE_Parallax_Clean()
     for (size_t i = 0; i < parallax_layers; i++)
         FE_DestroyResource(parallax[i].texture->path);
     free(parallax);
-
+    if (parallax_name)
+        free(parallax_name);
+        
+    parallax_name = 0;
     parallax = 0;
     parallax_dirty = false;
     parallax_layers = 0;
     parallax_speed = 1.0f;
     last_x = 0;
     last_y = 0;
+    last_zoom = 0;
     layer_width = 0;
     layer_height = 0;
+    parallax_name = 0;
 }
 
 static void FE_Parallax_Render(FE_Camera *camera)
@@ -177,8 +185,8 @@ static void FE_Parallax_Render(FE_Camera *camera)
     }
 
 
-    if (last_x != camera->x || last_y != camera->y || parallax_dirty) {
-        last_x = camera->x; last_y = camera->y;
+    if (last_x != camera->x || last_y != camera->y || parallax_dirty || last_zoom != camera->zoom) {
+        last_x = camera->x; last_y = camera->y; last_zoom = camera->zoom;
 
         for (size_t i = 0; i < parallax_layers; i++) {
             float scale = parallax[i].scale * parallax_speed;
@@ -220,6 +228,11 @@ static void FE_Parallax_Render(FE_Camera *camera)
         }
     }
     SDL_RenderCopy(PresentGame->Renderer, buff, &vis_rect, NULL);
+}
+
+char *FE_Parallax_GetName()
+{
+    return parallax_name;
 }
 
 void FE_RenderMapBG(FE_Camera *camera, FE_LoadedMap *map)

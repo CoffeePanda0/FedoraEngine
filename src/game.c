@@ -24,7 +24,6 @@ void FE_StartGame(const char *mapname)
 		FE_Game_SetMap(m);
 	}
 	free(map);
-    FE_Parallax_Load("forest");
 
 	// camera setup
 	GameCamera = FE_CreateCamera();
@@ -50,10 +49,6 @@ void FE_StartGame(const char *mapname)
 
 	world = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
 	FE_ResetDT();
-
-	FE_Prefab_Create("candle", 1000, 1250);
-	FE_Prefab_Create("candle", 2000, 1250);
-	FE_Prefab_Create("candle", 3000, 1250);
 
 	PresentGame->GameState = GAME_STATE_PLAY;
 }

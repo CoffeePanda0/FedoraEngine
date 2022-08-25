@@ -45,5 +45,6 @@ void FE_Parallax_Clean();
 /* Returns the amount of parallax backgrounds that exist and their names */
 FE_StrArr *FE_Parallax_Count();
 
+char *FE_Parallax_GetName();
 
 #endif

@@ -7,7 +7,7 @@ texture=torch.png
 
 [LIGHT] 
 enabled=true
-radius=256
+radius=250
 texture=torchglow.png
 
 [PARTICLE]

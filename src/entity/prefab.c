@@ -20,6 +20,11 @@ static int max_particles = 0;
 static int emission_radius = 0;
 static int light_radius = 100;
 
+FE_List *FE_Prefab_Get()
+{
+    return prefab_list;
+}
+
 int FE_Prefab_Destroy(FE_Prefab *prefab)
 {
     if (!prefab) {
@@ -34,7 +39,9 @@ int FE_Prefab_Destroy(FE_Prefab *prefab)
     if (prefab->has_particle)
         FE_DestroyParticleSystem(prefab->ps);
     
+    FE_List_Remove(&prefab_list, prefab);
     free(prefab);
+
     return 1;
 }
 
@@ -77,9 +84,39 @@ static int ConfigParser(void *user, const char *section, const char *name, const
     return 1;
 }
 
+SDL_Texture *FE_Prefab_Thumbnail(const char *name)
+{
+    // Load prefab file
+    buffer_prefab = xmalloc(sizeof(FE_Prefab));
+    char *full_path = mstradd(PREFAB_DIRECTORY, name);
+    if (ini_parse(full_path, ConfigParser, NULL) < 0) {
+        warn("Can't load prefab %s", name);
+        free(full_path);
+        free(buffer_prefab);
+        return 0;
+    }
+
+    if (buffer_prefab->name)
+        free(buffer_prefab->name);
+    if (light_effect)
+        free(light_effect);
+    if (particle_texture)
+        free(particle_texture);
+    free(full_path);
+    free(buffer_prefab);
+
+    char *path = mstradd("game/sprites/", texture_path);
+    SDL_Texture *t = FE_TextureFromFile(path);
+
+    if (texture_path)
+        free(texture_path);
+    free(path);
+
+    return t;
+}
+
 FE_Prefab *FE_Prefab_Create(const char *name, int x, int y)
 {
-    buffer_prefab = 0;
     buffer_rect = (SDL_Rect){x,y,0,0};
     buffer_prefab = xmalloc(sizeof(FE_Prefab));
     buffer_prefab->has_light = false;
@@ -140,6 +177,7 @@ void FE_Prefab_Clean()
 	}
 
 	FE_List_Destroy(&prefab_list);
+    prefab_list = 0;
 }
 
 void FE_Prefab_Update()

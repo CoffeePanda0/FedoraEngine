@@ -1,34 +1,23 @@
-#ifndef H_EDITOR
-#define H_EDITOR
+#ifndef _EDITOR_H_
+#define _EDITOR_H_
 
-#include "../core/include/utils.h"
-#include "../world/include/camera.h"
-#include "../world/include/map.h"
-#include "../core/include/texture.h"
-#include "../core/include/resourcemanager.h"
-#include <stdlib.h>
 
-/* Renders all map editor elements */
-void FE_RenderEditor();
+/** Initialises the editor
+ * \param path The path to the map to edit (pass NULL to create a new map)
+ */
+void FE_Editor_Init(char *path);
 
-/** Initialises and displays the map editor
- *\param path The path of the map to edit, or NULL to create a new map
-*/
-void FE_StartEditor(char *path);
 
-/* Handles all events for the map editor */
-void FE_EventEditorHandler();
+/* Renders the editor */
+void FE_Editor_Render();
 
-/* Destroys the Map editor and frees all used resources */
-void FE_CleanEditor();
 
-/* Editor functions - not to be used other than locally in editor.c */
-void Editor_Save(FE_Map *mapsave);
-size_t Editor_LoadBackgrounds();
-size_t Editor_LoadTextures();
-bool Editor_CallSave(FE_Map *save);
+/* Editor Event Handler */
+void FE_Editor_EventHandler();
 
-/* Editor variables - not to be used other than locally in editor.c */
-extern FE_Texture **editor_backgrounds; // The background atlas (stores 10)
+
+/* Closes the editor cleanly */
+void FE_Editor_Destroy();
+
 
 #endif

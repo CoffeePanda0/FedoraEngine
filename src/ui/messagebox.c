@@ -41,10 +41,12 @@ bool FE_Messagebox_Click(int x, int y)
     }
 
     // Check if the click is the textbox
-    if (MB->textbox->r.x < x && MB->textbox->r.x + MB->textbox->r.w > x &&
-        MB->textbox->r.y < y && MB->textbox->r.y + MB->textbox->r.h > y) {
-        FE_UI_ForceActiveTextbox(MB->textbox);
-        return true;
+    if (MB->type == MESSAGEBOX_TEXTBOX && MB->textbox) {
+        if (MB->textbox->r.x < x && MB->textbox->r.x + MB->textbox->r.w > x &&
+            MB->textbox->r.y < y && MB->textbox->r.y + MB->textbox->r.h > y) {
+            FE_UI_ForceActiveTextbox(MB->textbox);
+            return true;
+        }
     }
 
     return false;
@@ -76,12 +78,12 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
     };
 
     // title
-    MB->title = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, title, 1000, VEC_EMPTY, PresentGame->UIConfig.UIFontColor);
+    MB->title = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, title, 1000, 0,0 , PresentGame->UIConfig.UIFontColor);
     MB->title->r.x = FE_GetCentre(MB->title->r, MB->displayrect).x;
     MB->title->r.y = MB->displayrect.y + 10;
 
     // content
-    MB->content = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, body, MB_WIDTH, VEC_EMPTY, PresentGame->UIConfig.UIFontColor);
+    MB->content = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, body, MB_WIDTH, 0,0 , PresentGame->UIConfig.UIFontColor);
     MB->content->r.x = FE_GetCentre(MB->content->r, MB->displayrect).x;
     MB->content->r.y = MB->title->r.y + 48;
 
@@ -92,7 +94,7 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
 
 
     if (MB->type == MESSAGEBOX_TEXTBOX) {
-        MB->textbox = FE_UI_CreateTextbox(0, 0, MB_WIDTH * 0.8, 40, "");
+        MB->textbox = FE_UI_CreateTextbox(0, 0, MB_WIDTH * 0.8, "");
         FE_UI_ForceActiveTextbox(MB->textbox);
         FE_UI_MoveTextbox(MB->textbox, FE_GetCentre(MB->textbox->r, MB->displayrect).x, MB->content->r.y + MB->content->r.h + 10);
         FE_UI_AddElement(FE_UI_TEXTBOX, MB->textbox);

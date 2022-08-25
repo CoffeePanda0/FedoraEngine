@@ -3,7 +3,6 @@
 
 #include <SDL.h>
 #include <stdbool.h>
-#include "../../physics/include/vector.h"
 #include "font.h"
 
 typedef struct {
@@ -25,11 +24,12 @@ typedef struct {
  * \param font The font to use, or NULL for the default font
  * \param text The text to display
  * \param linewidth The maximum width of each line of the label
- * \param position The position to display the text
+ * \param x The x coordinate of the label
+ * \param y The y coordinate of the label
  * \param color The color of the text
  * \return The label created
 */
-FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, vec2 position, SDL_Color color);
+FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, int x, int y, SDL_Color color);
 
 
 /** Updates an existing label's text

@@ -1,7 +1,7 @@
-#include "editor.h"
 #include "../ui/include/include.h"
 #include "../core/include/file.h"
 #include "../core/lib/string.h"
+#include "save.h"
 
 #define MAP_DIRECTORY "game/map/maps/"
 
@@ -35,11 +35,14 @@ static void SortTiles(FE_Map *save)
 
 bool Editor_CallSave(FE_Map *save) // used to call the save function as a callback and display dialogues 
 {
-    save->name = 0;
-	save->name = mstrdup(FE_Messagebox_GetText());
 	if (save->name[0] == '\0') {
 		warn("Editor: Map name cannot be empty! Aborting save.");
         FE_Messagebox_Show("Warning", "Map name cannot be empty!", MESSAGEBOX_TEXT);
+		goto fail;
+	}
+    if (save->author[0] == '\0') {
+		warn("Editor: Map author cannot be empty! Aborting save.");
+        FE_Messagebox_Show("Warning", "Map author cannot be empty!", MESSAGEBOX_TEXT);
 		goto fail;
 	}
 	if (save->tilecount == 0) {
@@ -60,14 +63,9 @@ bool Editor_CallSave(FE_Map *save) // used to call the save function as a callba
     SortTiles(save);
 	Editor_Save(save);
 
-    if (save->name && mstrlen(save->name) > 0) {
-        free(save->name);
-    }
-
 	return true;
 
 fail:
-	free(save->name);
 	return false;
 }
 
@@ -87,6 +85,9 @@ void Editor_Save(FE_Map *mapsave)
     // Write map name
     if (!(FE_File_WriteStr(f, mapsave->name))) goto err;
 
+    // Write map author
+    if (!(FE_File_WriteStr(f, mapsave->author))) goto err;
+
     // write gravity
     if (fwrite(&mapsave->gravity, sizeof(float), 1, f) != 1) goto err;
 
@@ -97,7 +98,12 @@ void Editor_Save(FE_Map *mapsave)
     if (fwrite(&mapsave->atlas_tilesize, sizeof(Uint16), 1, f) != 1) goto err;
 
     // Write background texture path
+    if (fwrite(&mapsave->static_bg, sizeof(bool), 1, f) != 1) goto err;
     if (!(FE_File_WriteStr(f, mapsave->bg_texturepath))) goto err;
+    if (!(FE_File_WriteStr(f, mapsave->parallax))) goto err;
+
+    // Write ambient light
+    if (fwrite(&mapsave->ambientlight, sizeof(uint8_t), 1, f) != 1) goto err;
 
     // Write tilecount
     if (fwrite(&mapsave->tilecount, sizeof(Uint16), 1, f) != 1) goto err;
@@ -111,6 +117,17 @@ void Editor_Save(FE_Map *mapsave)
         if (fwrite(&mapsave->tiles[i].texture_y, sizeof(Uint16), 1, f) != 1) goto err;
         if (fwrite(&mapsave->tiles[i].rotation, sizeof(Uint16), 1, f) != 1) goto err;
         if (fwrite(&mapsave->tiles[i].position, sizeof(vec2), 1, f) != 1) goto err;
+    }
+
+    // Write prefab count
+    if (fwrite(&mapsave->prefabcount, sizeof(Uint16), 1, f) != 1) goto err;
+
+    // Write prefabs
+    for (int i = 0; i < mapsave->prefabcount; i++) {
+        FE_Map_Prefab p = mapsave->prefabs[i];
+        if (fwrite(&p.x, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fwrite(&p.y, sizeof(Uint16), 1, f) != 1) goto err;
+        if (!(FE_File_WriteStr(f, p.name))) goto err;
     }
 
     // Write player spawnq

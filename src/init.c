@@ -129,7 +129,7 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_Parallax_Clean();
 	FE_UI_ClearElements(PresentGame->UIConfig.ActiveElements);
 	FE_Dialogue_Free();
-	FE_CleanEditor();
+	FE_Editor_Destroy();
 	FE_CleanCameras();
 	FE_GameObject_Clean();
 	FE_CleanAudio();

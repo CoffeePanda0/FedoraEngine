@@ -12,20 +12,34 @@ typedef struct FE_Map_Tile {
     vec2 position;
 } FE_Map_Tile;
 
+typedef struct FE_Map_Prefab {
+    uint16_t x;
+    uint16_t y;
+    char *name;
+} FE_Map_Prefab;
+
 /* The Map format when written to file */
 typedef struct FE_Map {
     char *name;
-
+    char *author;
+    
     float gravity;
 
     char *atlaspath;
     Uint16 atlas_tilesize;
 
+    bool static_bg;
     char *bg_texturepath;
+    char *parallax;
+    
+    uint8_t ambientlight;
 
     Uint16 tilecount;
     Uint16 tilesize;
     FE_Map_Tile *tiles;
+
+    Uint16 prefabcount;
+    FE_Map_Prefab *prefabs;
 
     vec2 PlayerSpawn;
     vec2 EndFlag;
@@ -35,11 +49,16 @@ typedef struct FE_Map {
 /* The map format when loaded in RAM */
 typedef struct FE_LoadedMap {
     char *name;
+    char *author;
 
     float gravity;
 
     FE_TextureAtlas *atlas;
+    
+    bool static_bg;
     FE_Texture *bg;
+
+    uint8_t ambientlight;
 
     Uint16 tilecount;
     Uint16 tilesize;

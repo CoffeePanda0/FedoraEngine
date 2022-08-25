@@ -105,7 +105,7 @@ void FE_Light_Render(FE_Camera *camera, SDL_Texture *world)
     CheckIfLightDirty(camera);
 
     /* Create an layer to render the lighting to. Only re-render if lighting has changed. */
-    if (light_layer_dirty || 1) {
+    if (light_layer_dirty || PresentGame->GameState == GAME_STATE_EDITOR) {
         SDL_SetRenderTarget(PresentGame->Renderer, light_layer);
         SDL_SetTextureBlendMode(light_layer, SDL_BLENDMODE_MOD);
         SDL_SetRenderDrawColor(PresentGame->Renderer, brightness, brightness, brightness, 0);
