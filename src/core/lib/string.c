@@ -44,7 +44,9 @@ size_t mstrcspn(const char *s, const char *reject)
 
 int mstrcmp(const char *str1, const char *str2)
 {
-	assert(str1 != NULL && str2 != NULL);
+	if (!str1 || !str2)
+		return -1;
+		
 	register const unsigned char *s1 = (const unsigned char*)str1;
 	register const unsigned char *s2 = (const unsigned char*)str2;
 	

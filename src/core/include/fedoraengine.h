@@ -11,7 +11,8 @@ typedef enum FE_GAMESTATE {
     GAME_STATE_MENU,
     GAME_STATE_PLAY,
     GAME_STATE_PAUSE,
-    GAME_STATE_EDITOR
+    GAME_STATE_EDITOR,
+    GAME_STATE_MULTIPLAYER,
 } FE_GAMESTATE;
 
 typedef struct FE_DebugConfig {
@@ -65,6 +66,7 @@ typedef struct FE_InitConfig {
     const char *window_title;
     uint16_t WindowWidth, WindowHeight;
     bool vsync, show_fps;
+    bool headless;
     char *default_font;
 } FE_InitConfig;
 

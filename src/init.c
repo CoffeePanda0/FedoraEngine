@@ -12,6 +12,7 @@ FE_InitConfig *FE_NewInitConfig()
 	config->window_title = "FedoraEngine";
 	config->WindowWidth = 1280;
 	config->WindowHeight = 720;
+	config->headless = false;
 	config->vsync = true;
 	config->show_fps = true;
 	config->default_font = "OpenSans";
@@ -59,6 +60,36 @@ void FE_Init(FE_InitConfig *InitConfig)
 
 	PresentGame = NewGame(InitConfig);
 	FE_Log_Init();
+
+	// Initialise SDL without window
+	if (InitConfig->headless) {
+		FE_ResourceManager_Init();
+		
+		PresentGame->config->vsync = false; // disable vsync so we can cap at constant 60hz/ups
+
+		if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+			error("Could not initialise SDL: %s", SDL_GetError());
+			exit(-1);
+		}
+		if (IMG_Init(IMG_INIT_PNG) == 0)
+    		error("IMG Failed to initialize. SDL_Error: %s", IMG_GetError());
+
+		if (TTF_Init() != 0)
+			error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
+
+		PresentGame->font = FE_LoadFont(InitConfig->default_font, 24);
+		
+		FE_Console_Init();
+		FE_UI_InitUI();
+		FE_Key_Init();
+
+		info("FedoraEngine headless started successfully");
+
+		FE_GameInitialised = true;
+		PresentGame->GameActive = true;
+
+		return;
+	}
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{	

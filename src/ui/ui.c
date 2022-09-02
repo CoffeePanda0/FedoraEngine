@@ -4,6 +4,7 @@
 #include "../core/include/fedoraengine.h"
 #include "../core/include/utils.h"
 #include "../core/lib/string.h"
+#include "../web/net.h"
 #include "../include/init.h"
 
 bool FE_UI_ControlContainerLocked = false;

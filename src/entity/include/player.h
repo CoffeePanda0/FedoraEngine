@@ -16,6 +16,7 @@ typedef struct FE_Player {
 
     float jumpforce;
     float jump_elapsed;
+    int last_y_check;
     bool jump_started;
     
     bool on_ground;
@@ -83,6 +84,18 @@ void FE_UpdatePlayerJump(FE_Player *player);
  * \param player - The player to jump
  */
 void FE_StartPlayerJump(FE_Player *player);
+
+
+/** Destroys and frees all resources used by a player
+ * \param player - The player to destroy
+ */
+void FE_DestroyPlayer(FE_Player *player);
+
+
+/* Checks if a player is on the ground
+ * \param player - The player to check
+ */
+bool FE_PlayerOnGround(FE_Player *player);
 
 
 #endif

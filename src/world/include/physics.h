@@ -61,7 +61,7 @@ int FE_AddPhysInteractable(FE_PhysObj *o);
 
 
 /** Removes a physics object from the physics system
- *\param o The object to remove
+ *\param o The object to remove and free
 */
 int FE_RemovePhysInteractable(FE_PhysObj *o);
 

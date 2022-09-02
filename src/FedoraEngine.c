@@ -8,38 +8,40 @@
 	FedoraEngine.c - Primary Game file
 */
 #include "include/game.h"
+#include "web/net.h"
 
 FE_Game *PresentGame;
 
-static void LoadArgs(int argc, char *argv[])
+static void LoadArgs(int argc, char *argv[], FE_InitConfig *IC)
 {
 	if (argc > 1) {
-		if (mstrcmp(argv[1], "--editor") == 0 || mstrcmp(argv[1], "-e") == 0) {
-			/* If command --editor or -e, skip the menu and load directly into editor */
-			PresentGame->GameState = GAME_STATE_EDITOR;
-			FE_Editor_Init(0);
-		} else if (mstrcmp(argv[1], "--map") == 0 || mstrcmp(argv[1], "-m") == 0) {
-			/* If command --map or -m, skip the menu and load directly into given map */
-			if (argc > 2)
-				FE_StartGame(argv[2]);
-			else
-				error("No map specified");
-		} else {
-			FE_Menu_LoadMenu("Main");
+		if (mstrcmp(argv[1], "--server") == 0 || mstrcmp(argv[1], "-s") == 0) {
+			// check that a second arg exists for port
+			if (argc < 3) {
+				printf("No port specified (usage --server <port>)\n");
+				exit(-1);
+			}
+			/* Load headless FedoraEngine */
+			IC->headless = true;
 		}
-	} else FE_Menu_LoadMenu("Main");
+	}
 }
 
 int main(int argc, char* argv[])
 {
-	/* Initialise FedoraEngine systems first */
-	
 	FE_InitConfig *IC = FE_NewInitConfig();
-	IC->vsync = false;
-	FE_Init(IC);
+	IC->vsync = true;
 
 	/* Check launch args */
-	LoadArgs(argc, argv);
+	LoadArgs(argc, argv, IC);
+
+	/* Initialise FedoraEngine systems */
+	FE_Init(IC);
+
+	if (!IC->headless)
+		FE_Menu_LoadMenu("Main");
+	else
+		FE_Multiplayer_InitHeadless(atoi(argv[2]));
 		
 	/* main game loop - calls functions based on game state */
 	while (PresentGame->GameActive) {
@@ -60,6 +62,11 @@ int main(int argc, char* argv[])
 			case GAME_STATE_EDITOR:
 				FE_Editor_Render();
 				FE_Editor_EventHandler();
+			break;
+			case GAME_STATE_MULTIPLAYER:
+				FE_Multiplayer_Update();
+				FE_Multiplayer_Render();
+				FE_Multiplayer_EventHandle();
 			break;
 
 		}

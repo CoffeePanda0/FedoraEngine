@@ -7,7 +7,7 @@ include linux.mk
 all: $(out)
 
 $(out): $(obj)
-	$(LD) $(LDFLAGS) -o $@ $(obj) $(LIBS)
+	$(LD) $(LDFLAGS) -o $@ $(obj) $(LIBS) -lenet
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -21,6 +21,6 @@ vg-m:
 	valgrind --leak-check=full --show-reachable=no --show-possibly-lost=no ./$(out) -m test
 
 vg:
-	valgrind --leak-check=full --show-reachable=no --show-possibly-lost=no ./$(out)
+	valgrind --leak-check=full --show-reachable=no --show-possibly-lost=no --track-origins=yes ./$(out)
 
 -include $(src:.c=.d)

@@ -20,6 +20,7 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     p->movespeed = movespeed;
     p->jumpforce = jumpforce;
     p->jump_elapsed = 0;
+    p->last_y_check = 0;
 
     // physics object
     p->PhysObj = FE_CreatePhysObj(PLAYER_MASS, body);
@@ -45,6 +46,21 @@ FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL
     FE_AddPhysInteractable(p->PhysObj);
 
     return p;
+}
+
+void FE_DestroyPlayer(FE_Player *player)
+{
+    if (!player) {
+        warn("Tried to destroy NULL player");
+        return;
+    }
+    
+    FE_RemovePhysInteractable(player->PhysObj);
+    FE_Light_Destroy(player->Light);
+    FE_DestroyAnimation(player->idle_animation);
+    FE_DestroyAnimation(player->walk_animation);
+    FE_DestroyAnimation(player->jump_animation);
+    free(player);
 }
 
 void FE_RenderPlayer(FE_Player *player, FE_Camera *camera)
@@ -88,19 +104,18 @@ void FE_MovePlayer(FE_Player *player, vec2 movement)
 
     int lim = 10;
     if (!(player->PhysObj->velocity.x > lim) && player->PhysObj->velocity.x > -lim)
-        FE_ApplyForce(player->PhysObj, mov_vec); 
+        FE_ApplyForce(player->PhysObj, mov_vec);
 }
 
 
-static bool OnGround(FE_Player *player)
+bool FE_PlayerOnGround(FE_Player *player)
 {
     // keep track of last y as there is no point checking if player hasnt moved
-    static int last_y;
 
-    if (last_y != player->PhysObj->body.y) {
-        last_y = player->PhysObj->body.y;
+    if (player->last_y_check != player->PhysObj->body.y) {
+        player->last_y_check = player->PhysObj->body.y;
 
-        if (player->PhysObj->velocity.y != 0) // if velocity is 0, player will never be on ground
+        if (player->PhysObj->velocity.y != 0) // if velocity is not 0, player will never be on ground
             return false;
         
         vec2 GroundCollision = FE_CheckMapCollisionAbove(&player->PhysObj->body);
@@ -118,7 +133,7 @@ void FE_UpdatePlayer(FE_Player *player)
     FE_Trigger_Check(&player->PhysObj->body);
 
     player->render_rect = player->PhysObj->body;
-    player->on_ground = OnGround(player);
+    player->on_ground = FE_PlayerOnGround(player);
 
     static vec2 last_position = VEC_NULL;
 
