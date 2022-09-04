@@ -16,11 +16,6 @@ static void LoadArgs(int argc, char *argv[], FE_InitConfig *IC)
 {
 	if (argc > 1) {
 		if (mstrcmp(argv[1], "--server") == 0 || mstrcmp(argv[1], "-s") == 0) {
-			// check that a second arg exists for port
-			if (argc < 3) {
-				printf("No port specified (usage --server <port>)\n");
-				exit(-1);
-			}
 			/* Load headless FedoraEngine */
 			IC->headless = true;
 		}
@@ -41,7 +36,7 @@ int main(int argc, char* argv[])
 	if (!IC->headless)
 		FE_Menu_LoadMenu("Main");
 	else
-		FE_Multiplayer_InitHeadless(atoi(argv[2]));
+		FE_Multiplayer_InitServer();
 		
 	/* main game loop - calls functions based on game state */
 	while (PresentGame->GameActive) {

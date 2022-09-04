@@ -17,8 +17,6 @@ static size_t client_count;
 
 static int last_id = 0; // last client id
 
-static FE_UI_Label *status;
-
 // gets a client info by their peer
 static client_t *GetClient(ENetPeer *peer)
 {
@@ -90,13 +88,6 @@ static void HandleConnect(ENetEvent *event)
 	c->username[0] = '\0';
 
 	FE_List_Add(&clients, c);
-}
-
-static void UpdateStatus()
-{
-	char status_text[256];
-	sprintf(status_text, "Connected clients: %zu", client_count);
-	FE_UI_UpdateLabel(status, status_text);
 }
 
 // sends a "server message" to one client
@@ -187,8 +178,6 @@ static void HandleRecieve(ENetEvent *event)
 				JSONPacket_Add(p, "y", y);
 				BroadcastPacket(c->peer, PACKET_TYPE_SERVERCMD, p);
 				JSONPacket_Destroy(p);
-
-				UpdateStatus();
 				break;
 			}
 
@@ -248,8 +237,6 @@ static void HandleDisconnect(ENetEvent *event)
 	FE_List_Remove(&clients, c);
 	free(c);
 	client_count--;
-
-	UpdateStatus();
 }
 
 static char *GetExternalIP()
@@ -265,12 +252,6 @@ static char *GetExternalIP()
     }
 	
 	return ip;
-}
-
-static void Exit()
-{
-	DestroyServer();
-	FE_Menu_LoadMenu("Main");
 }
 
 void DestroyServer()
@@ -298,7 +279,6 @@ void DestroyServer()
 		enet_host_destroy(server);
 		server = 0;
 		last_id = 0;
-		status = 0;
 
 		client_count = 0;
 
@@ -308,7 +288,7 @@ void DestroyServer()
 }
 
 // initialises the server
-int InitServer(int port)
+int InitServer()
 {
 	RCON_Init();
 	Server_LoadConfig();
@@ -338,22 +318,12 @@ int InitServer(int port)
 	}
 	info("[SERVER]: Started Server");
 
-	// create status label
-	status = FE_UI_CreateLabel(0, "Connected Clients: 0", 300, midx(256), midy(30), COLOR_BLUE);
-	FE_UI_AddElement(FE_UI_LABEL, status);
-
-	// create exit button
-	FE_UI_Button *exit = FE_UI_CreateButton("Quit", 0, 28 , BUTTON_MEDIUM, &Exit, 0);
-	FE_UI_AddElement(FE_UI_BUTTON, exit);
-
 	// show the server ip and port
     char *ip = GetExternalIP();
 	if (ip) {
-		char text[64];
-		sprintf(text, "Server IP: %s:%d", ip, server->address.port);
-		FE_UI_AddElement(FE_UI_LABEL, FE_UI_CreateLabel(0, text, 400, midx(256), 100, COLOR_WHITE));
+		printf("[SERVER] EXTERNAL IP: %s\n", ip);
+		free(ip);
 	}
-	free(ip);
 
 	FE_ResetDT();
 

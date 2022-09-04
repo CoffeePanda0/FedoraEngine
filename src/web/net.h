@@ -18,12 +18,6 @@ typedef struct {
     char *reason;
 } FE_DisconnectInfo;
 
-/** Initialises a server on the given port.
- * @param port The port to listen on.
- * @return True if the server was successfully initialised.
- */
-bool FE_Multiplayer_InitServer(int port);
-
 
 /** Initialises a multiplayer client
  * @param addr The address of the server to connect to.
@@ -34,10 +28,8 @@ bool FE_Multiplayer_InitServer(int port);
 bool FE_Multiplayer_InitClient(char *addr, int port, char *username);
 
 
-/** Initialises a headless server (no rendering, runs in shell)
- * @param port The port to listen on.
- */
-void FE_Multiplayer_InitHeadless(int port);
+/** Initialises a headless server (no rendering, runs in shell) */
+void FE_Multiplayer_InitServer();
 
 
 /* Updates the client / server */

@@ -44,44 +44,6 @@ static void FE_MenuPage_JoinGame()
     joininfo.username = username;
 }
 
-static void HostAction(FE_UI_Textbox *p)
-{
-    // convert port to int
-    int port = atoi(p->content);
-    FE_Multiplayer_InitServer(port);
-}
-
-static void FE_MenuPage_HostGame()
-{
-    FE_UI_Container *container = FE_UI_CreateContainer(midx(400), midy(500), 400, 500, "Host Game", false);
-    FE_UI_AddElement(FE_UI_CONTAINER, container);
-
-    FE_UI_Textbox *port = FE_UI_CreateTextbox(0,0, 256, "7777");
-
-    FE_UI_Button *host_btn = FE_UI_CreateButton("Host", 0, 0, BUTTON_LARGE, &HostAction, port);
-    FE_UI_Button *back_btn = FE_UI_CreateButton("Back", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Main");
-
-    FE_UI_AddChild(container, FE_UI_LABEL, FE_UI_CreateLabel(0, "Server Port", 256, 0, 0, COLOR_WHITE), FE_LOCATION_CENTRE);
-    FE_UI_AddChild(container, FE_UI_TEXTBOX, port, FE_LOCATION_CENTRE);
-    FE_UI_AddChild(container, FE_UI_BUTTON, host_btn, FE_LOCATION_CENTRE);
-    FE_UI_AddContainerSpacer(container, 200);
-    FE_UI_AddChild(container, FE_UI_BUTTON, back_btn, FE_LOCATION_CENTRE);
-}
-
-static void FE_MenuPage_Multiplayer()
-{
-    FE_UI_Container *container = FE_UI_CreateContainer(midx(400), midy(500), 400, 500, "Multiplayer", false);
-    FE_UI_AddElement(FE_UI_CONTAINER, container);
-
-    FE_UI_Button *join_btn = FE_UI_CreateButton("Join Game", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "JoinGame");
-    FE_UI_Button *host_btn = FE_UI_CreateButton("Host Game", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "HostGame");
-    FE_UI_Button *back_btn = FE_UI_CreateButton("Back", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Main");
-
-    FE_UI_AddChild(container, FE_UI_BUTTON, join_btn, FE_LOCATION_CENTRE);
-    FE_UI_AddChild(container, FE_UI_BUTTON, host_btn, FE_LOCATION_CENTRE);
-    FE_UI_AddChild(container, FE_UI_BUTTON, back_btn, FE_LOCATION_CENTRE);
-}
-
 static void LoadEditor(char *m)
 {
     if (m) {
@@ -196,7 +158,7 @@ void FE_MenuPage_Main()
 
     FE_UI_Button *start_btn = FE_UI_CreateButton("Load Map", 0, 0, BUTTON_LARGE, &LoadMap, NULL);
     FE_UI_Button *editor_btn = FE_UI_CreateButton("Map Editor", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Editor");
-    FE_UI_Button *multiplayer_btn = FE_UI_CreateButton("Multiplayer", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Multiplayer");
+    FE_UI_Button *multiplayer_btn = FE_UI_CreateButton("Join Game", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "JoinGame");
     FE_UI_Button *key_btn = FE_UI_CreateButton("Keybinds", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Keyeditor");
     FE_UI_Button *quit_btn = FE_UI_CreateButton("Quit", 0, 0, BUTTON_LARGE, &FE_Clean, NULL);
 
@@ -268,12 +230,8 @@ void FE_Menu_LoadMenu(const char *page)
         FE_MenuPage_KeyEditor();
     else if ((mstrcmp(page, "Editor") == 0))
         FE_MenuPage_Editor();
-    else if ((mstrcmp(page, "Multiplayer") == 0))
-        FE_MenuPage_Multiplayer();
     else if ((mstrcmp(page, "JoinGame") == 0))
         FE_MenuPage_JoinGame();
-    else if ((mstrcmp(page, "HostGame") == 0))
-        FE_MenuPage_HostGame();
 }
 
 void FE_Menu_EventHandler()

@@ -5,7 +5,7 @@
 #include "rcon.h"
 #include "../net.h"
 
-int InitServer(int port);
+int InitServer();
 void UpdateServer();
 
 int InitClient(char *addr, int port, char *username);
