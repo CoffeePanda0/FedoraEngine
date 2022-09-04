@@ -8,6 +8,7 @@
 
 typedef enum packet_type {
     PACKET_TYPE_MESSAGE, // chat message
+    PACKET_TYPE_KICK,
     PACKET_TYPE_SERVERMSG, // server message to one client
     PACKET_TYPE_SERVERCMD, // command from server to client
     PACKET_TYPE_UPDATE, // client position has updated
@@ -29,6 +30,23 @@ typedef struct {
     SDL_Rect rect;
     FE_Texture *texture;
 } player;
+
+typedef struct {
+	ENetPeer *peer;
+	bool set_username;
+	char username[24];
+
+	FE_Player *player;
+	vec2 last_location; // used to check if the player has moved
+	vec2 last_velocity; // last velocity sent to client
+
+	bool has_rcon; // if the client has rcon access
+	size_t rcon_attempts; // how many times they have tried to rcon
+
+	size_t packets_sent; // count of packets sent by client in last frame
+
+	uint8_t held_keys[3]; // contains state of each key
+} client_t;
 
 typedef struct {
     packet_type type;

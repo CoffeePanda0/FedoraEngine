@@ -6,8 +6,9 @@
 #include "../core/lib/string.h"
 #include "../core/include/include.h"
 #include "include/packet.h"
+#include "../ui/include/messagebox.h"
 
-#define MAX_FIELDS 12
+#define MAX_FIELDS 32
 
 char *JSONPacket_GetValue(ENetEvent *event, const char *key)
 {
@@ -163,28 +164,37 @@ void LoadServerState(ENetEvent *event, FE_List **list)
 	if (type != PACKET_TYPE_SERVERSTATE)
 		return;
 
+	// load welcome message
+	int has_welcome = atoi(json_getPropertyValue(json, "hasmsg"));
+	if (has_welcome) {
+		char *msg = (char*)json_getPropertyValue(json, "msg");
+		FE_Messagebox_Show("Server Message", msg, MESSAGEBOX_TEXT);
+	}
+
 	// load each player
 	json_t const* players = json_getProperty(json, "players");
-    json_t const* _player;
+	if (players) {
+		json_t const* _player;
 
-    for (_player = json_getChild(players); _player != 0; _player = json_getSibling(_player)) {
-        if (JSON_OBJ == json_getType(_player)) {
-			// for each player
-			player *p = xmalloc(sizeof(player));
+		for (_player = json_getChild(players); _player != 0; _player = json_getSibling(_player)) {
+			if (JSON_OBJ == json_getType(_player)) {
+				// for each player
+				player *p = xmalloc(sizeof(player));
 
-			// load vars
-            char const* name = json_getPropertyValue(_player, "username");
-			p->rect.x = atoi(json_getPropertyValue(_player, "x"));
-			p->rect.y = atoi(json_getPropertyValue(_player, "y"));
-			p->rect.w = 120; p->rect.h = 100;
+				// load vars
+				char const* name = json_getPropertyValue(_player, "username");
+				p->rect.x = atoi(json_getPropertyValue(_player, "x"));
+				p->rect.y = atoi(json_getPropertyValue(_player, "y"));
+				p->rect.w = 120; p->rect.h = 100;
 
-            p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png"); // todo sprite isnt working
-			mstrcpy(p->username, name);
+				p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png");
+				mstrcpy(p->username, name);
 
-			// add to list
-			FE_List_Add(list, p);
-        }
-    }
+				// add to list
+				FE_List_Add(list, p);
+			}
+		}
+	}
 
 	free(buff);
 }

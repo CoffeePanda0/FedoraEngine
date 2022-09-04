@@ -6,27 +6,9 @@
 #include "../include/game.h"
 #include "../ext/json-maker/json-maker.h"
 
-#define MAP "test"
-#define rcon_password "password"
+#define rcon_password "cds_nuts"
 
 static size_t key_count = 3;
-
-typedef struct {
-	ENetPeer *peer;
-	bool set_username;
-	char username[24];
-
-	FE_Player *player;
-	vec2 last_location; // used to check if the player has moved
-	vec2 last_velocity; // last velocity sent to client
-
-	bool has_rcon; // if the client has rcon access
-	size_t rcon_attempts; // how many times they have tried to rcon
-
-	size_t packets_sent; // count of packets sent by client in last frame
-
-	uint8_t held_keys[3]; // contains state of each key
-} client;
 
 static ENetHost* server;
 
@@ -38,10 +20,10 @@ static int last_id = 0; // last client id
 static FE_UI_Label *status;
 
 // gets a client info by their peer
-static client *GetClient(ENetPeer *peer)
+static client_t *GetClient(ENetPeer *peer)
 {
 	for (FE_List *l = clients; l; l = l->next) {
-		client *c = l->data;
+		client_t *c = l->data;
 		if (c->peer == peer) {
 			return c;
 		}
@@ -51,25 +33,29 @@ static client *GetClient(ENetPeer *peer)
 
 static void ServerState(char *buffer, size_t size)
 {
-	if (!clients)
-		return;
-
 	// create json packet
 	buffer = json_objOpen(buffer, NULL, &size);
 	buffer = json_int(buffer, "type", PACKET_TYPE_SERVERSTATE, &size);
 
-	buffer = json_arrOpen(buffer, "players", &size);
-	for (FE_List *l = clients; l; l = l->next) {
-		client *c = l->data;
-		if (c->set_username) {
-			buffer = json_objOpen(buffer, NULL, &size);
-			buffer = json_str(buffer, "username", c->username, &size);
-			buffer = json_int(buffer, "x", c->player->PhysObj->body.x, &size);
-			buffer = json_int(buffer, "y", c->player->PhysObj->body.y, &size);
-			buffer = json_objClose(buffer, &size);
+	// load welcome message (if exists)
+	buffer = json_int(buffer, "hasmsg", server_config.has_message, &size);
+	if (server_config.has_message)
+		buffer = json_str(buffer, "msg", server_config.message, &size);
+
+	if (clients) {
+		buffer = json_arrOpen(buffer, "players", &size);
+		for (FE_List *l = clients; l; l = l->next) {
+			client_t *c = l->data;
+			if (c->set_username) {
+				buffer = json_objOpen(buffer, NULL, &size);
+				buffer = json_str(buffer, "username", c->username, &size);
+				buffer = json_int(buffer, "x", c->player->PhysObj->body.x, &size);
+				buffer = json_int(buffer, "y", c->player->PhysObj->body.y, &size);
+				buffer = json_objClose(buffer, &size);
+			}
 		}
+		buffer = json_arrClose(buffer, &size);
 	}
-	buffer = json_arrClose(buffer, &size);
 	buffer = json_objClose(buffer, &size);
 }
 
@@ -77,21 +63,22 @@ static void ServerState(char *buffer, size_t size)
 static void HandleConnect(ENetEvent *event)
 {
 	// send the current game state
-	if (clients != 0) {
-		size_t size = 32 * (client_count +1);
-		char *buffer = xcalloc(size, 1);
+	size_t size = 44 + (32 * (client_count + 1));
+	if (server_config.has_message) size += (mstrlen(server_config.message) + 2);
 
-		ServerState(buffer, size);
+	char *buffer = xcalloc(size, 1);
 
-		size_t len = mstrlen(buffer);
-		ENetPacket *packet = enet_packet_create(buffer, len, ENET_PACKET_FLAG_RELIABLE);
-		enet_peer_send(event->peer, 0, packet);
+	ServerState(buffer, size);
 
-		free(buffer);
-	}
+	size_t len = mstrlen(buffer);
+	ENetPacket *packet = enet_packet_create(buffer, len, ENET_PACKET_FLAG_RELIABLE);
+	enet_peer_send(event->peer, 0, packet);
+
+	free(buffer);
+
 	client_count++;
 
-	client *c = xmalloc(sizeof(client));
+	client_t *c = xmalloc(sizeof(client_t));
 	c->peer = event->peer;
 	c->set_username = false;
 	c->has_rcon = false;
@@ -113,7 +100,7 @@ static void UpdateStatus()
 }
 
 // sends a "server message" to one client
-static void ServerMSG(client *client, char *msg)
+static void ServerMSG(client_t *client, char *msg)
 {
 	json_packet *p = JSONPacket_Create();
 	JSONPacket_Add(p, "msg", msg);
@@ -127,28 +114,22 @@ static void ServerMSG(client *client, char *msg)
 static void BroadcastPacket(ENetPeer *peer, packet_type type, json_packet *p)
 {
 	for (FE_List *l = clients; l; l = l->next) {
-		client *c = l->data;
+		client_t *c = l->data;
 		if (!peer || c->peer != peer) {
 			SendPacket(c->peer, type, p);
 		}
 	}
 }
 
-static void KickPlayer(client *client, char *reason)
-{
-	info("[SERVER]: Kicking player [%s:%i] %s (%s)", client->peer->address.host, client->peer->address.port, client->username, reason);
-	enet_peer_disconnect(client->peer, 0);
-}
-
 // handles the first press of a key down
-static void HandleKeyDown(held_keys key, client *c)
+static void HandleKeyDown(held_keys key, client_t *c)
 {
 	if (key < key_count)
 		c->held_keys[key] = 1;
 }
 
 // handles the first press of a key up
-static void HandleKeyUp(held_keys key, client *c)
+static void HandleKeyUp(held_keys key, client_t *c)
 {
 	if (key < key_count)
 		c->held_keys[key] = 0;
@@ -157,15 +138,15 @@ static void HandleKeyUp(held_keys key, client *c)
 // handles receiving a message from a client
 static void HandleRecieve(ENetEvent *event)
 {
-	client *c = GetClient(event->peer);
+	client_t *c = GetClient(event->peer);
 	c->packets_sent++;
 
 	if (c->packets_sent > 30) // only allow 30 packets per second
 		return;
 	if (c->packets_sent > 60)
-		KickPlayer(c, "Too many packets sent");
+		RCON_Kick(c, "Too many packets sent");
 	if (!c->set_username && (PacketType(event) != PACKET_TYPE_MESSAGE))
-		KickPlayer(c, "Username not set");
+		RCON_Kick(c, "Username not set");
 
 	switch (PacketType(event)) {
 		case PACKET_TYPE_MESSAGE:
@@ -176,7 +157,7 @@ static void HandleRecieve(ENetEvent *event)
 				// check if the username is already taken
 				bool set = false;
 				for (FE_List *l = clients; l; l = l->next) {
-					client *cl = l->data;
+					client_t *cl = l->data;
 					if (strcmp(cl->username, JSONPacket_GetValue(event, "msg")) == 0) {
 						// if so, set it to client + last_id
 						sprintf(c->username, "client%d", last_id++);
@@ -252,7 +233,7 @@ static void HandleRecieve(ENetEvent *event)
 
 static void HandleDisconnect(ENetEvent *event)
 {
-	client *c = GetClient(event->peer);
+	client_t *c = GetClient(event->peer);
 	info("[SERVER]: Client %s disconnected", c->username);
 
 	// send packet to all clients to remove the player
@@ -297,7 +278,7 @@ void DestroyServer()
 	if (server) {
 		// free clients
 		for (FE_List *l = clients; l; l = l->next) {
-			client *c = l->data;
+			client_t *c = l->data;
 			FE_DestroyPlayer(c->player);
 			enet_peer_disconnect(c->peer, 0);
 			c->peer = 0;
@@ -320,15 +301,21 @@ void DestroyServer()
 		status = 0;
 
 		client_count = 0;
+
+		RCON_Destroy();
+		Server_DestroyConfig();
 	}
 }
 
 // initialises the server
 int InitServer(int port)
 {
+	RCON_Init();
+	Server_LoadConfig();
+
 	// load the map
 	FE_LoadedMap *m;
-	if (!(m = FE_LoadMap(MAP))) {
+	if (!(m = FE_LoadMap(server_config.map))) {
 		warn("[SERVER]: Failed to load map");
 		return -1;
 	}
@@ -341,9 +328,9 @@ int InitServer(int port)
 
 	ENetAddress address;
 	address.host = ENET_HOST_ANY;
-	address.port = port;
+	address.port = server_config.port;
 
-	server = enet_host_create(&address, 32, 1, 0, 0);
+	server = enet_host_create(&address, server_config.max_players, 1, 0, 0);
 
 	if (!server) {
 		warn("[SERVER]: An error occurred while trying to create an ENet server host.");
@@ -380,6 +367,12 @@ static void HostServer()
         switch (event.type)
         {
             case ENET_EVENT_TYPE_CONNECT:
+				// check that player hasn't already connected
+				if (RCON_CheckIP(event.peer->address.host)) {
+					enet_peer_disconnect_now(event.peer, DISC_NOCON);
+					break;
+				}
+
                 info("[SERVER]: A new client connected from %x:%u.",
                     event.peer->address.host, event.peer->address.port);
                 HandleConnect(&event);
@@ -410,7 +403,7 @@ static void ResetPacketCount()
 	if (timer >= 1) {
 		timer -= 1;
 		for (FE_List *l = clients; l; l = l->next) {
-			client *c = l->data;
+			client_t *c = l->data;
 			c->packets_sent = 0;
 		}
 	}
@@ -421,7 +414,7 @@ static void UpdateHeldKeys()
 {
 	for (FE_List *l = clients; l; l = l->next) {
 		
-		client *c = l->data;
+		client_t *c = l->data;
 		FE_Player *p = c->player;
 
 		if (c->held_keys[0])
@@ -452,7 +445,7 @@ void UpdateServer()
 	
 	// check if any clients have moved, if so then send them the new position
 	for (FE_List *l = clients; l; l = l->next) {
-		client *c = l->data;
+		client_t *c = l->data;
 		if (!vec2_cmp(c->last_location, vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y))
 		|| !vec2_cmp(c->last_velocity, vec(c->player->PhysObj->velocity.x, c->player->PhysObj->velocity.y))) {
 			

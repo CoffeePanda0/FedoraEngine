@@ -6,6 +6,7 @@
 #include "../../physics/include/vector.h"
 #include "../../ui/include/font.h"
 #include "../../core/include/linkedlist.h"
+#include "../../web/net.h"
 
 typedef enum FE_GAMESTATE {
     GAME_STATE_MENU,
@@ -87,6 +88,8 @@ typedef struct FE_Game {
     
     bool GameActive;
     FE_GAMESTATE GameState;
+
+    FE_DisconnectInfo DisconnectInfo;
 
     FE_MapConfig MapConfig;
     FE_AudioConfig AudioConfig;

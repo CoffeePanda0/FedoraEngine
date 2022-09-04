@@ -4,14 +4,9 @@
 /* todo:
     sending chats
     sending config and map and other connected clients
-    why are we randomly not receiving (or processing) packets?
     rcon
-    server config from file
-    showing "you have been kicked" when kicked or other messages instead of instant exit to menu
-    ban list (ip)
     pause menu
     configure player animations / actual sprites
-    welcome message
 */
 
 

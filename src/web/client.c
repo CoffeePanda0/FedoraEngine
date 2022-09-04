@@ -1,4 +1,3 @@
-#include <pthread.h>
 #include "net.h"
 #include "include/internal.h"
 #include "../include/game.h"
@@ -7,23 +6,18 @@
 #define _connection_timeout 5000
 static ENetPeer *peer;
 static ENetHost *client;
+
 static bool connected = false;
-static pthread_t client_thread;
 static char *username;
 
-// game vars
+// Game vars
 static FE_Player *GamePlayer;
 static FE_Camera *GameCamera;
 static SDL_Texture *world;
-
 static FE_UI_Label *ping_label;
 
-static bool rem = false; // hacky way to remove the player from server whilst rendering from another thread
-
 // struct for each connected client
-
 static FE_List *players;
-
 static bool Connect(int port, char *addr)
 {
     // show connecting status
@@ -53,6 +47,7 @@ static bool Connect(int port, char *addr)
     }
     return false;
 }
+
 
 static void Disconnect()
 {
@@ -139,9 +134,7 @@ static void HandleRecieve(ENetEvent *event)
                 FE_List_Add(&players, p);
 
                 info("Player %s has joined", JSONPacket_GetValue(event, "username"));
-
             } else if (mstrcmp(cmd, "removeplayer") == 0) {
-                rem = true;
                 // remove player from list and free memory
                 char *user = JSONPacket_GetValue(event, "username");
                 for (FE_List *p = players; p; p = p->next) {
@@ -154,14 +147,22 @@ static void HandleRecieve(ENetEvent *event)
                         return;
                     }
                 }
-                rem = false;
             }
-
             break;
+
         case PACKET_TYPE_SERVERSTATE: ;
              // parse as json
             LoadServerState(event, &players);
             break;
+
+        case PACKET_TYPE_KICK:
+            // set the game disconnect info to the kick message
+            PresentGame->DisconnectInfo = (FE_DisconnectInfo) {
+                .set = true,
+                .reason = mstradd("Reason: ", JSONPacket_GetValue(event, "reason")),
+            };
+        break;
+
         default:
             break;
     }
@@ -173,26 +174,54 @@ static void Exit()
     FE_Menu_LoadMenu("Main");
 }
 
-static void *HostClient()
+static void HandleDisconnect(ENetEvent *event)
 {
-    while (connected) {
-        ENetEvent event;
-        while (enet_host_service(client, &event, 0) > 0) {
-            switch (event.type) {
-                case ENET_EVENT_TYPE_RECEIVE: ;
-                    HandleRecieve(&event);
-                    enet_packet_destroy(event.packet);
-                break;
-                case ENET_EVENT_TYPE_DISCONNECT:
-                    printf("You have been disconnected.\n");
-                    connected = false;
-                break;
+    connected = false;
+    switch (event->data) {
+        case DISC_SERVER:
+            info("Disconnected from server (Timed out)");
+            PresentGame->DisconnectInfo = (FE_DisconnectInfo) {
+                .set = true,
+                .type = DISC_SERVER,
+                .reason = "Disconnected from server (Timed out)",
+            };
+            break;
+        case DISC_KICK:
+            info("You have been kicked from the server. (Reason: %s)", PresentGame->DisconnectInfo.reason);
+            PresentGame->DisconnectInfo.type = DISC_KICK;
+            break;
+        case DISC_BAN:
+            info("You have been banned from the server. (Reason: %s)", PresentGame->DisconnectInfo.reason);
+            PresentGame->DisconnectInfo.type = DISC_BAN;
+            break;
+        case DISC_NOCON:
+            PresentGame->DisconnectInfo.set = true;
+            PresentGame->DisconnectInfo.reason = mstrdup("You have been banned from this server.");
+            info("Failed to connect to server. (Reason: %s", PresentGame->DisconnectInfo.reason);
+            PresentGame->DisconnectInfo.type = DISC_NOCON;
+        break;
+        default:
+            info("Disconnected from server (Other)");
+            break;
+    }
+}
 
-                default: break;
-            }
+static void HostClient()
+{
+    ENetEvent event;
+    while (enet_host_service(client, &event, 0) > 0) {
+        switch (event.type) {
+            case ENET_EVENT_TYPE_RECEIVE: ;
+                HandleRecieve(&event);
+                enet_packet_destroy(event.packet);
+            break;
+            case ENET_EVENT_TYPE_DISCONNECT:
+                HandleDisconnect(&event);
+            break;
+
+            default: break;
         }
     }
-    return NULL;
 }
 
 static void UpdatePing()
@@ -204,9 +233,7 @@ static void UpdatePing()
 }
 
 void DestroyClient()
-{
-    pthread_join(client_thread, NULL);
-    
+{    
     if (players) {
         // destroy connected players
         for (FE_List *l = players; l; l = l->next) {
@@ -279,7 +306,6 @@ bool LoadConfig()
 
 static void RenderPlayers()
 {
-    if (rem) return; // hack to not run function when thread is removing player
     for (FE_List *l = players; l; l = l->next) {
         player *p = l->data;
         FE_RenderCopy(GameCamera, false, p->texture, NULL, &p->rect);
@@ -423,6 +449,7 @@ void ClientUpdate()
 	if (FE_FPS == 0 || !connected) {
 		return;
 	}
+    HostClient();
 
     UpdatePing();
 
@@ -479,8 +506,6 @@ int InitClient(char *addr, int port, char *username)
         FE_UI_AddElement(FE_UI_LABEL, ping_label);
     }
 
-    // start the client thread
-    pthread_create(&client_thread, NULL, HostClient, NULL);
 
     return 0;
 }

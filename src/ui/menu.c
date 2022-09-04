@@ -244,6 +244,24 @@ void FE_Menu_LoadMenu(const char *page)
 		true
 	);
 
+    // if any server messages exist, display and then clear them
+    if (PresentGame->DisconnectInfo.set) {
+        PresentGame->DisconnectInfo.set = false;
+        switch (PresentGame->DisconnectInfo.type) {
+            case DISC_SERVER:
+                FE_Messagebox_Show("Multiplayer", "Connection to server timed out", MESSAGEBOX_TEXT);
+            break;
+            case DISC_KICK:
+                FE_Messagebox_Show("You were kicked", PresentGame->DisconnectInfo.reason, MESSAGEBOX_TEXT);
+            break;
+            case DISC_BAN:
+                FE_Messagebox_Show("You were banned", PresentGame->DisconnectInfo.reason, MESSAGEBOX_TEXT);
+            break;
+        }
+        free(PresentGame->DisconnectInfo.reason);
+    }
+
+
     if ((mstrcmp(page, "Main") == 0))
         FE_MenuPage_Main();
     else if ((mstrcmp(page, "Keyeditor") == 0))

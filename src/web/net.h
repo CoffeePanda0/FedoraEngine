@@ -5,6 +5,18 @@
 #include <SDL.h>
 #include <stdbool.h>
 
+typedef enum {
+    DISC_SERVER,
+    DISC_KICK,
+    DISC_BAN,
+    DISC_NOCON // no connection allowed (previously banned)
+} DISCON_TYPE;
+
+typedef struct {
+    bool set;
+    DISCON_TYPE type;
+    char *reason;
+} FE_DisconnectInfo;
 
 /** Initialises a server on the given port.
  * @param port The port to listen on.
