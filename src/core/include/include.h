@@ -15,5 +15,6 @@
 #include "timing.h"
 #include "utils.h"
 #include "strarr.h"
+#include "linkedlist.h"
 
 #endif

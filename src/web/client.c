@@ -2,7 +2,6 @@
 #include "net.h"
 #include "include/internal.h"
 #include "../include/game.h"
-
 #define MAP "test"
 
 #define _connection_timeout 5000
@@ -19,14 +18,10 @@ static SDL_Texture *world;
 
 static FE_UI_Label *ping_label;
 
-static bool cansend = false;
+static bool rem = false; // hacky way to remove the player from server whilst rendering from another thread
 
 // struct for each connected client
-typedef struct {
-    char username[24];
-    SDL_Rect rect;
-    FE_Texture *texture;
-} player;
+
 static FE_List *players;
 
 static bool Connect(int port, char *addr)
@@ -57,23 +52,6 @@ static bool Connect(int port, char *addr)
         info("Connection to %s:%i failed", addr, port);
     }
     return false;
-}
-
-static void UpdateThrottle()
-{
-    /* only sends packets 60 times a second, as without this players can move faster
-    as more packets are sent matching the server's 60fps update rate prevents this */
-
-    static float update_time = 1.0f / 60.0f;
-    static float last_update = 0.0f;
-    last_update += FE_DT;
-
-    if (last_update >= update_time) {
-        last_update -= update_time;
-        cansend = true;
-    } else {
-        cansend = false;
-    }
 }
 
 static void Disconnect()
@@ -156,13 +134,14 @@ static void HandleRecieve(ENetEvent *event)
                     .w = 120,
                     .h = 100
                 };
-                p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "player.png");
+                p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png");
                 mstrcpy(p->username, JSONPacket_GetValue(event, "username"));
                 FE_List_Add(&players, p);
 
                 info("Player %s has joined", JSONPacket_GetValue(event, "username"));
 
             } else if (mstrcmp(cmd, "removeplayer") == 0) {
+                rem = true;
                 // remove player from list and free memory
                 char *user = JSONPacket_GetValue(event, "username");
                 for (FE_List *p = players; p; p = p->next) {
@@ -175,8 +154,13 @@ static void HandleRecieve(ENetEvent *event)
                         return;
                     }
                 }
+                rem = false;
             }
 
+            break;
+        case PACKET_TYPE_SERVERSTATE: ;
+             // parse as json
+            LoadServerState(event, &players);
             break;
         default:
             break;
@@ -295,6 +279,7 @@ bool LoadConfig()
 
 static void RenderPlayers()
 {
+    if (rem) return; // hack to not run function when thread is removing player
     for (FE_List *l = players; l; l = l->next) {
         player *p = l->data;
         FE_RenderCopy(GameCamera, false, p->texture, NULL, &p->rect);
@@ -303,7 +288,6 @@ static void RenderPlayers()
 
 void ClientRender()
 {
-    // todo render other players
     if (!connected) {
         SDL_RenderClear(PresentGame->Renderer);
         FE_UI_Render();
@@ -334,13 +318,14 @@ void ClientRender()
     }
 }
 
-static void SendKeyDown(char *key)
+static void SendKeyDown(int key)
 {
-    if (!cansend) return;
-    json_packet *p = JSONPacket_Create();
-    JSONPacket_Add(p, "key", key);
-    SendPacket(peer, PACKET_TYPE_KEYDOWN, p);
-    JSONPacket_Destroy(p);
+    JSONPacket_SendInt(peer, PACKET_TYPE_KEYDOWN, "key", key);
+}
+
+static void SendKeyUp(int key)
+{
+    JSONPacket_SendInt(peer, PACKET_TYPE_KEYUP, "key", key);
 }
 
 void ClientEventHandle()
@@ -368,6 +353,17 @@ void ClientEventHandle()
                         FE_Console_Show();
                         break;
                     }
+
+                    if ((int)event.key.keysym.scancode == FE_Key_Get("LEFT")) {
+                        SendKeyDown(KEY_LEFT);
+                        break;
+                    } else if ((int)event.key.keysym.scancode == FE_Key_Get("RIGHT")) {
+                        SendKeyDown(KEY_RIGHT);
+                        break;
+                    } else if ((int)event.key.keysym.scancode == FE_Key_Get("JUMP")) {
+                        SendKeyDown(KEY_JUMP);
+                        break;
+                    }
                 
                     if (keyboard_state[FE_Key_Get("ZOOM IN")])
                         FE_Camera_SmoothZoom(GameCamera, 0.5, 250);
@@ -384,6 +380,7 @@ void ClientEventHandle()
                             FE_UI_DestroyLabel(ping_label, true);
                             ping_label = 0;
                         }
+                        break;
                     }
 
                     if (keyboard_state[SDL_SCANCODE_L])
@@ -394,24 +391,26 @@ void ClientEventHandle()
                     if (PresentGame->MapConfig.AmbientLight <= 252) {
                         PresentGame->MapConfig.AmbientLight += 3;
                     }
+                    break;
                 }
                 else if (keyboard_state[SDL_SCANCODE_N]) {
                     if (PresentGame->MapConfig.AmbientLight >= 3) {
                         PresentGame->MapConfig.AmbientLight -= 3;
                     }
+                    break;
                 }
 
             break;
-        }
-    }
 
-    // Handle essential inputs here to prevent first click issue. These are sent as networking
-    if (keyboard_state[FE_Key_Get("LEFT")])
-        SendKeyDown("LEFT");
-    if (keyboard_state[FE_Key_Get("RIGHT")])
-        SendKeyDown("RIGHT");
-    if (keyboard_state[FE_Key_Get("JUMP")]) {
-        SendKeyDown("JUMP");
+            case SDL_KEYUP:
+                if ((int)event.key.keysym.scancode == FE_Key_Get("LEFT"))
+                    SendKeyUp(KEY_LEFT);
+                else if ((int)event.key.keysym.scancode == FE_Key_Get("RIGHT"))
+                    SendKeyUp(KEY_RIGHT);
+                else if ((int)event.key.keysym.scancode == FE_Key_Get("JUMP"))
+                    SendKeyUp(KEY_JUMP);
+            break;
+        }
     }
 }
 
@@ -431,7 +430,6 @@ void ClientUpdate()
 	FE_Dialogue_Update();
 
 	PresentGame->Timing.UpdateTime = SDL_GetPerformanceCounter();
-    UpdateThrottle();
 	FE_UpdateTimers();
 	FE_UpdateParticles();
 	FE_UpdatePlayer(GamePlayer);

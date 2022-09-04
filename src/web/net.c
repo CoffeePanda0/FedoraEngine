@@ -8,10 +8,10 @@
     rcon
     server config from file
     showing "you have been kicked" when kicked or other messages instead of instant exit to menu
-    headless is fucked
     ban list (ip)
     pause menu
     configure player animations / actual sprites
+    welcome message
 */
 
 
@@ -94,12 +94,14 @@ void FE_Multiplayer_Render()
         FE_UI_Render();
         SDL_RenderPresent(PresentGame->Renderer);
     }
-    if (mode == MODE_SERVER_HEADLESS || MODE_SERVER) {
-        const float target = (1.0f / 60.0f) / 1000;
-        int sleep = target - PresentGame->Timing.UpdateTime;
-        if (sleep > 0)
-            SDL_Delay(sleep);
+    
+    if (mode == MODE_SERVER_HEADLESS || mode == MODE_SERVER) {
+        const float target = (1.0f / 60.0f) * 1000;
+        int del = target - PresentGame->Timing.UpdateTime;
+        if (del > 0)
+            SDL_Delay(del);
     }
+
     else if (mode == MODE_CLIENT) {
         ClientRender();
     }
