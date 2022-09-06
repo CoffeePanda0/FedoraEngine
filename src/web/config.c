@@ -31,7 +31,7 @@ static int ConfigParser(void *user, const char *section, const char *name, const
         server_config.map = mstrdup(value);
     else if (MATCH("SERVER", "maxplayers"))
         server_config.max_players = atoi(value);
-    else if (MATCH("SERVER", "rcon_pass"))
+    else if (MATCH("SERVER", "rcon_password"))
         server_config.rcon_pass = mstrdup(value);
     
     if (MATCH("MESSAGE", "has_message"))

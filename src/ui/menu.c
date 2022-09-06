@@ -220,7 +220,8 @@ void FE_Menu_LoadMenu(const char *page)
                 FE_Messagebox_Show("You were banned", PresentGame->DisconnectInfo.reason, MESSAGEBOX_TEXT);
             break;
         }
-        free(PresentGame->DisconnectInfo.reason);
+        if (PresentGame->DisconnectInfo.reason)
+            free(PresentGame->DisconnectInfo.reason);
     }
 
 

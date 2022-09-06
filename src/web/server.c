@@ -6,8 +6,6 @@
 #include "../include/game.h"
 #include "../ext/json-maker/json-maker.h"
 
-#define rcon_password "cds_nuts"
-
 static size_t key_count = 3;
 
 static ENetHost* server;
@@ -182,12 +180,13 @@ static void HandleRecieve(ENetEvent *event)
 			}
 
 			// if message is recieved from a client, send it to all clients
-			json_packet *packet = JSONPacket_Create();
-			JSONPacket_Add(packet, "username", c->username);
-			JSONPacket_Add(packet, "msg", JSONPacket_GetValue(event, "msg"));
-			BroadcastPacket(event->peer, PACKET_TYPE_MESSAGE, packet);
-			JSONPacket_Destroy(packet);
-			
+			if (mstrlen(JSONPacket_GetValue(event, "msg")) < 80) {
+				json_packet *packet = JSONPacket_Create();
+				JSONPacket_Add(packet, "username", c->username);
+				JSONPacket_Add(packet, "msg", JSONPacket_GetValue(event, "msg"));
+				BroadcastPacket(0, PACKET_TYPE_MESSAGE, packet);
+				JSONPacket_Destroy(packet);
+			}
 			break;
 
 		case PACKET_TYPE_KEYDOWN:
@@ -199,19 +198,57 @@ static void HandleRecieve(ENetEvent *event)
 		break;
 
 
-		case PACKET_TYPE_RCONREQUEST:
-			if (c->has_rcon) return;
-			if (c->rcon_attempts >= 3) { // max attempts
-				ServerMSG(c, "Too many RCON attempts");
-				return;	
+		case PACKET_TYPE_RCONREQUEST: ;
+			char *command = JSONPacket_GetValue(event, "cmd");
+			char *data = JSONPacket_GetValue(event, "data");
+			if (!command || !data) {
+				ServerMSG(c, "Invalid RCON request");
+				return;
 			}
-			if (mstrcmp(JSONPacket_GetValue(event, "password"), rcon_password) == 0) {
-				c->has_rcon = true;
-				ServerMSG(c, "RCON granted");
+
+			if (c->has_rcon) {
+				if (mstrcmp(command, "kick") == 0) {
+					// find the player to kick by their username
+					for (FE_List *l = clients; l; l = l->next) {
+						client_t *cl = l->data;
+						if (mstrcmp(cl->username, data) == 0) {
+							ServerMSG(c, "Kicked user");
+							RCON_Kick(cl, "Kicked by RCON");
+							break;
+						}
+					}
+				} else if (mstrcmp(command, "ban") == 0) {
+					for (FE_List *l = clients; l; l = l->next) {
+						client_t *cl = l->data;
+						if (mstrcmp(cl->username, data) == 0) {
+							ServerMSG(c, "Banned user");
+							RCON_Ban(cl, "Banned by RCON");
+							break;
+						}
+					}
+				} else if (mstrcmp(command, "gravity") == 0) {
+					PresentGame->MapConfig.Gravity = atof(data);
+				} else if (mstrcmp(command, "shutdown") == 0) {
+					info("[SERVER]: Shutting down server (RCON)");
+					DestroyServer();
+				}
+ 			}
+			else if (mstrcmp(command, "login") == 0) {
+				// if they don't have rcon, use arg to login
+				if (c->rcon_attempts >= 3) { // max attempts
+					ServerMSG(c, "Too many RCON attempts");
+					return;	
+				}
+				if (mstrcmp(data, server_config.rcon_pass) == 0) {
+					c->has_rcon = true;
+					ServerMSG(c, "RCON granted");
+				} else {
+					ServerMSG(c, "Incorrect RCON password");
+				}
+				c->rcon_attempts++;
 			} else {
-				ServerMSG(c, "Incorrect RCON password");
+				ServerMSG(c, "Invalid RCON command");
 			}
-			c->rcon_attempts++;
 		break;
 
 		default:
@@ -285,6 +322,7 @@ void DestroyServer()
 		RCON_Destroy();
 		Server_DestroyConfig();
 	}
+	exit(0);
 }
 
 // initialises the server

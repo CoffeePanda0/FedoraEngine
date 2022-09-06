@@ -2,12 +2,11 @@
 #include "include/internal.h"
 
 /* todo:
-    sending chats
-    sending config and map and other connected clients
-    rcon
+    sending map
     pause menu
     configure player animations / actual sprites
     handle DISC_NOCON
+    muting players, measure chats sent and mute if too many
 */
 
 

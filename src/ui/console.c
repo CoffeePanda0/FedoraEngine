@@ -110,6 +110,7 @@ void FE_Console_SetText(const char *text)
 
 void FE_Console_Show()
 {
+    return;
     PresentGame->ConsoleVisible = true;
     if (!Console.console_texture)
         Console.console_texture = FE_TextureFromFile(CONSOLE_TEXTURE);

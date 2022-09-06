@@ -236,3 +236,13 @@ int mstrinarr(char **arr, size_t n, char *str)
 	}
 	return 0;
 }
+
+int mstrempty(char *str)
+{
+	if (str == NULL) return 1;
+	size_t len = mstrlen(str);
+	for (size_t i = 0; i < len; i++) {
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
+			return 0;
+	}
+}

@@ -1,5 +1,5 @@
 # FedoraEngine (WIP)
-The *most advanced game engine* to ever be released  
+The *most advanced game engine* to ever be released *now with multiplayer*
 
 https://user-images.githubusercontent.com/34898787/184728240-b5c2a3c5-3122-4528-b23e-138c1df67482.mp4
 
@@ -9,6 +9,7 @@ written in pure c
 
 # Current features
 FedoraEngine is still very much in development. Current groundbreaking features are:
+- Full multiplayer including chats and rcon
 - Resource Manager  
 - Fully featured lighting system  
 - Parallax support  
@@ -31,7 +32,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 
 # Requirements
 - A C compiler (e.g gcc)
-- SDL2, SDL_TTF, SDL_Mixer and SDL_Image libraries
+- SDL2, SDL_TTF, SDL_Mixer SDL_Image and ENet libraries
 - ~~a will to live~~  
 
 # Todo  

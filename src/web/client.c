@@ -1,6 +1,9 @@
 #include "net.h"
+#include <string.h>
 #include "include/internal.h"
 #include "../include/game.h"
+#include "../ui/include/chatbox.h"
+
 #define MAP "test"
 
 #define _connection_timeout 5000
@@ -14,10 +17,14 @@ static char *username;
 static FE_Player *GamePlayer;
 static FE_Camera *GameCamera;
 static SDL_Texture *world;
+
+// ui elements
 static FE_UI_Label *ping_label;
+static FE_UI_Chatbox *chatbox;
 
 // struct for each connected client
 static FE_List *players;
+
 static bool Connect(int port, char *addr)
 {
     // show connecting status
@@ -109,7 +116,9 @@ static void HandleRecieve(ENetEvent *event)
         case PACKET_TYPE_SERVERMSG: ;
             char *servermsg = mstradd("SERVER MESSAGE: ", JSONPacket_GetValue(event, "msg"));
             info(servermsg);
-            FE_Console_SetText(servermsg);
+            
+            FE_UI_ChatboxMessage(chatbox, servermsg);
+
             free(servermsg);
             break;
         case PACKET_TYPE_SERVERCMD: ;
@@ -133,7 +142,12 @@ static void HandleRecieve(ENetEvent *event)
                 mstrcpy(p->username, JSONPacket_GetValue(event, "username"));
                 FE_List_Add(&players, p);
 
+                // show player join message
                 info("Player %s has joined", JSONPacket_GetValue(event, "username"));
+                char *msg = mstradd(JSONPacket_GetValue(event, "username"), " has joined the game");
+                FE_UI_ChatboxMessage(chatbox,  msg);
+                free(msg);
+
             } else if (mstrcmp(cmd, "removeplayer") == 0) {
                 // remove player from list and free memory
                 char *user = JSONPacket_GetValue(event, "username");
@@ -141,9 +155,14 @@ static void HandleRecieve(ENetEvent *event)
                     player *pl = p->data;
                     if (mstrcmp(pl->username, user) == 0) {
                         FE_DestroyResource(pl->texture->path);
-                        FE_List_Remove(&players, p);
+                        FE_List_Remove(&players, pl);
                         free(pl);
+
                         info("Player %s has left", user);
+                        char *msg = mstradd(JSONPacket_GetValue(event, "username"), " has left the game");
+                        FE_UI_ChatboxMessage(chatbox,  msg);
+                        free(msg);
+
                         return;
                     }
                 }
@@ -161,6 +180,21 @@ static void HandleRecieve(ENetEvent *event)
                 .set = true,
                 .reason = mstradd("Reason: ", JSONPacket_GetValue(event, "reason")),
             };
+        break;
+
+        case PACKET_TYPE_MESSAGE: ;
+            // show chat message
+            
+            char *_username = JSONPacket_GetValue(event, "username");
+            char *_msg = JSONPacket_GetValue(event, "msg");
+
+            size_t len = mstrlen(_username) + mstrlen(_msg) + 7;
+            char *msg = xmalloc(len);
+            snprintf(msg, len, "[%s]: %s", _username, _msg);
+
+            FE_UI_ChatboxMessage(chatbox, msg);
+            free(msg);
+            break;
         break;
 
         default:
@@ -183,7 +217,7 @@ static void HandleDisconnect(ENetEvent *event)
             PresentGame->DisconnectInfo = (FE_DisconnectInfo) {
                 .set = true,
                 .type = DISC_SERVER,
-                .reason = "Disconnected from server (Timed out)",
+                .reason = mstrdup("Disconnected from server (Timed out)"),
             };
             break;
         case DISC_KICK:
@@ -250,6 +284,10 @@ void DestroyClient()
     if (username)
         free(username);
     username = 0;
+
+    if (chatbox)
+        FE_UI_DestroyChatbox(chatbox);
+    chatbox = 0;
 
     if (client)
         enet_host_destroy(client);
@@ -337,7 +375,10 @@ void ClientRender()
         if (PresentGame->DebugConfig.LightingEnabled)
             FE_Light_Render(GameCamera, world);
 
+
+        FE_UI_RenderChatbox(chatbox);
         FE_UI_Render();
+
         SDL_RenderPresent(PresentGame->Renderer);
 
 	    PresentGame->Timing.RenderTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.RenderTime) / SDL_GetPerformanceFrequency()) * 1000;
@@ -370,6 +411,7 @@ void ClientEventHandle()
             case SDL_KEYDOWN:
                 if (event.key.repeat == 0) {
                     if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
+                        Disconnect();
                         // todo change pause menu
                         break;
                     }
@@ -380,7 +422,7 @@ void ClientEventHandle()
                         break;
                     }
 
-                    if ((int)event.key.keysym.scancode == FE_Key_Get("LEFT")) {
+                    else if ((int)event.key.keysym.scancode == FE_Key_Get("LEFT")) {
                         SendKeyDown(KEY_LEFT);
                         break;
                     } else if ((int)event.key.keysym.scancode == FE_Key_Get("RIGHT")) {
@@ -390,13 +432,13 @@ void ClientEventHandle()
                         SendKeyDown(KEY_JUMP);
                         break;
                     }
-                
-                    if (keyboard_state[FE_Key_Get("ZOOM IN")])
+
+                    else if (keyboard_state[FE_Key_Get("ZOOM IN")])
                         FE_Camera_SmoothZoom(GameCamera, 0.5, 250);
                     else if (keyboard_state[FE_Key_Get("ZOOM OUT")])
                         FE_Camera_SmoothZoom(GameCamera, -0.5, 250);
                     
-                    if (keyboard_state[SDL_SCANCODE_I]) {
+                    else if (keyboard_state[SDL_SCANCODE_I]) {
                         PresentGame->DebugConfig.ShowTiming = !PresentGame->DebugConfig.ShowTiming;
                         if (!ping_label) {
                             ping_label = FE_UI_CreateLabel(0, "pong", 256, 0, 180, COLOR_BLACK);
@@ -409,8 +451,10 @@ void ClientEventHandle()
                         break;
                     }
 
-                    if (keyboard_state[SDL_SCANCODE_L])
+                    else if (keyboard_state[SDL_SCANCODE_L])
                         FE_Light_Toggle(GamePlayer->Light);
+                    else if (keyboard_state[SDL_SCANCODE_C])
+                        FE_UI_ToggleChatbox(chatbox);
                 }
 
                 if (keyboard_state[SDL_SCANCODE_M]) {
@@ -466,6 +510,35 @@ void ClientUpdate()
 	PresentGame->Timing.UpdateTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.UpdateTime) / SDL_GetPerformanceFrequency()) * 1000;
 }
 
+static void SendMessage(char *msg)
+{
+    // check if message is rcon command
+    if (msg[0] == '/') {
+        char *command = strtok(msg, " ");
+        char *arg = strtok(NULL, " ");
+        if (strcmp(command, "/rcon") == 0) {
+            if (arg) {
+                // split arg by command:data
+                char *rcon_command = strtok(arg, ";");
+                char *rcon_data = strtok(NULL, ";");
+                if (rcon_command && rcon_data) {
+                    json_packet *p = JSONPacket_Create();
+                    JSONPacket_Add(p, "cmd", rcon_command);
+                    JSONPacket_Add(p, "data", rcon_data);
+                    SendPacket(peer, PACKET_TYPE_RCONREQUEST, p);
+                    JSONPacket_Destroy(p);
+                }
+            }
+        }
+    } else {
+        // send chat message
+        json_packet *p = JSONPacket_Create();
+        JSONPacket_Add(p, "msg", msg);
+        SendPacket(peer, PACKET_TYPE_MESSAGE, p);
+        JSONPacket_Destroy(p);
+    }
+}
+
 int InitClient(char *addr, int port, char *username)
 {
     if (enet_initialize() != 0) {
@@ -505,7 +578,7 @@ int InitClient(char *addr, int port, char *username)
         ping_label->showbackground = true;
         FE_UI_AddElement(FE_UI_LABEL, ping_label);
     }
-
+    chatbox = FE_UI_CreateChatbox(&SendMessage);
 
     return 0;
 }
