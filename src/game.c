@@ -31,7 +31,7 @@ void FE_StartGame(const char *mapname)
 	GameCamera->minzoom = 1.0f;
 
 	// player setup
-	GamePlayer = FE_CreatePlayer(40, 8, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
+	GamePlayer = FE_CreatePlayer(40, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
 	GameCamera->follow = &GamePlayer->render_rect;
 
 	// test particle system

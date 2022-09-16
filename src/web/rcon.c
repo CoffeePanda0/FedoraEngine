@@ -11,18 +11,22 @@ typedef struct {
     size_t count;
 } kick_info; // contains how many times a person has been kicked in the current session to ban them
 
+
 static FILE *ban_file = 0;
+
+// list of kicked players so that they will be kicked if they try to join again
 static kick_info *kicks = 0;
 static size_t kick_count = 0;
+
+// list of muted players so that they will be muted if they rejoin
+static FE_StrArr *muted;
 
 void RCON_Kick(client_t *client, char *reason)
 {
     // check if they already have been kicked before
-    char ip[32];
-    snprintf(ip, 32, "%x", client->peer->address.host);
 
     for (size_t i = 0; i < kick_count; i++) {
-        if (strcmp(kicks[i].addr, ip) == 0) {
+        if (strcmp(kicks[i].addr, client->ip) == 0) {
             kicks[i].count++;
             if (kicks[i].count >= 3) {
                 RCON_Ban(client, "Kicked too many times");
@@ -34,7 +38,7 @@ void RCON_Kick(client_t *client, char *reason)
 
     // add them to the list of kicked people
     kicks = xrealloc(kicks, ++kick_count * sizeof(kick_info));
-    kicks[kick_count - 1].addr = mstrdup(ip);
+    kicks[kick_count - 1].addr = mstrdup(client->ip);
     kicks[kick_count - 1].count = 1;
 
 kick:
@@ -52,11 +56,9 @@ kick:
 void RCON_Ban(client_t *client, char *reason)
 {
     // add them to the ban list
-    char ip[32];
-    snprintf(ip, 32, "%x", client->peer->address.host);
     if (!ban_file)
         return;
-    fprintf(ban_file, "%s\n", ip);
+    fprintf(ban_file, "%s\n", client->ip);
     fflush(ban_file);
 
 
@@ -71,14 +73,11 @@ void RCON_Ban(client_t *client, char *reason)
     enet_peer_disconnect_later(client->peer, DISC_BAN);
 }
 
-bool RCON_CheckIP(enet_uint32 addr)
+bool RCON_CheckIP(char *ip)
 {
     // check if ip is banned
     if (!ban_file)
         return false;
-
-    char ip[32];
-    snprintf(ip, 32, "%x", addr);
 
     // Read line by line
     char line[64];
@@ -88,7 +87,7 @@ bool RCON_CheckIP(enet_uint32 addr)
 
         // Check if ip matches
         if (mstrcmp(line, ip) == 0) {
-            info("[SERVER]: Banned player [%d] tried to connect", addr);
+            info("[SERVER]: Banned player [%s] tried to connect", ip);
             return true;
         }
     }
@@ -97,7 +96,7 @@ bool RCON_CheckIP(enet_uint32 addr)
     for (size_t i = 0; i < kick_count; i++) {
         if (strcmp(kicks[i].addr, ip) == 0) {
             if (kicks[i].count >= 3) {
-                info("[SERVER]: Banned player [%d] tried to connect", addr);
+                info("[SERVER]: Banned player [%s] tried to connect", ip);
                 return true;
             }
         }
@@ -106,12 +105,31 @@ bool RCON_CheckIP(enet_uint32 addr)
     return false;
 }
 
+void RCON_Mute(client_t *client)
+{
+    client->muted = true;
+    FE_StrArr_Add(muted, client->ip);
+}
+
+void RCON_Unmute(client_t *client)
+{
+    client->muted = false;
+    ssize_t index = FE_StrArr_Exists(muted, client->ip);
+    FE_StrArr_RemoveAt(muted, index);
+}
+
+bool RCON_CheckMute(char *ip)
+{
+    return (FE_StrArr_Exists(muted, ip) == -1 ? false : true);
+}
+
 void RCON_Init()
 {
     ban_file = fopen("bans.txt", "a+");
     if (!ban_file) {
         warn("Failed to open bans.txt");
     }
+    muted = FE_StrArr_Create();
 }
 
 void RCON_Destroy()
@@ -124,5 +142,12 @@ void RCON_Destroy()
         free(kicks[i].addr);
     if (kicks)
         free(kicks);
+
+    if (muted)
+        free(muted);
+
     kicks = 0;
+
+    FE_StrArr_Destroy(muted);
+    muted = 0;
 }

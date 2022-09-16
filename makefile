@@ -7,7 +7,7 @@ include linux.mk
 all: $(out)
 
 $(out): $(obj)
-	$(LD) $(LDFLAGS) -o $@ $(obj) $(LIBS) -lenet
+	$(LD) $(LDFLAGS) -o $@ $(obj) $(LIBS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<

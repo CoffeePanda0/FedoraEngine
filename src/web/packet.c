@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <enet/enet.h>
+#include "../ext/enet.h"
 #include "../ext/tiny-json.h"
 #include "../ext/json-maker/json-maker.h"
 #include "../core/lib/string.h"
@@ -147,54 +147,4 @@ void SendPacket(ENetPeer* peer, packet_type type, json_packet *jsonpacket)
 
 	ENetPacket *packet = enet_packet_create(buffer, len, ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(peer, 0, packet);
-}
-
-void LoadServerState(ENetEvent *event, FE_List **list)
-{
-	// first load the server state json packet
-	json_t mem[32];
-	
-	// use a buffer so we don't change the original packet
-	char *buff = xmalloc(event->packet->dataLength + 1);
-	mmemcpy(buff, event->packet->data, event->packet->dataLength);
-
-    json_t const *json = json_create(buff, mem, sizeof mem / sizeof *mem);
-
-	int type = atoi(json_getPropertyValue(json, "type"));
-	if (type != PACKET_TYPE_SERVERSTATE)
-		return;
-
-	// load welcome message
-	int has_welcome = atoi(json_getPropertyValue(json, "hasmsg"));
-	if (has_welcome) {
-		char *msg = (char*)json_getPropertyValue(json, "msg");
-		FE_Messagebox_Show("Server Message", msg, MESSAGEBOX_TEXT);
-	}
-
-	// load each player
-	json_t const* players = json_getProperty(json, "players");
-	if (players) {
-		json_t const* _player;
-
-		for (_player = json_getChild(players); _player != 0; _player = json_getSibling(_player)) {
-			if (JSON_OBJ == json_getType(_player)) {
-				// for each player
-				player *p = xmalloc(sizeof(player));
-
-				// load vars
-				char const* name = json_getPropertyValue(_player, "username");
-				p->rect.x = atoi(json_getPropertyValue(_player, "x"));
-				p->rect.y = atoi(json_getPropertyValue(_player, "y"));
-				p->rect.w = 120; p->rect.h = 100;
-
-				p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png");
-				mstrcpy(p->username, name);
-
-				// add to list
-				FE_List_Add(list, p);
-			}
-		}
-	}
-
-	free(buff);
 }

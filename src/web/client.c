@@ -33,7 +33,7 @@ static bool Connect(int port, char *addr)
     FE_UI_Render();
     SDL_RenderPresent(PresentGame->Renderer);
 
-    ENetAddress address;
+    ENetAddress address = {0};
     ENetEvent event;
 
     enet_address_set_host(&address, addr);
@@ -82,6 +82,17 @@ static void Disconnect()
 
 static void HandleRecieve(ENetEvent *event)
 {
+    static bool AwaitingMap = false;
+    // listen for binary data instead of usual strings
+    if (AwaitingMap) {
+        // write map data to file
+        FILE *f = fopen("mapdata", "wb");
+        fwrite(event->packet->data, 1, event->packet->dataLength, f);
+        fclose(f);
+        AwaitingMap = false;
+        return;
+    }
+
     switch (PacketType(event)) {
         case PACKET_TYPE_UPDATE:;
             // update player position
@@ -195,6 +206,10 @@ static void HandleRecieve(ENetEvent *event)
             FE_UI_ChatboxMessage(chatbox, msg);
             free(msg);
             break;
+        break;
+
+        case PACKET_TYPE_MAP:
+            AwaitingMap = true;
         break;
 
         default:
@@ -320,7 +335,7 @@ bool LoadConfig()
 	GameCamera->minzoom = 1.0f;
 
 	// player setup
-	GamePlayer = FE_CreatePlayer(40, 8, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
+	GamePlayer = FE_CreatePlayer(40, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
 	GameCamera->follow = &GamePlayer->render_rect;
 
 	// test particle system

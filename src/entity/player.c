@@ -12,7 +12,7 @@ static const int PLAYER_MASS = 50;
 
 static size_t PlayerCount = 0;
 
-FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL_Rect body)
+FE_Player *FE_CreatePlayer(float movespeed, float jumpforce, SDL_Rect body)
 {
     // basic player vars
     FE_Player *p = xmalloc(sizeof(FE_Player));
@@ -135,7 +135,7 @@ void FE_UpdatePlayer(FE_Player *player)
     player->render_rect = player->PhysObj->body;
     player->on_ground = FE_PlayerOnGround(player);
 
-    static vec2 last_position = VEC_NULL;
+    static vec2 last_position = {-1, -1};
 
     // Update the light position, keeping player centered
     if (last_position.x != player->PhysObj->body.x || last_position.y != player->PhysObj->body.y) {

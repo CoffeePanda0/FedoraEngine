@@ -219,6 +219,9 @@ void FE_Menu_LoadMenu(const char *page)
             case DISC_BAN:
                 FE_Messagebox_Show("You were banned", PresentGame->DisconnectInfo.reason, MESSAGEBOX_TEXT);
             break;
+            case DISC_NOCON:
+                FE_Messagebox_Show("Connection Denied", "You have been banned from this server", MESSAGEBOX_TEXT);
+            break;
         }
         if (PresentGame->DisconnectInfo.reason)
             free(PresentGame->DisconnectInfo.reason);

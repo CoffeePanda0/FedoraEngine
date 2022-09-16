@@ -13,7 +13,7 @@ typedef struct FE_Player {
     int id;
 
     float movespeed;
-
+    
     float jumpforce;
     float jump_elapsed;
     int last_y_check;
@@ -44,11 +44,10 @@ void FE_RenderPlayer(FE_Player *player, FE_Camera *camera);
 
 /** Creates a new player
  *\param movespeed - The speed that the player accelerates by when moving
- *\param maxspeed - The maximum speed that a player can run at
  *\param jumpforce - The force for the player to jump at
  *\param body - The rectangle for the player's size and position in the world
 */
-FE_Player *FE_CreatePlayer(float movespeed, float maxspeed, float jumpforce, SDL_Rect body);
+FE_Player *FE_CreatePlayer(float movespeed, float jumpforce, SDL_Rect body);
 
 
 /** Moves the player by a small amount (e.g walking, user input)

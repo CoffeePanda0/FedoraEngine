@@ -4,7 +4,7 @@
 // internal use for networking
 
 /* Checks if an IP has been banned */
-bool RCON_CheckIP(enet_uint32 addr);
+bool RCON_CheckIP(char *ip);
 
 /* Initialises RCON */
 void RCON_Init();
@@ -17,6 +17,15 @@ void RCON_Kick(client_t *client, char *reason);
 
 /* Permabans a player */
 void RCON_Ban(client_t *client, char *reason);
+
+/* Checks if an address was previously muted */
+bool RCON_CheckMute(char *mute);
+
+/* Mutes a player */
+void RCON_Mute(client_t *client);
+
+/* Unmutes a player */
+void RCON_Unmute(client_t *client);
 
 
 #endif

@@ -17,6 +17,7 @@ void DestroyServer();
 
 void Server_LoadConfig();
 void Server_DestroyConfig();
+void Server_SendMap(ENetPeer *peer);
 
 typedef struct {
     char *map;

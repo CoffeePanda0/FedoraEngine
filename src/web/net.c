@@ -2,11 +2,10 @@
 #include "include/internal.h"
 
 /* todo:
-    sending map
+    loading newly saved maps and comparing checksum to prevent unnecesary download, actual connection logic
+    serverstate and maps should really be sent through connection
     pause menu
     configure player animations / actual sprites
-    handle DISC_NOCON
-    muting players, measure chats sent and mute if too many
 */
 
 

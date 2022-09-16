@@ -245,4 +245,5 @@ int mstrempty(char *str)
 		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
 			return 0;
 	}
+	return 1;
 }

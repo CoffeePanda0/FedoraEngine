@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
+#define ENET_IMPLEMENTATION
 #include "net.h"
+
 #include "include/internal.h"
 #include "../include/game.h"
 #include "../ext/json-maker/json-maker.h"
@@ -58,12 +61,11 @@ static void ServerState(char *buffer, size_t size)
 // handles a client connecting
 static void HandleConnect(ENetEvent *event)
 {
-	// send the current game state
-	size_t size = 44 + (32 * (client_count + 1));
+	// Send the current game state
+	size_t size = 44 + (32 * (++client_count));
 	if (server_config.has_message) size += (mstrlen(server_config.message) + 2);
 
 	char *buffer = xcalloc(size, 1);
-
 	ServerState(buffer, size);
 
 	size_t len = mstrlen(buffer);
@@ -72,18 +74,34 @@ static void HandleConnect(ENetEvent *event)
 
 	free(buffer);
 
-	client_count++;
+	Server_SendMap(event->peer);
 
+	// set default values
 	client_t *c = xmalloc(sizeof(client_t));
-	c->peer = event->peer;
-	c->set_username = false;
-	c->has_rcon = false;
-	c->rcon_attempts = 0;
+	enet_peer_get_ip(event->peer, c->ip, 32);
+
+	*c = (client_t) {
+		.peer = event->peer,
+
+		.set_username = false,
+		.username[0] = '\0',
+
+		.has_rcon = false,
+		.rcon_attempts = 0,
+
+		.packets_sent = 0,
+
+		.limited_count = 0,
+		.messages_sent = 0,
+		.muted = RCON_CheckMute(c->ip),
+
+		.last_location = vec(PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y),
+		.last_velocity = vec(0, 0)
+	};
+	
+	// create player
 	memset(c->held_keys, 0, key_count);
-	c->packets_sent = 0;
-	c->player = FE_CreatePlayer(40, 8, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
-	c->last_location = vec(PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y);
-	c->username[0] = '\0';
+	c->player = FE_CreatePlayer(40, 18, (SDL_Rect){c->last_location.x, c->last_location.y, 120, 100});
 
 	FE_List_Add(&clients, c);
 }
@@ -179,6 +197,21 @@ static void HandleRecieve(ENetEvent *event)
 				break;
 			}
 
+			/* Sending a message code */
+
+			if (c->muted) {
+				ServerMSG(c, "You are muted");
+				break;
+			}
+			if ((c->messages_sent++) > 10) {
+				ServerMSG(c, "Warning: Too many messages sent");
+				c->limited_count++;
+				// if they've sent too many messages, mute them
+				if (c->limited_count > 10)
+					RCON_Mute(c);
+				return;
+			}
+
 			// if message is recieved from a client, send it to all clients
 			if (mstrlen(JSONPacket_GetValue(event, "msg")) < 80) {
 				json_packet *packet = JSONPacket_Create();
@@ -217,7 +250,8 @@ static void HandleRecieve(ENetEvent *event)
 							break;
 						}
 					}
-				} else if (mstrcmp(command, "ban") == 0) {
+				}
+				else if (mstrcmp(command, "ban") == 0) {
 					for (FE_List *l = clients; l; l = l->next) {
 						client_t *cl = l->data;
 						if (mstrcmp(cl->username, data) == 0) {
@@ -226,11 +260,24 @@ static void HandleRecieve(ENetEvent *event)
 							break;
 						}
 					}
-				} else if (mstrcmp(command, "gravity") == 0) {
+				}
+				else if (mstrcmp(command, "gravity") == 0) {
 					PresentGame->MapConfig.Gravity = atof(data);
-				} else if (mstrcmp(command, "shutdown") == 0) {
+				}
+				else if (mstrcmp(command, "shutdown") == 0) {
 					info("[SERVER]: Shutting down server (RCON)");
 					DestroyServer();
+				}
+				else if (mstrcmp(command, "mute") == 0) {
+					// get the client to mute
+					for (FE_List *l = clients; l; l = l->next) {
+						client_t *cl = l->data;
+						if (mstrcmp(cl->username, data) == 0) {
+							info("[SERVER]: Muting user %s (RCON)", data);
+							RCON_Mute(cl);
+							break;
+						}
+					}
 				}
  			}
 			else if (mstrcmp(command, "login") == 0) {
@@ -344,7 +391,7 @@ int InitServer()
 		return -1;
 	}
 
-	ENetAddress address;
+	ENetAddress address = {0};
 	address.host = ENET_HOST_ANY;
 	address.port = server_config.port;
 
@@ -374,9 +421,12 @@ static void HostServer()
     while (enet_host_service(server, &event, 0) > 0) {
         switch (event.type)
         {
-            case ENET_EVENT_TYPE_CONNECT:
+            case ENET_EVENT_TYPE_CONNECT: ;
 				// check that player hasn't already connected
-				if (RCON_CheckIP(event.peer->address.host)) {
+				char ip[32];
+				enet_peer_get_ip(event.peer, ip, 32);
+
+				if (RCON_CheckIP(ip)) {
 					enet_peer_disconnect_now(event.peer, DISC_NOCON);
 					break;
 				}
@@ -417,6 +467,20 @@ static void ResetPacketCount()
 	}
 }
 
+static void ResetMessageCount()
+{
+	static float timer = 0;
+	timer += FE_DT;
+
+	if (timer >= 3) {
+		timer -= 3;
+		for (FE_List *l = clients; l; l = l->next) {
+			client_t *c = l->data;
+			c->messages_sent = 0;
+		}
+	}
+}
+
 // checks each player's held keys, and applies the action associated by those keys being held down
 static void UpdateHeldKeys()
 {
@@ -444,6 +508,8 @@ void UpdateServer()
 	PresentGame->Timing.UpdateTime = SDL_GetPerformanceCounter();
 	
 	ResetPacketCount();
+	ResetMessageCount();
+
 	HostServer();
 
 	UpdateHeldKeys();

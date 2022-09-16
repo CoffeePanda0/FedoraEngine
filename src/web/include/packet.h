@@ -1,7 +1,7 @@
 #ifndef _H_PACKET
 #define _H_PACKET
 
-#include <enet/enet.h>
+#include "../../ext/enet.h"
 #include "../../core/include/linkedlist.h"
 #include "../../entity/include/player.h"
 /* internal packet header to be used by network code only */
@@ -16,6 +16,7 @@ typedef enum packet_type {
     PACKET_TYPE_KEYUP, // client has released a key
     PACKET_TYPE_RCONREQUEST, // rcon request
     PACKET_TYPE_SERVERSTATE, // server state
+    PACKET_TYPE_MAP
 } packet_type;
 
 typedef struct {
@@ -33,6 +34,8 @@ typedef struct {
 
 typedef struct {
 	ENetPeer *peer;
+    char ip[32];
+    
 	bool set_username;
 	char username[24];
 
@@ -44,6 +47,10 @@ typedef struct {
 	size_t rcon_attempts; // how many times they have tried to rcon
 
 	size_t packets_sent; // count of packets sent by client in last frame
+
+    size_t messages_sent; // amount of messages sent in last 3 seconds
+    size_t limited_count; // how many times they have been limited
+    bool muted; // if the client is muted
 
 	uint8_t held_keys[3]; // contains state of each key
 } client_t;
