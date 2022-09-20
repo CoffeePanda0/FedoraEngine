@@ -1,7 +1,7 @@
 #include "include/prefab.h"
 #include "../core/lib/string.h"
 #include "../core/include/include.h"
-#include "../ext/ini.h"
+#include "../ext/inih/ini.h"
 
 #define PREFAB_DIRECTORY "game/prefabs/"
 

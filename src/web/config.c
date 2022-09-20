@@ -1,6 +1,6 @@
 #include "include/internal.h"
-#include "../ext/ini.h"
-#include "../ext/tiny-json.h"
+#include "../ext/inih/ini.h"
+#include "../ext/tiny-json/tiny-json.h"
 #include "../core/include/include.h"
 #include "../core/lib/string.h"
 #include "../ui/include/messagebox.h"

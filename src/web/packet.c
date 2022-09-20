@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../ext/enet.h"
-#include "../ext/tiny-json.h"
+#include "../ext/tiny-json/tiny-json.h"
 #include "../ext/json-maker/json-maker.h"
 #include "../core/lib/string.h"
 #include "../core/include/include.h"

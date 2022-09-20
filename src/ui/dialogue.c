@@ -1,6 +1,6 @@
 #include "../core/include/include.h"
 #include "include/include.h"
-#include "../ext/tiny-json.h"
+#include "../ext/tiny-json/tiny-json.h"
 
 #define DIALOGUEPATH "game/dialogue/"
 #define DIALOGUETEXT "dialogue.png"
