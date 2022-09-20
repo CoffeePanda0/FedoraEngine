@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "../core/lib/string.h"
 #include "include/utils.h"
 #include "../ext/hashtbl.h"

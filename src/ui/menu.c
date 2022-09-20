@@ -223,8 +223,6 @@ void FE_Menu_LoadMenu(const char *page)
                 FE_Messagebox_Show("Connection Denied", "You have been banned from this server", MESSAGEBOX_TEXT);
             break;
         }
-        if (PresentGame->DisconnectInfo.reason)
-            free(PresentGame->DisconnectInfo.reason);
     }
 
 

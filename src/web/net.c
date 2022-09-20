@@ -2,10 +2,10 @@
 #include "include/internal.h"
 
 /* todo:
-    loading newly saved maps and comparing checksum to prevent unnecesary download, actual connection logic
-    serverstate and maps should really be sent through connection
+    loading newly saved maps and comparing checksum to prevent unnecesary download
     pause menu
     configure player animations / actual sprites
+    show "you have been banned"
 */
 
 

@@ -21,7 +21,7 @@ void FE_UI_RenderChatbox(FE_UI_Chatbox *chatbox);
 
 
 /* Creates and returns a new chatbox */
-FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)());
+FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)(), void *peer);
 
 
 /* Sends a message to the chatbox */

@@ -66,6 +66,10 @@ typedef struct FE_LoadedMap {
 
     vec2 PlayerSpawn;
     vec2 EndFlag;
+
+    int MapWidth;
+    int MapHeight;
+    int MinimumX;
 } FE_LoadedMap;
 
 typedef struct FE_EndFlag {
@@ -97,6 +101,11 @@ void FE_RenderMapBackground(FE_Camera *camera);
 
 /* Closes and frees resources from a map */
 void FE_CloseMap(FE_LoadedMap *map);
+
+
+/* Gets the current active map*/
+FE_LoadedMap *FE_Game_GetMap();
+
 
 /* Destroys the currently loaded map */
 void FE_CloseLoadedMap();

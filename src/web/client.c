@@ -4,8 +4,6 @@
 #include "../include/game.h"
 #include "../ui/include/chatbox.h"
 
-#define MAP "test"
-
 #define _connection_timeout 5000
 static ENetPeer *peer;
 static ENetHost *client;
@@ -20,6 +18,7 @@ static SDL_Texture *world;
 
 // ui elements
 static FE_UI_Label *ping_label;
+static FE_UI_Label *connecting_label;
 static FE_UI_Chatbox *chatbox;
 
 // struct for each connected client
@@ -29,7 +28,8 @@ static bool Connect(int port, char *addr)
 {
     // show connecting status
     SDL_RenderClear(PresentGame->Renderer);
-    FE_UI_AddElement(FE_UI_LABEL, FE_UI_CreateLabel(0, "Connecting...", 300, midx(256), 50, COLOR_WHITE));
+    connecting_label = FE_UI_CreateLabel(0, "Connecting...", 300, midx(256), 50, COLOR_WHITE);
+    FE_UI_AddElement(FE_UI_LABEL, connecting_label);
     FE_UI_Render();
     SDL_RenderPresent(PresentGame->Renderer);
 
@@ -55,7 +55,6 @@ static bool Connect(int port, char *addr)
     return false;
 }
 
-
 static void Disconnect()
 {
     // to be called when we want to manually disconnect from the server to let the server know we're done
@@ -64,35 +63,24 @@ static void Disconnect()
         enet_peer_disconnect(peer, 0);
         while (enet_host_service(client, &event, 3000) > 0) {
             switch (event.type) {
-                case ENET_EVENT_TYPE_CONNECT:
-                    break;
                 case ENET_EVENT_TYPE_RECEIVE:
                     enet_packet_destroy(event.packet);
                     break;
                 case ENET_EVENT_TYPE_DISCONNECT:
                     info("Disconnected from server");
                     connected = false;
+                    enet_packet_destroy(event.packet);
                     break;
-                default: break;
+                default:
+                    enet_packet_destroy(event.packet);
+                break;
             }
         }
     }
 }
 
-
 static void HandleRecieve(ENetEvent *event)
 {
-    static bool AwaitingMap = false;
-    // listen for binary data instead of usual strings
-    if (AwaitingMap) {
-        // write map data to file
-        FILE *f = fopen("mapdata", "wb");
-        fwrite(event->packet->data, 1, event->packet->dataLength, f);
-        fclose(f);
-        AwaitingMap = false;
-        return;
-    }
-
     switch (PacketType(event)) {
         case PACKET_TYPE_UPDATE:;
             // update player position
@@ -135,12 +123,7 @@ static void HandleRecieve(ENetEvent *event)
         case PACKET_TYPE_SERVERCMD: ;
             char *cmd = JSONPacket_GetValue(event, "cmd");
 
-            if (mstrcmp(cmd, "username") == 0) {
-                // the server setting the clients username
-                username = strdup(JSONPacket_GetValue(event, "username"));
-                info("Username set to %s", username);
-
-            } else if (mstrcmp(cmd, "addplayer") == 0) {
+            if (mstrcmp(cmd, "addplayer") == 0) {
                 // add player to list
                 player *p = xmalloc(sizeof(player));
                 p->rect = (SDL_Rect) {
@@ -180,16 +163,11 @@ static void HandleRecieve(ENetEvent *event)
             }
             break;
 
-        case PACKET_TYPE_SERVERSTATE: ;
-             // parse as json
-            LoadServerState(event, &players);
-            break;
-
         case PACKET_TYPE_KICK:
             // set the game disconnect info to the kick message
             PresentGame->DisconnectInfo = (FE_DisconnectInfo) {
                 .set = true,
-                .reason = mstradd("Reason: ", JSONPacket_GetValue(event, "reason")),
+                .reason = JSONPacket_GetValue(event, "reason"),
             };
         break;
 
@@ -206,10 +184,6 @@ static void HandleRecieve(ENetEvent *event)
             FE_UI_ChatboxMessage(chatbox, msg);
             free(msg);
             break;
-        break;
-
-        case PACKET_TYPE_MAP:
-            AwaitingMap = true;
         break;
 
         default:
@@ -266,6 +240,11 @@ static void HostClient()
             break;
             case ENET_EVENT_TYPE_DISCONNECT:
                 HandleDisconnect(&event);
+                enet_packet_destroy(event.packet);
+            break;
+            case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT:
+                HandleDisconnect(&event);
+                enet_packet_destroy(event.packet);
             break;
 
             default: break;
@@ -317,17 +296,9 @@ void DestroyClient()
     world = 0;
 }
 
-bool LoadConfig()
+static bool CreateGame()
 {
-    // Loads a game like usual
-    FE_UI_ClearElements(PresentGame->UIConfig.ActiveElements);
-
-    FE_LoadedMap *m = 0;
-    if (!(m = FE_LoadMap(MAP))) {
-        warn("Failed to load map %s", MAP);
-        return false;
-    }
-    FE_Game_SetMap(m);
+    FE_UI_DestroyLabel(connecting_label, true);
 
     // camera setup
 	GameCamera = FE_CreateCamera();
@@ -525,36 +496,7 @@ void ClientUpdate()
 	PresentGame->Timing.UpdateTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.UpdateTime) / SDL_GetPerformanceFrequency()) * 1000;
 }
 
-static void SendMessage(char *msg)
-{
-    // check if message is rcon command
-    if (msg[0] == '/') {
-        char *command = strtok(msg, " ");
-        char *arg = strtok(NULL, " ");
-        if (strcmp(command, "/rcon") == 0) {
-            if (arg) {
-                // split arg by command:data
-                char *rcon_command = strtok(arg, ";");
-                char *rcon_data = strtok(NULL, ";");
-                if (rcon_command && rcon_data) {
-                    json_packet *p = JSONPacket_Create();
-                    JSONPacket_Add(p, "cmd", rcon_command);
-                    JSONPacket_Add(p, "data", rcon_data);
-                    SendPacket(peer, PACKET_TYPE_RCONREQUEST, p);
-                    JSONPacket_Destroy(p);
-                }
-            }
-        }
-    } else {
-        // send chat message
-        json_packet *p = JSONPacket_Create();
-        JSONPacket_Add(p, "msg", msg);
-        SendPacket(peer, PACKET_TYPE_MESSAGE, p);
-        JSONPacket_Destroy(p);
-    }
-}
-
-int InitClient(char *addr, int port, char *username)
+int InitClient(char *addr, int port, char *_username)
 {
     if (enet_initialize() != 0) {
         warn("An error occurred while initializing ENet!");
@@ -574,26 +516,29 @@ int InitClient(char *addr, int port, char *username)
         warn("Could not connect to server");
         return -1;
     }
-
     free(addr);
 
-    if (!LoadConfig()) {
-        warn("Could not load game config");
+    // Sync state with server
+    if (Client_Connect(_username, peer, client, &username, &players) == false) {
+        warn("Unable to authenticate with server");
         Disconnect();
         return -1;
     }
 
-    json_packet *p = JSONPacket_Create();
-    JSONPacket_Add(p, "msg", username);
-    SendPacket(peer, PACKET_TYPE_MESSAGE, p);
-    JSONPacket_Destroy(p);
+    if (!CreateGame()) {
+        warn("Could not create game");
+        Disconnect();
+        return -1;
+    }
 
     if (PresentGame->DebugConfig.ShowTiming) {
         ping_label = FE_UI_CreateLabel(0, "pong", 256, 0, 180, COLOR_BLACK);
         ping_label->showbackground = true;
         FE_UI_AddElement(FE_UI_LABEL, ping_label);
     }
-    chatbox = FE_UI_CreateChatbox(&SendMessage);
+
+    chatbox = FE_UI_CreateChatbox(&Client_SendMesage, peer);
+    FE_UI_ToggleChatbox(chatbox);
 
     return 0;
 }

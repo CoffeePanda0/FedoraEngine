@@ -8,6 +8,7 @@
 static FE_Font *chatbox_font;
 
 static void (*callback)();
+static void *_peer;
 
 // todo: nicer input, scrolling, transparency
 
@@ -17,17 +18,17 @@ static void SendMessage(FE_UI_Chatbox *c)
         warn("Message too long");
         return;
     }
-    if (mstrempty(c->input->content)) { // todo check len on server-side
+    if (mstrempty(c->input->content)) {
         FE_UI_SetTextboxContent(c->input, "");
         return;
     }
 
-    callback(c->input->content);
+    callback(c->input->content, _peer);
 
     FE_UI_SetTextboxContent(c->input, "");
 }
 
-FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)())
+FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)(), void *peer)
 {
     if (!chatbox_font)
         chatbox_font = FE_LoadFont("RobotoMono-Regular", 16);
@@ -48,6 +49,7 @@ FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)())
     chatbox->visible = true;
     
     callback = cb;
+    _peer = peer;
 
     chatbox->input = FE_UI_CreateTextbox(0, chatbox->body.y + chatbox->body.h - 40, chatbox->body.w, 0);
     
@@ -108,7 +110,8 @@ void FE_UI_DestroyChatbox(FE_UI_Chatbox *chatbox)
     if (chatbox->messages)
         free(chatbox->messages);
 
-    FE_UI_DestroyTextbox(chatbox->input, true);
+    if (chatbox->visible)
+        FE_UI_DestroyTextbox(chatbox->input, true);
     SDL_DestroyTexture(chatbox->texture);
 
     free(chatbox);

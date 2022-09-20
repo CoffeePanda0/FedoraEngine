@@ -3,6 +3,7 @@
 
 # FE files
 log.txt
+bans.txt
 FedoraEngine
 .vscode/
 vgcore.*

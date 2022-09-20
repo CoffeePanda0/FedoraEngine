@@ -42,7 +42,7 @@ void RCON_Kick(client_t *client, char *reason)
     kicks[kick_count - 1].count = 1;
 
 kick:
-    info("[SERVER]: Kicking player [%d:%i] %s (%s)", client->peer->address.host, client->peer->address.port, client->username, reason);
+    info("[SERVER]: Kicking player [%s:%i] %s (%s)", client->ip, client->peer->address.port, client->username, reason);
     
     // send client a packet so they know they have been kicked
     json_packet *p = JSONPacket_Create();
@@ -61,8 +61,7 @@ void RCON_Ban(client_t *client, char *reason)
     fprintf(ban_file, "%s\n", client->ip);
     fflush(ban_file);
 
-
-    info("[SERVER]: Banning player [%d:%i] %s (%s)", client->peer->address.host, client->peer->address.port, client->username, reason);
+    info("[SERVER]: Banning player [%s:%i] %s (%s)", client->ip, client->peer->address.port, client->username, reason);
     
     // send client a packet so they know they have been kicked
     json_packet *p = JSONPacket_Create();

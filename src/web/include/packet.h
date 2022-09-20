@@ -8,7 +8,8 @@
 
 typedef enum packet_type {
     PACKET_TYPE_MESSAGE, // chat message
-    PACKET_TYPE_KICK,
+    PACKET_TYPE_LOGIN, // login request
+    PACKET_TYPE_KICK, // tells a client they will be kicked
     PACKET_TYPE_SERVERMSG, // server message to one client
     PACKET_TYPE_SERVERCMD, // command from server to client
     PACKET_TYPE_UPDATE, // client position has updated
@@ -16,27 +17,33 @@ typedef enum packet_type {
     PACKET_TYPE_KEYUP, // client has released a key
     PACKET_TYPE_RCONREQUEST, // rcon request
     PACKET_TYPE_SERVERSTATE, // server state
-    PACKET_TYPE_MAP
+    PACKET_TYPE_MAP // tells client to expect a map to follow
 } packet_type;
 
+
+/* The packet data before serialisation */
 typedef struct {
     packet_type type;
     size_t properties;
     char **keys;
     char **values;
-} json_packet; // the packet before serialization
+} json_packet;
 
+
+/* the player struct for each connected player to the client */
 typedef struct {
     char username[24];
     SDL_Rect rect;
     FE_Texture *texture;
 } player;
 
+
+/* the player struct for each connected player to the server */
 typedef struct {
 	ENetPeer *peer;
     char ip[32];
     
-	bool set_username;
+	bool authenticated; // whether or not the player has logged in yet
 	char username[24];
 
 	FE_Player *player;
@@ -55,11 +62,8 @@ typedef struct {
 	uint8_t held_keys[3]; // contains state of each key
 } client_t;
 
-typedef struct {
-    packet_type type;
-    char *data;
-} split_packet;
 
+/* For keeping track of client inputs */
 typedef enum {
     KEY_LEFT,
     KEY_RIGHT,

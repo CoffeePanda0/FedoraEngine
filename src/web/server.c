@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <stdlib.h>
 
 #define ENET_IMPLEMENTATION
@@ -7,16 +6,25 @@
 
 #include "include/internal.h"
 #include "../include/game.h"
-#include "../ext/json-maker/json-maker.h"
 
 static size_t key_count = 3;
 
-static ENetHost* server;
+static ENetHost *server;
 
 static FE_List *clients;
 static size_t client_count;
 
-static int last_id = 0; // last client id
+/* sends a packet to all clients other than the one who sent it
+	(set to 0 to send to all clients) */
+void BroadcastPacket(ENetPeer *peer, packet_type type, json_packet *p)
+{
+	for (FE_List *l = clients; l; l = l->next) {
+		client_t *c = l->data;
+		if (!peer || c->peer != peer) {
+			SendPacket(c->peer, type, p);
+		}
+	}
+}
 
 // gets a client info by their peer
 static client_t *GetClient(ENetPeer *peer)
@@ -30,102 +38,40 @@ static client_t *GetClient(ENetPeer *peer)
 	return 0;
 }
 
-static void ServerState(char *buffer, size_t size)
-{
-	// create json packet
-	buffer = json_objOpen(buffer, NULL, &size);
-	buffer = json_int(buffer, "type", PACKET_TYPE_SERVERSTATE, &size);
-
-	// load welcome message (if exists)
-	buffer = json_int(buffer, "hasmsg", server_config.has_message, &size);
-	if (server_config.has_message)
-		buffer = json_str(buffer, "msg", server_config.message, &size);
-
-	if (clients) {
-		buffer = json_arrOpen(buffer, "players", &size);
-		for (FE_List *l = clients; l; l = l->next) {
-			client_t *c = l->data;
-			if (c->set_username) {
-				buffer = json_objOpen(buffer, NULL, &size);
-				buffer = json_str(buffer, "username", c->username, &size);
-				buffer = json_int(buffer, "x", c->player->PhysObj->body.x, &size);
-				buffer = json_int(buffer, "y", c->player->PhysObj->body.y, &size);
-				buffer = json_objClose(buffer, &size);
-			}
-		}
-		buffer = json_arrClose(buffer, &size);
-	}
-	buffer = json_objClose(buffer, &size);
-}
-
 // handles a client connecting
 static void HandleConnect(ENetEvent *event)
 {
-	// Send the current game state
-	size_t size = 44 + (32 * (++client_count));
-	if (server_config.has_message) size += (mstrlen(server_config.message) + 2);
-
-	char *buffer = xcalloc(size, 1);
-	ServerState(buffer, size);
-
-	size_t len = mstrlen(buffer);
-	ENetPacket *packet = enet_packet_create(buffer, len, ENET_PACKET_FLAG_RELIABLE);
-	enet_peer_send(event->peer, 0, packet);
-
-	free(buffer);
-
-	Server_SendMap(event->peer);
-
 	// set default values
 	client_t *c = xmalloc(sizeof(client_t));
 	enet_peer_get_ip(event->peer, c->ip, 32);
 
-	*c = (client_t) {
-		.peer = event->peer,
+	c->peer = event->peer;
 
-		.set_username = false,
-		.username[0] = '\0',
+	c->authenticated = false;
+	mmemset(c->username, 0, sizeof(c->username));
 
-		.has_rcon = false,
-		.rcon_attempts = 0,
+	c->has_rcon = false;
+	c->rcon_attempts = 0;
 
-		.packets_sent = 0,
+	c->packets_sent = 0;
 
-		.limited_count = 0,
-		.messages_sent = 0,
-		.muted = RCON_CheckMute(c->ip),
+	c->limited_count = 0;
+	c->messages_sent = 0;
+	c->muted = RCON_CheckMute(c->ip);
 
-		.last_location = vec(PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y),
-		.last_velocity = vec(0, 0)
-	};
+	c->last_location = vec(PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y);
+	c->last_velocity = vec(-1, -1);
 	
 	// create player
-	memset(c->held_keys, 0, key_count);
+	mmemset(c->held_keys, 0, key_count);
 	c->player = FE_CreatePlayer(40, 18, (SDL_Rect){c->last_location.x, c->last_location.y, 120, 100});
 
 	FE_List_Add(&clients, c);
-}
 
-// sends a "server message" to one client
-static void ServerMSG(client_t *client, char *msg)
-{
-	json_packet *p = JSONPacket_Create();
-	JSONPacket_Add(p, "msg", msg);
-	SendPacket(client->peer, PACKET_TYPE_SERVERMSG, p);
+	// wait for client to send / receive state
+	Server_AuthenticateClient(server, c, &clients, &client_count);
 
-	JSONPacket_Destroy(p);
-}
-
-/* sends a packet to all clients other than the one who sent it
-	(set to 0 to send to all clients) */
-static void BroadcastPacket(ENetPeer *peer, packet_type type, json_packet *p)
-{
-	for (FE_List *l = clients; l; l = l->next) {
-		client_t *c = l->data;
-		if (!peer || c->peer != peer) {
-			SendPacket(c->peer, type, p);
-		}
-	}
+	enet_packet_destroy(event->packet);
 }
 
 // handles the first press of a key down
@@ -142,85 +88,21 @@ static void HandleKeyUp(held_keys key, client_t *c)
 		c->held_keys[key] = 0;
 }
 
-// handles receiving a message from a client
+// handles receiving a packet from a client
 static void HandleRecieve(ENetEvent *event)
 {
 	client_t *c = GetClient(event->peer);
 	c->packets_sent++;
 
-	if (c->packets_sent > 30) // only allow 30 packets per second
-		return;
 	if (c->packets_sent > 60)
 		RCON_Kick(c, "Too many packets sent");
-	if (!c->set_username && (PacketType(event) != PACKET_TYPE_MESSAGE))
-		RCON_Kick(c, "Username not set");
+	if (!c->authenticated)
+		RCON_Kick(c, "Client not authenticated");
 
 	switch (PacketType(event)) {
 		case PACKET_TYPE_MESSAGE:
-			// first ever packet is the username
-			if (!c->set_username) {
-				c->set_username = true;
-
-				// check if the username is already taken
-				bool set = false;
-				for (FE_List *l = clients; l; l = l->next) {
-					client_t *cl = l->data;
-					if (strcmp(cl->username, JSONPacket_GetValue(event, "msg")) == 0) {
-						// if so, set it to client + last_id
-						sprintf(c->username, "client%d", last_id++);
-						ServerMSG(c, "Username taken, setting to client#");
-						set = true;
-					}
-				}
-				if (!set) strncpy(c->username, JSONPacket_GetValue(event, "msg"), 23);
-				info("[SERVER]: Client username set to %s", c->username);
-
-				// send the client their id
-				json_packet *p = JSONPacket_Create();
-				JSONPacket_Add(p, "cmd", "username");
-				JSONPacket_Add(p, "username", c->username);
-				SendPacket(c->peer, PACKET_TYPE_SERVERCMD, p);
-				JSONPacket_Destroy(p);
-
-				// send packet to all clients to add the new player
-				char x[16], y[16];
-				sprintf(x, "%f", c->player->PhysObj->position.x);
-				sprintf(y, "%f", c->player->PhysObj->position.y);
-
-				p = JSONPacket_Create();
-				JSONPacket_Add(p, "cmd", "addplayer");
-				JSONPacket_Add(p, "username", c->username);
-				JSONPacket_Add(p, "x", x);
-				JSONPacket_Add(p, "y", y);
-				BroadcastPacket(c->peer, PACKET_TYPE_SERVERCMD, p);
-				JSONPacket_Destroy(p);
-				break;
-			}
-
-			/* Sending a message code */
-
-			if (c->muted) {
-				ServerMSG(c, "You are muted");
-				break;
-			}
-			if ((c->messages_sent++) > 10) {
-				ServerMSG(c, "Warning: Too many messages sent");
-				c->limited_count++;
-				// if they've sent too many messages, mute them
-				if (c->limited_count > 10)
-					RCON_Mute(c);
-				return;
-			}
-
-			// if message is recieved from a client, send it to all clients
-			if (mstrlen(JSONPacket_GetValue(event, "msg")) < 80) {
-				json_packet *packet = JSONPacket_Create();
-				JSONPacket_Add(packet, "username", c->username);
-				JSONPacket_Add(packet, "msg", JSONPacket_GetValue(event, "msg"));
-				BroadcastPacket(0, PACKET_TYPE_MESSAGE, packet);
-				JSONPacket_Destroy(packet);
-			}
-			break;
+			Server_ParseMessage(c, event);
+		break;
 
 		case PACKET_TYPE_KEYDOWN:
 			HandleKeyDown(JSONPacket_GetInt(event, "key"), c);
@@ -229,7 +111,6 @@ static void HandleRecieve(ENetEvent *event)
 		case PACKET_TYPE_KEYUP:
 			HandleKeyUp(JSONPacket_GetInt(event, "key"), c);
 		break;
-
 
 		case PACKET_TYPE_RCONREQUEST: ;
 			char *command = JSONPacket_GetValue(event, "cmd");
@@ -362,7 +243,6 @@ void DestroyServer()
 		enet_deinitialize();
 		enet_host_destroy(server);
 		server = 0;
-		last_id = 0;
 
 		client_count = 0;
 
@@ -431,8 +311,8 @@ static void HostServer()
 					break;
 				}
 
-                info("[SERVER]: A new client connected from %x:%u.",
-                    event.peer->address.host, event.peer->address.port);
+                info("[SERVER]: A new client connected from %s:%u.",
+                    ip, event.peer->address.port);
                 HandleConnect(&event);
                 break;
             break;
@@ -445,7 +325,13 @@ static void HostServer()
 
             case ENET_EVENT_TYPE_DISCONNECT:
                 HandleDisconnect(&event);
+				enet_packet_destroy(event.packet);
             break;
+
+			case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT:
+				HandleDisconnect(&event);
+				enet_packet_destroy(event.packet);
+			break;
 
             default: break;
         }
