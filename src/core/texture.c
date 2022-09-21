@@ -14,11 +14,10 @@ SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a fi
         return FE_TextureFromRGBA(COLOR_PINK);
     }
     
+
     SDL_Surface* s = IMG_Load(path); // we have this to check the image is valid
     if (s) {
-        SDL_Surface* tmpSurface = IMG_Load(path); 
-        SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Renderer, tmpSurface);
-        SDL_FreeSurface(tmpSurface);
+        SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
         SDL_FreeSurface(s);
         return text;
     } else {

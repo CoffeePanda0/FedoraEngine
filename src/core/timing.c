@@ -36,7 +36,7 @@ void FE_ResetDT()
 }
 
 int FE_CalculateDT()
-{	
+{
 	last_time = current_time;
 	current_time = SDL_GetPerformanceCounter();
 	FE_DT = (float)((current_time - last_time) / (float)SDL_GetPerformanceFrequency());
@@ -51,7 +51,7 @@ int FE_CalculateDT()
     FE_FPS = (1 / FE_DT);
     FE_DT_MULTIPLIER = (FE_DT / FE_DT_TARGET);
 
-    if (PresentGame->config->show_fps)
+    if (PresentGame->config->show_fps && !PresentGame->config->headless)
 	    FE_FPSCounter();
 
     return 1;

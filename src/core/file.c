@@ -55,7 +55,7 @@ FE_StrArr *FE_File_GetFiles(const char *dir)
 
     struct dirent *ent;
     while ((ent = readdir(d)) != NULL) {
-        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
+        if (mstrcmp(ent->d_name, ".") == 0 || mstrcmp(ent->d_name, "..") == 0)
             continue;
         FE_StrArr_Add(arr, ent->d_name);
     }

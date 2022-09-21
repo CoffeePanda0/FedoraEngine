@@ -15,7 +15,7 @@ static FE_Texture *flagtexture;
 
 FE_LoadedMap *FE_LoadMap(const char *name)
 {
-    if (!name || strlen(name) < 1)
+    if (!name || mstrlen(name) < 1)
         return 0;
     
     FE_LoadedMap *m = xmalloc(sizeof(FE_LoadedMap));
@@ -26,7 +26,6 @@ FE_LoadedMap *FE_LoadMap(const char *name)
     FILE *f = fopen(map_path, "rb");
     if (f == NULL) {
         warn("Failed to open map file: %s", name);
-        FE_Menu_LoadMenu("Main"); // return to main menu when we can't open map
         free(map_path);
         return 0;
     }
@@ -75,6 +74,11 @@ FE_LoadedMap *FE_LoadMap(const char *name)
     if (fread(&m->tilecount, sizeof(Uint16), 1, f) != 1) goto err;
     if (fread(&m->tilesize, sizeof(Uint16), 1, f) != 1) goto err;
     
+    // set empty values
+    m->MinimumX = 0;
+    m->MapHeight = 0;
+    m->MapWidth = 0;
+
     bool setminX = false; // check if we have set the map minimum values yet
 
     m->tiles = xmalloc(sizeof(FE_Map_Tile) * m->tilecount);
@@ -85,17 +89,17 @@ FE_LoadedMap *FE_LoadMap(const char *name)
         if (fread(&m->tiles[i].position, sizeof(vec2), 1, f) != 1) goto err;
 
         // calculate map height and width
-        if ((Uint16)m->tiles[i].position.x + m->tilesize > PresentGame->MapConfig.MapWidth) PresentGame->MapConfig.MapWidth = m->tiles[i].position.x + m->tilesize;
-        if ((Uint16)m->tiles[i].position.y - PresentGame->WindowHeight + m->tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = m->tiles[i].position.y + m->tilesize - PresentGame->MapConfig.MapHeight;
+        if ((Uint16)m->tiles[i].position.x + m->tilesize > m->MapWidth) m->MapWidth = m->tiles[i].position.x + m->tilesize;
+        if ((Uint16)m->tiles[i].position.y - PresentGame->WindowHeight + m->tilesize > m->MapHeight) m->MapHeight = m->tiles[i].position.y + m->tilesize - m->MapHeight;
     
         // calculate minimum x point and minimum y point for camera bounds
-        if ((Uint16)m->tiles[i].position.x < PresentGame->MapConfig.MinimumX || !setminX) {
-            PresentGame->MapConfig.MinimumX = m->tiles[i].position.x;
+        if ((Uint16)m->tiles[i].position.x < m->MinimumX || !setminX) {
+            m->MinimumX = m->tiles[i].position.x;
             setminX = true;
         }
         
         // calculate highest Y value
-        if ((Uint16)m->tiles[i].position.y + m->tilesize > PresentGame->MapConfig.MapHeight) PresentGame->MapConfig.MapHeight = m->tiles[i].position.y + m->tilesize;
+        if ((Uint16)m->tiles[i].position.y + m->tilesize > m->MapHeight) m->MapHeight = m->tiles[i].position.y + m->tilesize;
     }
 
     // Read Prefabs
@@ -112,12 +116,8 @@ FE_LoadedMap *FE_LoadMap(const char *name)
         free(_name);
     }
 
-    PresentGame->MapConfig.Gravity = m->gravity;
-    PresentGame->MapConfig.AmbientLight = m->ambientlight;
-
     // read player spawn
     if (fread(&m->PlayerSpawn, sizeof(vec2), 1, f) != 1) goto err;
-    PresentGame->MapConfig.PlayerSpawn = m->PlayerSpawn;
     
     // read end flag
     if (fread(&m->EndFlag, sizeof(vec2), 1, f) != 1) goto err;
@@ -145,8 +145,24 @@ void FE_Game_SetMap(FE_LoadedMap *m)
     }
     if (PresentGame->MapConfig.Loaded)
         FE_CloseMap(map);
+
     map = m;
-    PresentGame->MapConfig.Loaded = true;
+
+    PresentGame->MapConfig = (FE_MapConfig) {
+        .Loaded = true,
+        .MapWidth = m->MapWidth,
+        .MapHeight = m->MapHeight,
+        .MinimumX = m->MinimumX,
+        .Gravity = m->gravity,
+        .AmbientLight = m->ambientlight,
+        .PlayerSpawn = m->PlayerSpawn
+    };
+
+}
+
+FE_LoadedMap *FE_Game_GetMap()
+{
+    return map;
 }
 
 void FE_RenderLoadedMap(FE_Camera *camera)
@@ -229,6 +245,8 @@ void FE_CloseMap(FE_LoadedMap *map)
     }
     map->tilecount = 0;
     free(map);
+
+    PresentGame->MapConfig.Loaded = false;
 
     return;
 }

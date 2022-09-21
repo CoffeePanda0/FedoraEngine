@@ -79,7 +79,7 @@ bool Raycast_Circle(Ray *ray, Circle *circle, Ray_Result *result)
     return true;
 }
 
-bool Collision_AABB(AABB *a, AABB *b, Collision_Point *result)
+bool Collision_AABB(AABB *a, AABB *b)
 {
     if(a->max.x < b->min.x || a->min.x > b->max.x) return false;
     if(a->max.y < b->min.y || a->min.y > b->max.y) return false;
@@ -87,7 +87,7 @@ bool Collision_AABB(AABB *a, AABB *b, Collision_Point *result)
     return true;
 }
 
-bool Collision_Circle_AABB(Circle *c, AABB *a, Collision_Point *result)
+bool Collision_Circle_AABB(Circle *c, AABB *a)
 {
     // find closest point on a to c
     vec2 closest = vec2_clamp(c->position, a->min, a->max);
@@ -99,7 +99,7 @@ bool Collision_Circle_AABB(Circle *c, AABB *a, Collision_Point *result)
 }
 
 
-bool Collision_Circle(Circle *a, Circle *b, Collision_Point *result)
+bool Collision_Circle(Circle *a, Circle *b)
 {
     // Calculate the distance between the two circles to avoid a square root
     float dist = square(b->position.x - a->position.x) + square(b->position.y - a->position.y);

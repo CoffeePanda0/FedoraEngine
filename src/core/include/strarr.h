@@ -29,4 +29,20 @@ FE_StrArr *FE_StrArr_Create();
 void FE_StrArr_Destroy(FE_StrArr *arr);
 
 
+
+/** Checks if a string exists in a string array
+ * @param arr the Array to check
+ * @param string The string to find
+ * @returns -1 if not found, otherwise, the index of the item
+*/
+ssize_t FE_StrArr_Exists(FE_StrArr *arr, char *str);
+
+
+/** Removes a string from a string array
+ * @param arr The array to remove from
+ * @param index The index of the item to remove
+*/
+void FE_StrArr_RemoveAt(FE_StrArr *arr, ssize_t index);
+
+
 #endif

@@ -55,9 +55,9 @@ void Raycast_Reset(Ray_Result *result);
 bool Raycast_Plane(Ray *ray, Plane *plane, Ray_Result *result);
 bool Raycast_Polygon(Ray *ray, Polygon *polygon, Ray_Result *result);
 bool Raycast_Circle(Ray *ray, Circle *circle, Ray_Result *result);
-bool Collision_AABB(AABB *a, AABB *b, Collision_Point *result);
-bool Collision_Circle_AABB(Circle *c, AABB *a, Collision_Point *result);
-bool Collision_Circle(Circle *a, Circle *b, Collision_Point *result);
+bool Collision_AABB(AABB *a, AABB *b);
+bool Collision_Circle_AABB(Circle *c, AABB *a);
+bool Collision_Circle(Circle *a, Circle *b);
 
 
 #endif

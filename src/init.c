@@ -12,6 +12,7 @@ FE_InitConfig *FE_NewInitConfig()
 	config->window_title = "FedoraEngine";
 	config->WindowWidth = 1280;
 	config->WindowHeight = 720;
+	config->headless = false;
 	config->vsync = true;
 	config->show_fps = true;
 	config->default_font = "OpenSans";
@@ -36,6 +37,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.Renderer = NULL,
 		.GameActive = false,
 		.GameState = GAME_STATE_MENU,
+		.DisconnectInfo = {false, 0, 0},
 		.MapConfig = {false, ic->WindowWidth, ic->WindowHeight, 0, VEC_EMPTY, 0.0f, 20},
 		.AudioConfig = {50, false},
 		.Timing = {0,0,0},
@@ -59,6 +61,16 @@ void FE_Init(FE_InitConfig *InitConfig)
 
 	PresentGame = NewGame(InitConfig);
 	FE_Log_Init();
+
+	// Initialise SDL without window
+	if (InitConfig->headless) {
+		FE_ResourceManager_Init();
+		
+		PresentGame->config->vsync = false; // disable vsync so we can cap at constant 60hz/ups
+		PresentGame->GameActive = true;
+		
+		return;
+	}
 
 	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
 	{	

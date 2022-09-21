@@ -44,7 +44,9 @@ size_t mstrcspn(const char *s, const char *reject)
 
 int mstrcmp(const char *str1, const char *str2)
 {
-	assert(str1 != NULL && str2 != NULL);
+	if (!str1 || !str2)
+		return -1;
+		
 	register const unsigned char *s1 = (const unsigned char*)str1;
 	register const unsigned char *s2 = (const unsigned char*)str2;
 	
@@ -233,4 +235,15 @@ int mstrinarr(char **arr, size_t n, char *str)
 			return 1;
 	}
 	return 0;
+}
+
+int mstrempty(char *str)
+{
+	if (str == NULL) return 1;
+	size_t len = mstrlen(str);
+	for (size_t i = 0; i < len; i++) {
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
+			return 0;
+	}
+	return 1;
 }

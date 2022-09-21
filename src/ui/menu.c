@@ -1,9 +1,48 @@
 #include "../include/game.h"
 #include "../editor/editor.h"
+#include "../web/net.h"
 
 static FE_Texture *MenuTexture;
 static FE_Camera *Camera;
 static FE_ParticleSystem *Particles;
+
+struct JoinInfo {
+    FE_UI_Textbox *addr;
+    FE_UI_Textbox *port;
+    FE_UI_Textbox *username;
+};
+static struct JoinInfo joininfo;
+
+static void JoinAction()
+{
+    FE_Multiplayer_InitClient(joininfo.addr->content, atoi(joininfo.port->content), joininfo.username->content);
+}
+
+static void FE_MenuPage_JoinGame()
+{
+    FE_UI_Container *container = FE_UI_CreateContainer(midx(400), midy(500), 400, 500, "Join Game", false);
+    FE_UI_AddElement(FE_UI_CONTAINER, container);
+
+    FE_UI_Textbox *addr = FE_UI_CreateTextbox(0, 0, 256, "127.0.0.1");
+    FE_UI_Textbox *port = FE_UI_CreateTextbox(0, 0, 256, "7777");
+    FE_UI_Textbox *username = FE_UI_CreateTextbox(0,0, 256, "coffee");
+    FE_UI_Button *host_btn = FE_UI_CreateButton("Join", 0, 0, BUTTON_LARGE, &JoinAction, 0);
+    FE_UI_Button *back_btn = FE_UI_CreateButton("Back", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Main");
+
+    FE_UI_AddChild(container, FE_UI_LABEL, FE_UI_CreateLabel(0, "Server Address", 256, 0, 0, COLOR_WHITE), FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_TEXTBOX, addr, FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_LABEL, FE_UI_CreateLabel(0, "Server Port", 256, 0, 0, COLOR_WHITE), FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_TEXTBOX, port, FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_LABEL, FE_UI_CreateLabel(0, "Username", 256, 0, 0, COLOR_WHITE), FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_TEXTBOX, username, FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_BUTTON, host_btn, FE_LOCATION_CENTRE);
+    FE_UI_AddContainerSpacer(container, 64);
+    FE_UI_AddChild(container, FE_UI_BUTTON, back_btn, FE_LOCATION_CENTRE);
+
+    joininfo.addr = addr;
+    joininfo.port = port;
+    joininfo.username = username;
+}
 
 static void LoadEditor(char *m)
 {
@@ -27,8 +66,6 @@ static void FE_MenuPage_Editor()
     FE_UI_AddChild(container, FE_UI_BUTTON, new_btn, FE_LOCATION_CENTRE);
     FE_UI_AddChild(container, FE_UI_BUTTON, load_btn, FE_LOCATION_CENTRE);
     FE_UI_AddChild(container, FE_UI_BUTTON, back_btn, FE_LOCATION_CENTRE);
-
-
 }
 
 static void LoadMap_()
@@ -90,7 +127,6 @@ static void FE_MenuPage_KeyEditor()
     FE_UI_Button *zoomin_btn = FE_UI_CreateButton("Change", 0, 0, BUTTON_SMALL, &KeyChange, "ZOOM IN");
     FE_UI_Button *zoomout_btn = FE_UI_CreateButton("Change", 0, 0, BUTTON_SMALL, &KeyChange, "ZOOM OUT");
 
-
     FE_UI_AddChild(container, FE_UI_BUTTON, return_btn, FE_LOCATION_CENTRE);
     FE_UI_AddChild(container, FE_UI_BUTTON, save_btn, FE_LOCATION_CENTRE);
     FE_UI_AddContainerSpacer(container, 10);
@@ -113,7 +149,6 @@ static void FE_MenuPage_KeyEditor()
 
     FE_UI_AddChild(container, FE_UI_LABEL, zoomout_l, FE_LOCATION_CENTRE);
     FE_UI_AddChild(container, FE_UI_BUTTON, zoomout_btn, FE_LOCATION_CENTRE);
-
 }
 
 void FE_MenuPage_Main()
@@ -123,13 +158,15 @@ void FE_MenuPage_Main()
 
     FE_UI_Button *start_btn = FE_UI_CreateButton("Load Map", 0, 0, BUTTON_LARGE, &LoadMap, NULL);
     FE_UI_Button *editor_btn = FE_UI_CreateButton("Map Editor", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Editor");
+    FE_UI_Button *multiplayer_btn = FE_UI_CreateButton("Join Game", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "JoinGame");
     FE_UI_Button *key_btn = FE_UI_CreateButton("Keybinds", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Keyeditor");
     FE_UI_Button *quit_btn = FE_UI_CreateButton("Quit", 0, 0, BUTTON_LARGE, &FE_Clean, NULL);
 
     FE_UI_AddChild(container, FE_UI_BUTTON, start_btn, FE_LOCATION_CENTRE);
     FE_UI_AddChild(container, FE_UI_BUTTON, editor_btn, FE_LOCATION_CENTRE);
+    FE_UI_AddChild(container, FE_UI_BUTTON, multiplayer_btn, FE_LOCATION_CENTRE);
     FE_UI_AddChild(container, FE_UI_BUTTON, key_btn, FE_LOCATION_CENTRE);
-    FE_UI_AddContainerSpacer(container, 100);
+    FE_UI_AddContainerSpacer(container, 64);
     FE_UI_AddChild(container, FE_UI_BUTTON, quit_btn, FE_LOCATION_CENTRE);
 }
 
@@ -169,13 +206,34 @@ void FE_Menu_LoadMenu(const char *page)
 		true
 	);
 
+    // if any server messages exist, display and then clear them
+    if (PresentGame->DisconnectInfo.set) {
+        PresentGame->DisconnectInfo.set = false;
+        switch (PresentGame->DisconnectInfo.type) {
+            case DISC_SERVER:
+                FE_Messagebox_Show("Multiplayer", "Connection to server timed out", MESSAGEBOX_TEXT);
+            break;
+            case DISC_KICK:
+                FE_Messagebox_Show("You were kicked", PresentGame->DisconnectInfo.reason, MESSAGEBOX_TEXT);
+            break;
+            case DISC_BAN:
+                FE_Messagebox_Show("You were banned", PresentGame->DisconnectInfo.reason, MESSAGEBOX_TEXT);
+            break;
+            case DISC_NOCON:
+                FE_Messagebox_Show("Connection Denied", "You have been banned from this server", MESSAGEBOX_TEXT);
+            break;
+        }
+    }
+
+
     if ((mstrcmp(page, "Main") == 0))
         FE_MenuPage_Main();
     else if ((mstrcmp(page, "Keyeditor") == 0))
         FE_MenuPage_KeyEditor();
     else if ((mstrcmp(page, "Editor") == 0))
         FE_MenuPage_Editor();
-
+    else if ((mstrcmp(page, "JoinGame") == 0))
+        FE_MenuPage_JoinGame();
 }
 
 void FE_Menu_EventHandler()

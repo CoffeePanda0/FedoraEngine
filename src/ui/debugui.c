@@ -44,7 +44,7 @@ static void CreateUI()
     UI_Created = true;
 }
 
-static void DestroyUI()
+void FE_DebugUI_Destroy()
 {
     if (UI_Created) {
         FE_UI_DestroyLabel(update_label, true);
@@ -95,6 +95,6 @@ void FE_DebugUI_Update(FE_Player *player)
         }
     } else {
         if (UI_Created)
-            DestroyUI();
+            FE_DebugUI_Destroy();
     }
 }

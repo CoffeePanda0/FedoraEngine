@@ -1,3 +1,4 @@
+#include <sys/types.h>
 #include "include/strarr.h"
 #include "include/mem.h"
 #include "include/utils.h"
@@ -46,4 +47,27 @@ size_t FE_StrArr_Add(FE_StrArr *arr, char *str)
     arr->data = xrealloc(arr->data, sizeof(char *) * (arr->items + 1));
     arr->data[arr->items] = mstrdup(str);
     return arr->items++;
+}
+
+ssize_t FE_StrArr_Exists(FE_StrArr *arr, char *str)
+{
+    for (size_t i = 0; i < arr->items; i++) {
+        if (mstrcmp(arr->data[i], str) == 0)
+            return i;
+    }
+    return -1;
+}
+
+void FE_StrArr_RemoveAt(FE_StrArr *arr, ssize_t index)
+{
+    if (index == -1)
+        return;
+
+    if ((size_t)index < arr->items) {
+        for (size_t i = index; i < arr->items - 1; i++)
+            arr->data[i] = arr->data[i + 1];
+        arr->items--;
+        arr->data = xrealloc(arr->data, sizeof(char *) * arr->items);
+    }
+
 }

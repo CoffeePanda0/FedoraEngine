@@ -176,7 +176,7 @@ static void AddPrefab(int x, int y)
     Snap(&x, &y);
 
     // Avoid repeating
-    static vec2 last_click = VEC_NULL;
+    static vec2 last_click = {-1, -1};
 	static char *last_prefab = 0;
     if (last_click.x == x && last_click.y == y && last_prefab == selected_prefab)
         return;
@@ -203,7 +203,7 @@ static void AddTile(int x, int y)
     // snap x and y to a grid using tile size
     Snap(&x, &y);
 
-	static vec2 last_click = VEC_NULL;
+	static vec2 last_click = {-1, -1};
 	static int last_texture = 0;
 
 	// no point replacing same tile when mouse held

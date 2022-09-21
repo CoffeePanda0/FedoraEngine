@@ -3,7 +3,7 @@
 #include "../core/include/include.h"
 
 #include "../core/include/file.h"
-#include "../ext/ini.h"
+#include "../ext/inih/ini.h"
 
 #ifdef _WIN32
 	#include "../ext/dirent.h" // for finding textures in dir

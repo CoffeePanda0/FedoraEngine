@@ -205,6 +205,15 @@ char *mstrmult(const char *str, size_t n);
  */
 char *mstrrand(size_t len);
 
+
+/** 
+ * @brief Checks if a given string only consists of whitespace
+ * @param str The string to check
+ * @return 1 if string is only whitespace, 0 if not
+ */
+int mstrempty(char *str);
+
+
 // return true or false if the two strings match
 #define MATCH(s, n) mstrcmp(section, s) == 0 && mstrcmp(name, n) == 0
 

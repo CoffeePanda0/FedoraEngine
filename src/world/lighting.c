@@ -53,8 +53,8 @@ FE_Light *FE_Light_Create(SDL_Rect rect, int radius, const char *texture)
     light->y_offset = rect.h / 2;
 
     light->Rect = (SDL_Rect) {
-        rect.x + light->x_offset - (light->Rect.w / 2),
-        rect.y + light->y_offset - (light->Rect.h / 2),
+        rect.x + light->x_offset - radius,
+        rect.y + light->y_offset - radius,
         radius * 2,
         radius * 2
     };
