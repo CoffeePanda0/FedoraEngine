@@ -78,6 +78,8 @@ bool RCON_CheckIP(char *ip)
     if (!ban_file)
         return false;
 
+    rewind(ban_file);
+
     // Read line by line
     char line[64];
     while (fgets(line, 64, ban_file)) {
@@ -141,9 +143,6 @@ void RCON_Destroy()
         free(kicks[i].addr);
     if (kicks)
         free(kicks);
-
-    if (muted)
-        free(muted);
 
     kicks = 0;
 

@@ -9,20 +9,18 @@ written in pure c
 
 # Current features
 FedoraEngine is still very much in development. Current groundbreaking features are:
-- Full multiplayer including chats and rcon
+- Full multiplayer (Chats, RCON, efficient server-side networking)  
+- Custom map system (including full map editor with prefab selector)  
 - Resource Manager  
 - Fully featured lighting system  
 - Parallax support  
 - Keybinds and customisable inputs in game  
 - Custom UI Library (Labels, Textboxes, Buttons, Checkboxes, MessageBoxes, HUD, Grids)  
 - Easy-to-create prefabs, Game Objects and sprites  
-- Basic physics engine    
 - Timers  
 - Basic hard-coded menus  
 - Audio controls  
 - Custom Dialogue system  
-- Viewing logs in game console  
-- Custom map system (including full map editor)  
 - Animation system  
 - Particle system  
 

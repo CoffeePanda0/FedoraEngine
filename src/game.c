@@ -91,7 +91,7 @@ void FE_GameLoop()
 	PresentGame->Timing.UpdateTime = SDL_GetPerformanceCounter();
 	FE_UpdateTimers();
 	FE_RunPhysics();
-	FE_UpdateParticles(); // todo can we multithread this?
+	FE_UpdateParticles(); // todo can we multithread this
 	FE_UpdatePlayer(GamePlayer);
 	FE_UpdateAnimations();
 	FE_Prefab_Update();

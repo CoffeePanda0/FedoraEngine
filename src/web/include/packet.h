@@ -70,14 +70,72 @@ typedef enum {
     KEY_JUMP
 } held_keys;
 
+
+/** Sends a JSON packet to a peer
+ * \param peer The peer to send the packet to
+ * \param type The type of packet to send
+ * \param jsonpacket The packet to send
+ */
 void SendPacket(ENetPeer* peer, packet_type type, json_packet *jsonpacket);
+
+
+/** Destroys and frees a JSON packet
+ * \param j The packet to destroy
+ */
 void JSONPacket_Destroy(json_packet *j);
+
+
+/** Adds a key:value pair to a JSON packet
+ * \param j The packet to add to
+ * \param key The key to add
+ * \param value The value to add
+ */
 void JSONPacket_Add(json_packet *j, char *key, char *value);
+
+
+/** Sends a JSON packet containing just one integer
+ * \param peer The peer to send the packet to
+ * \param type The type of packet to send
+ * \param key The key to add
+ * \param value The value to send
+ */
 void JSONPacket_SendInt(ENetPeer *peer, packet_type type, char *key, int value);
+
+
+/** Creates and returns an empty JSON packet
+ * \return The new JSON packet
+ */
 json_packet *JSONPacket_Create();
+
+
+/** Gets the value for a given key in a recieved packet
+ * \param event The packet recieve event to get the value from
+ * \param key The key to get the value for
+ * \return The value for the given key
+ */
 char *JSONPacket_GetValue(ENetEvent *event, const char *key);
+
+
+/** Gets an integer value for a given key in a recieved packet
+ * \param event The packet recieve event to get the value from
+ * \param key The key to get the value for
+ * \return The value for the given key
+ */
 int JSONPacket_GetInt(ENetEvent *event, const char *key);
+
+
+/** Returns the type of a recieved packet
+ * \param event The packet recieve event to get the type from
+ * \return The type of the packet
+ */
 int PacketType(ENetEvent *event);
+
+
+/** Loads the recieved serverstate packet
+ * \param config The config file to load from
+ * \param list The list of connected players to modify
+ */
 void LoadServerState(ENetEvent *event, FE_List **list);
+
 
 #endif

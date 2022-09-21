@@ -47,6 +47,11 @@ void FE_UI_AddElement(FE_UI_Type type, void *element);
 void FE_UI_Destroy(FE_UI_Element *element);
 
 
+/** Destroys the DebugUI, freeing the resource
+ */
+void FE_DebugUI_Destroy();
+
+
 /**
 *\param Clears a list of UI elements, destroying all elements in the list
 *\param Elements The list of elements to be cleared

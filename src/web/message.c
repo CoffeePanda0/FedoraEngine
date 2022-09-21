@@ -1,6 +1,7 @@
 #include <string.h>
 #include "include/internal.h"
 #include "../core/lib/string.h"
+#include "../core/include/timing.h"
 
 void Server_ParseMessage(client_t *c, ENetEvent *event)
 {
@@ -56,6 +57,20 @@ void Client_SendMesage(char *msg, ENetPeer *peer)
         SendPacket(peer, PACKET_TYPE_MESSAGE, p);
         JSONPacket_Destroy(p);
     }
+}
+
+void ResetMessageCount(FE_List **clients)
+{
+	static float timer = 0;
+	timer += FE_DT;
+
+	if (timer >= 3) {
+		timer -= 3;
+		for (FE_List *l = *clients; l; l = l->next) {
+			client_t *c = l->data;
+			c->messages_sent = 0;
+		}
+	}
 }
 
 // sends a "server message" to one client

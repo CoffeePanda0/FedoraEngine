@@ -139,6 +139,14 @@ bool Client_Connect(char *uname, ENetPeer *server, ENetHost *client, char **user
                     break;
 
                 }
+            } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
+                if (event.data && event.data == DISC_NOCON) {
+                    PresentGame->DisconnectInfo.set = true;
+                    PresentGame->DisconnectInfo.reason = mstrdup("You have been banned from this server.");
+                    info("Failed to connect to server. (Reason: %s", PresentGame->DisconnectInfo.reason);
+                    PresentGame->DisconnectInfo.type = DISC_NOCON;
+                    return false;
+                }
             }
             if (event.packet)
                 enet_packet_destroy(event.packet);

@@ -7,7 +7,7 @@
 #include "include/internal.h"
 #include "../include/game.h"
 
-static size_t key_count = 3;
+static const size_t key_count = 3;
 
 static ENetHost *server;
 
@@ -160,7 +160,17 @@ static void HandleRecieve(ENetEvent *event)
 						}
 					}
 				}
- 			}
+				else if (mstrcmp(command, "unmute") == 0) {
+					for (FE_List *l = clients; l; l = l->next) {
+						client_t *cl = l->data;
+						if (mstrcmp(cl->username, data) == 0) {
+							info("[SERVER]: Unmuting user %s (RCON)", data);
+							RCON_Unmute(cl);
+							break;
+						}
+					}
+				}
+			}
 			else if (mstrcmp(command, "login") == 0) {
 				// if they don't have rcon, use arg to login
 				if (c->rcon_attempts >= 3) { // max attempts
@@ -353,20 +363,6 @@ static void ResetPacketCount()
 	}
 }
 
-static void ResetMessageCount()
-{
-	static float timer = 0;
-	timer += FE_DT;
-
-	if (timer >= 3) {
-		timer -= 3;
-		for (FE_List *l = clients; l; l = l->next) {
-			client_t *c = l->data;
-			c->messages_sent = 0;
-		}
-	}
-}
-
 // checks each player's held keys, and applies the action associated by those keys being held down
 static void UpdateHeldKeys()
 {
@@ -394,7 +390,7 @@ void UpdateServer()
 	PresentGame->Timing.UpdateTime = SDL_GetPerformanceCounter();
 	
 	ResetPacketCount();
-	ResetMessageCount();
+	ResetMessageCount(&clients);
 
 	HostServer();
 

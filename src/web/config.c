@@ -165,11 +165,13 @@ void Server_GenerateState(char *buffer, size_t size, FE_List *clients)
 void Server_SendMap(ENetPeer *peer)
 {
     // read map file as binary data
-	FILE *file = fopen("game/map/maps/test", "r");
+    char *path = mstradd("game/map/maps/", server_config.map);
+	FILE *file = fopen(path, "r");
 	if (!file) {
 		printf("Could not open map\n");
 		return;
 	}
+    free(path);
 	fseek(file, 0, SEEK_END);
 	size_t size = ftell(file);
 	fseek(file, 0, SEEK_SET);
@@ -205,6 +207,7 @@ void Server_SendMap(ENetPeer *peer)
     enet_peer_send(peer, 0, packet);
 
     free(data);
+    free(compressed);
 }
 
 // parses and loads the map data from the server

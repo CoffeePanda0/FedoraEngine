@@ -126,6 +126,7 @@ void FE_UI_ToggleChatbox(FE_UI_Chatbox *chatbox)
         chatbox->input = FE_UI_CreateTextbox(0, chatbox->body.y + chatbox->body.h - 40, chatbox->body.w, 0);
         chatbox->input->onenter = &SendMessage;
         chatbox->input->data = chatbox;
+        FE_UI_ForceActiveTextbox(chatbox->input);
         
         FE_UI_AddElement(FE_UI_TEXTBOX, chatbox->input);
     }

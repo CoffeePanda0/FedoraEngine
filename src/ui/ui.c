@@ -56,6 +56,10 @@ void FE_UI_ClearElements(FE_UIList *Elements)
     if (Elements->Count == 0)
         return;
 
+    if (PresentGame->DebugConfig.ShowTiming) {
+		FE_DebugUI_Destroy();
+	}
+
     FE_Messagebox_Destroy();
     
     for (FE_List *l = Elements->Labels; l; l = l->next)
