@@ -24,25 +24,30 @@ bool Server_AuthenticateClient(ENetHost *server, client_t *c, FE_List **clients,
 			packet_type type = PacketType(&event);
 			if (type == PACKET_TYPE_LOGIN) {
 
+                char *username = JSONPacket_GetValue(&event, "username");
+                if (!username) {
+                    info("[SERVER]: Client joined with invalid username");
+                    return false;
+                }
+
 				// check if the username is already taken
 				bool set = false;
 				for (FE_List *l = *clients; l; l = l->next) {
 					client_t *cl = l->data;
-					if (mstrcmp(cl->username, JSONPacket_GetValue(&event, "username")) == 0) {
+					if (mstrcmp(cl->username, username) == 0) {
 						// if so, set it to client + last_id
-						sprintf(c->username, "client[%ld]", *client_count);
+						snprintf(c->username, 17, "client[%ld]", *client_count);
 						ServerMSG(c, "Username taken, setting to client#");
 						set = true;
 					}
 				}
-				if (!set) mstrncpy(c->username, JSONPacket_GetValue(&event, "username"), 23);
+				if (!set) mstrncpy(c->username, username, 17);
 
 				// send the client their username
 				json_packet *p = JSONPacket_Create();
 				JSONPacket_Add(p, "username", c->username);
 				SendPacket(c->peer, PACKET_TYPE_LOGIN, p);
 				JSONPacket_Destroy(p);
-
 			}
 		}
 
@@ -52,7 +57,7 @@ bool Server_AuthenticateClient(ENetHost *server, client_t *c, FE_List **clients,
 	}
 
 	/* Send server state */
-	size_t size = 60 + (64 * (++*client_count));
+	size_t size = 60 + (58 * (++*client_count));
 	if (server_config.has_message) size += (mstrlen(server_config.message) + 4);
 
 	char *buffer = xcalloc(size, 1);

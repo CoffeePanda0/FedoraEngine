@@ -2,6 +2,7 @@
 #define _H_PACKET
 
 #include "../../ext/enet.h"
+
 #include "../../core/include/linkedlist.h"
 #include "../../entity/include/player.h"
 /* internal packet header to be used by network code only */
@@ -32,7 +33,7 @@ typedef struct {
 
 /* the player struct for each connected player to the client */
 typedef struct {
-    char username[24];
+    char username[18];
     SDL_Rect rect;
     FE_Texture *texture;
 } player;
@@ -44,7 +45,7 @@ typedef struct {
     char ip[32];
     
 	bool authenticated; // whether or not the player has logged in yet
-	char username[24];
+	char username[18];
 
 	FE_Player *player;
 	vec2 last_location; // used to check if the player has moved

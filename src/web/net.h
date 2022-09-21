@@ -1,7 +1,6 @@
 #ifndef _H_NET
 #define _H_NET
 
-#define ENET_
 #include <SDL.h>
 #include <stdbool.h>
 

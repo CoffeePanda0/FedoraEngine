@@ -1,4 +1,6 @@
 #include "../include/game.h"
+
+#define ENET_IMPLEMENTATION
 #include "include/internal.h"
 
 /* todo:

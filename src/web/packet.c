@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "../ext/enet.h"
+
 #include "../ext/tiny-json/tiny-json.h"
 #include "../ext/json-maker/json-maker.h"
 #include "../core/lib/string.h"
@@ -25,7 +25,12 @@ char *JSONPacket_GetValue(ENetEvent *event, const char *key)
 		return 0;
 	}
 
-	return (char*)json_getPropertyValue(parent, key);	
+	if (parent->type != JSON_OBJ) {
+		warn("Corrupt packet recieved: %i", parent->type);
+		return 0;
+	}
+
+	return (char*)json_getPropertyValue(parent, key);
 }
 
 json_packet *JSONPacket_Create()
