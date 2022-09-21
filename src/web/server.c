@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ENET_IMPLEMENTATION
 #include "net.h"
 
 #include "include/internal.h"

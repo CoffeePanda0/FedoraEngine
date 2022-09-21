@@ -8,13 +8,13 @@
 enum dietypes {
 	DT_NONE,
 	DT_ERRNO,
-	DT_SDL,
+	DT_SDL
 };
 
 enum logtypes {
 	LT_INFO,
 	LT_WARN,
-	LT_ERROR,
+	LT_ERROR
 };
 
 

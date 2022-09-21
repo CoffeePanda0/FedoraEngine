@@ -2,6 +2,7 @@
 #define _H_STRARR
 
 #include <stddef.h>
+#include <sys/types.h>
 
 typedef struct {
     char **data;

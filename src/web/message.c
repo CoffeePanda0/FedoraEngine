@@ -1,7 +1,8 @@
-#include <string.h>
+//#include <string.h>
 #include "include/internal.h"
 #include "../core/lib/string.h"
 #include "../core/include/timing.h"
+#include "../core/include/utils.h"
 
 void Server_ParseMessage(client_t *c, ENetEvent *event)
 {
@@ -20,11 +21,17 @@ void Server_ParseMessage(client_t *c, ENetEvent *event)
         return;
     }
 
+    char *msg = JSONPacket_GetValue(event, "msg");
+    if (!msg) {
+        warn("[SERVER]: Illegal message sent by %s", c->username);
+        return;
+    }
+
     // if message is recieved from a client, send it to all clients
-    if (mstrlen(JSONPacket_GetValue(event, "msg")) < 80) {
+    if (mstrlen(msg) < 80 && mstrlen(msg) > 1) {
         json_packet *packet = JSONPacket_Create();
         JSONPacket_Add(packet, "username", c->username);
-        JSONPacket_Add(packet, "msg", JSONPacket_GetValue(event, "msg"));
+        JSONPacket_Add(packet, "msg", msg);
         BroadcastPacket(0, PACKET_TYPE_MESSAGE, packet);
         JSONPacket_Destroy(packet);
     }
