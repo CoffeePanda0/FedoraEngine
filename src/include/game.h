@@ -22,6 +22,8 @@
 #include "../ui/include/include.h"
 #include "../ui/include/menu.h"
 
+#include "../physics/include/physics.h"
+
 /** Loads a map and initalises a game
  * \param mapname The name of the map to load
  */

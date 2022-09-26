@@ -213,6 +213,12 @@ char *mstrrand(size_t len);
  */
 int mstrempty(char *str);
 
+/**
+ * @brief Strips trailing whitespace from a string
+ * @param str The string to strip
+ * @return The stripped string
+ */
+char *mstrtrim(char *str);
 
 // return true or false if the two strings match
 #define MATCH(s, n) mstrcmp(section, s) == 0 && mstrcmp(name, n) == 0

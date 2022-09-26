@@ -2,7 +2,7 @@
 #define H_TEXTURE
 
 #include <SDL.h>
-#include "../../physics/include/vector.h"
+#include "../../core/include/vector.h"
 
 #define COLOR_BLACK (SDL_Color){0, 0, 0, 255}
 #define COLOR_WHITE (SDL_Color){255, 255, 255, 255}

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "../../physics/include/vector.h"
+#include "../../core/include/vector.h"
 #include "../../ui/include/font.h"
 #include "../../core/include/linkedlist.h"
 #include "../../web/net.h"

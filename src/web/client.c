@@ -98,7 +98,7 @@ static void HandleRecieve(ENetEvent *event)
                 GamePlayer->PhysObj->velocity.x = velx;
                 GamePlayer->PhysObj->velocity.y = vely;
 
-                FE_DT_RECT(GamePlayer->PhysObj->position, &GamePlayer->PhysObj->body);
+                FE_UPDATE_RECT(GamePlayer->PhysObj->position, &GamePlayer->PhysObj->body);
             } else {
                 // find player in list, update position
                 for (FE_List *l = players; l; l = l->next) {
@@ -288,7 +288,7 @@ void DestroyClient()
     enet_deinitialize();
     
     if (GamePlayer)
-        FE_DestroyPlayer(GamePlayer);
+        FE_Player_Destroy(GamePlayer);
     GamePlayer = 0;
     GameCamera = 0;
     if (world)
@@ -306,11 +306,11 @@ static bool CreateGame()
 	GameCamera->minzoom = 1.0f;
 
 	// player setup
-	GamePlayer = FE_CreatePlayer(40, 18, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
+	GamePlayer = FE_Player_Create(30, 50, 180, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
 	GameCamera->follow = &GamePlayer->render_rect;
 
 	// test particle system
-	FE_CreateParticleSystem(
+	FE_ParticleSystem_Create(
 		(SDL_Rect){0, -20, PresentGame->MapConfig.MapWidth, 20}, // Position for the whole screen, slightly above the top to create more random
 		350, // Emission rate
 		3000, // Max particles
@@ -349,14 +349,14 @@ void ClientRender()
             SDL_SetRenderTarget(PresentGame->Renderer, world);
 
         SDL_RenderClear(PresentGame->Renderer);
-        FE_RenderMapBackground(GameCamera);
-        FE_RenderParticles(GameCamera);
-        FE_RenderLoadedMap(GameCamera);
+        FE_Map_RenderBackground(GameCamera);
+        FE_Particles_Render(GameCamera);
+        FE_Map_RenderLoaded(GameCamera);
         FE_Trigger_Render(GameCamera);
         FE_GameObject_Render(GameCamera);
         FE_Trigger_Render(GameCamera);
         RenderPlayers();
-        FE_RenderPlayer(GamePlayer, GameCamera);
+        FE_Player_Render(GamePlayer, GameCamera);
 
         if (PresentGame->DebugConfig.LightingEnabled)
             FE_Light_Render(GameCamera, world);
@@ -483,14 +483,16 @@ void ClientUpdate()
 
     UpdatePing();
 
-	FE_DebugUI_Update(GamePlayer);
+    if (GamePlayer->PhysObj->velocity.y == 0) GamePlayer->on_ground = true;
+
+	FE_DebugUI_Update(GamePlayer); 
 	FE_Dialogue_Update();
 
 	PresentGame->Timing.UpdateTime = SDL_GetPerformanceCounter();
-	FE_UpdateTimers();
-	FE_UpdateParticles();
-	FE_UpdatePlayer(GamePlayer);
-	FE_UpdateAnimations();
+	FE_Timers_Update();
+	FE_Particles_Update();
+	FE_Player_Update(GamePlayer);
+	FE_Animations_Update();
 	FE_Prefab_Update();
 	FE_UpdateCamera(GameCamera);
 	PresentGame->Timing.UpdateTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.UpdateTime) / SDL_GetPerformanceFrequency()) * 1000;

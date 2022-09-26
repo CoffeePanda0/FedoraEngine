@@ -2,13 +2,13 @@
 #define H_GAMEOBJECT
 
 #include <SDL.h>
-#include "../../world/include/physics.h"
+#include "../../physics/include/physics.h"
 #include "../../world/include/camera.h"
 #include "../../core/include/texture.h"
 #include "../../core/include/resourcemanager.h"
 
 typedef struct FE_GameObject {
-	FE_PhysObj *phys;
+	FE_Phys_Rigidbody *phys;
 	FE_Texture* texture;
 } FE_GameObject;
 

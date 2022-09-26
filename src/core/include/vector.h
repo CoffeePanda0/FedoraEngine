@@ -13,7 +13,7 @@ typedef struct vec2 {
 #define VEC_NULL (vec2){-1,-1}
 #define VEC_EMPTY (vec2){0,0}
 
-void FE_DT_RECT(vec2 position, SDL_Rect *rect);
+void FE_UPDATE_RECT(vec2 position, SDL_Rect *rect);
 
 #define vec2_add(a, b) (vec2){a.x + b.x, a.y + b.y}
 #define vec2_sub(a, b) (vec2){a.x - b.x, a.y - b.y}
@@ -29,4 +29,6 @@ void FE_DT_RECT(vec2 position, SDL_Rect *rect);
 #define vec2_clamp(a, min, max) (vec2){fmaxf(min.x, fminf(max.x, a.x)), fmaxf(min.y, fminf(max.y, a.y))}
 #define vec2_null(a) (a.x == -1 && a.y == -1)
 #define vec2_cmp(a, b) ((a.x == b.x) && (a.y == b.y))
+#define vec2_lerp(a, b, t) (vec2){a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)}
+
 #endif

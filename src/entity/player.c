@@ -12,18 +12,19 @@ static const int PLAYER_MASS = 50;
 
 static size_t PlayerCount = 0;
 
-FE_Player *FE_CreatePlayer(float movespeed, float jumpforce, SDL_Rect body)
+FE_Player *FE_Player_Create(float acceleration, float maxspeed, float jumpforce, SDL_Rect body)
 {
     // basic player vars
     FE_Player *p = xmalloc(sizeof(FE_Player));
     p->id = PlayerCount++;
-    p->movespeed = movespeed;
+    p->moveforce = (acceleration * PLAYER_MASS / PHYS_SCALE);
+    p->maxspeed = maxspeed;
     p->jumpforce = jumpforce;
     p->jump_elapsed = 0;
     p->last_y_check = 0;
 
     // physics object
-    p->PhysObj = FE_CreatePhysObj(PLAYER_MASS, body);
+    p->PhysObj = FE_Physics_CreateBody(PLAYER_MASS, body);
 
     // light
     p->Light = FE_Light_Create(body, 128, "light.png");
@@ -35,35 +36,35 @@ FE_Player *FE_CreatePlayer(float movespeed, float jumpforce, SDL_Rect body)
     p->jump_started = false;
 
     // load animations
-    p->idle_animation = FE_CreateAnimation(IDLE_ANIMATION, 2, 30, 23, 250, true);
-    p->walk_animation = FE_CreateAnimation(WALK_ANIMATION, 3, 30, 23, 100, true);
-    p->jump_animation = FE_CreateAnimation(JUMP_ANIMATION, 4, 30, 23, 50, false);
+    p->idle_animation = FE_Animation_Create(IDLE_ANIMATION, 2, 30, 23, 250, true);
+    p->walk_animation = FE_Animation_Create(WALK_ANIMATION, 3, 30, 23, 100, true);
+    p->jump_animation = FE_Animation_Create(JUMP_ANIMATION, 4, 30, 23, 50, false);
     p->jump_animation->current_frame = 3;
 
     p->render_rect = p->PhysObj->body;
 
     // add to physics world
-    FE_AddPhysInteractable(p->PhysObj);
+    FE_Physics_AddBody(p->PhysObj);
 
     return p;
 }
 
-void FE_DestroyPlayer(FE_Player *player)
+void FE_Player_Destroy(FE_Player *player)
 {
     if (!player) {
         warn("Tried to destroy NULL player");
         return;
     }
     
-    FE_RemovePhysInteractable(player->PhysObj);
+    FE_Physics_Remove(player->PhysObj);
     FE_Light_Destroy(player->Light);
-    FE_DestroyAnimation(player->idle_animation);
-    FE_DestroyAnimation(player->walk_animation);
-    FE_DestroyAnimation(player->jump_animation);
+    FE_Animation_Destroy(player->idle_animation);
+    FE_Animation_Destroy(player->walk_animation);
+    FE_Animation_Destroy(player->jump_animation);
     free(player);
 }
 
-void FE_RenderPlayer(FE_Player *player, FE_Camera *camera)
+void FE_Player_Render(FE_Player *player, FE_Camera *camera)
 {
     if (!player || PlayerCount == 0)
         return;
@@ -84,7 +85,7 @@ void FE_RenderPlayer(FE_Player *player, FE_Camera *camera)
 
     // render the player
 
-    SDL_Rect player_srcrct = FE_GetAnimationFrame(current_animation);
+    SDL_Rect player_srcrct = FE_Animation_GetFrame(current_animation);
     const SDL_Point center = (SDL_Point){player->render_rect.w/2, player->render_rect.h/2};
     SDL_RenderCopyEx(PresentGame->Renderer,
         current_animation->spritesheet->Texture,
@@ -95,45 +96,46 @@ void FE_RenderPlayer(FE_Player *player, FE_Camera *camera)
 
 }
 
-void FE_MovePlayer(FE_Player *player, vec2 movement)
+void FE_Player_Move(FE_Player *player, vec2 movement)
 {
     if (!player)
         return;
 
     vec2 mov_vec = vec(movement.x * FE_DT_MULTIPLIER, movement.y * FE_DT_MULTIPLIER);
 
-    int lim = 10;
-    if (!(player->PhysObj->velocity.x > lim) && player->PhysObj->velocity.x > -lim)
-        FE_ApplyForce(player->PhysObj, mov_vec);
-}
+    vec2 min_speed = vec(-player->maxspeed, -9999);
 
+    if (!player->on_ground) {
+        // Only allow tiny X movements in the air
+        float friction_force = player->PhysObj->friction * 0.1;
+        if (movement.x < 0) friction_force *= -1;
 
-bool FE_PlayerOnGround(FE_Player *player)
-{
-    // keep track of last y as there is no point checking if player hasnt moved
-
-    if (player->last_y_check != player->PhysObj->body.y) {
-        player->last_y_check = player->PhysObj->body.y;
-
-        if (player->PhysObj->velocity.y != 0) // if velocity is not 0, player will never be on ground
-            return false;
-        
-        vec2 GroundCollision = FE_CheckMapCollisionAbove(&player->PhysObj->body);
-        if (vec2_null(GroundCollision))
-            return false;
-        else
-            return true;
+        mov_vec = vec((mov_vec.x * 0.3) + friction_force, mov_vec.y);
+        mov_vec = vec2_scale(mov_vec, FE_DT_MULTIPLIER);
     }
 
-    return player->on_ground;
+    if (movement.x > 0) {
+        // Calculate the maximum force that we can apply to still be under the max speed
+        float max_x_force = (player->maxspeed - player->PhysObj->velocity.x) * player->PhysObj->mass;
+        vec2 max_force = vec(max_x_force, 9999);
+        mov_vec = vec2_clamp(mov_vec, min_speed, max_force);
+    } else if (movement.x < 0) {
+        // Calculate the maximum force that we can apply to still be under the max speed
+        float max_x_force = (-player->maxspeed - player->PhysObj->velocity.x) * player->PhysObj->mass;
+        mov_vec = vec2_clamp(mov_vec, vec(max_x_force, -9999), vec(0, 9999));
+    }
+
+    // apply the force
+    FE_Physics_ApplyForce(player->PhysObj, mov_vec);
+
 }
 
-void FE_UpdatePlayer(FE_Player *player)
+void FE_Player_Update(FE_Player *player)
 {
     FE_Trigger_Check(&player->PhysObj->body);
 
     player->render_rect = player->PhysObj->body;
-    player->on_ground = FE_PlayerOnGround(player);
+    player->on_ground = player->PhysObj->grounded;
 
     static vec2 last_position = {-1, -1};
 
@@ -156,7 +158,7 @@ void FE_UpdatePlayer(FE_Player *player)
     }
 }
 
-void FE_StartPlayerJump(FE_Player *player)
+void FE_Player_StartJump(FE_Player *player)
 {
     if (!player || player->jump_started || !player->on_ground)
         return;
@@ -165,7 +167,7 @@ void FE_StartPlayerJump(FE_Player *player)
     player->jump_elapsed = 0;
 }
 
-void FE_UpdatePlayerJump(FE_Player *player)
+void FE_Player_UpdateJump(FE_Player *player)
 {
     if (!player || !player->jump_started)
         return;
@@ -174,11 +176,11 @@ void FE_UpdatePlayerJump(FE_Player *player)
     player->jump_elapsed += FE_DT;
 
     if (player->PhysObj->velocity.y == 0) {
-        FE_ApplyForce(player->PhysObj, vec(0, -min_jump * player->PhysObj->mass));
+        FE_Physics_ApplyForce(player->PhysObj, vec(0, -min_jump * player->PhysObj->mass));
         return;
     }
 
-    FE_ApplyForce(player->PhysObj, vec(0, -3 * FE_DT_MULTIPLIER * player->PhysObj->mass));
+    FE_Physics_ApplyForce(player->PhysObj, vec(0, -3 * FE_DT_MULTIPLIER * player->PhysObj->mass));
 
     if (player->PhysObj->velocity.y <= -player->jumpforce || player->jump_elapsed > 0.15) {
         player->PhysObj->velocity.y = -player->jumpforce;

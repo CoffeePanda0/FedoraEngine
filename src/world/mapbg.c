@@ -235,7 +235,7 @@ char *FE_Parallax_GetName()
     return parallax_name;
 }
 
-void FE_RenderMapBG(FE_Camera *camera, FE_LoadedMap *map)
+void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
 {
     /*  Render background twice so that we can loop background for infinite effect
         This is not hugely efficient and will use a lot of SDL_Render time.

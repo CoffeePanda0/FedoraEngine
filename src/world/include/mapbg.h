@@ -16,7 +16,7 @@ typedef struct FE_Map_Parallax {
  * \param camera The camera to render the map from
  * \param map The map to render
  */
-void FE_RenderMapBG(FE_Camera *camera, FE_LoadedMap *map);
+void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map);
 
 
 /** Adds a parallax layer

@@ -23,38 +23,38 @@ typedef struct FE_Timer {
     *\param params The parameters to pass to the callback function
     *\return A pointer to the new timer
 */
-FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, void (*callback)(), void *params);
+FE_Timer *FE_Timer_Create(unsigned long duration, bool started, bool repeats, void (*callback)(), void *params);
 
 
 /* Main timer loop, must be called for the timers to run */
-void FE_UpdateTimers();
+void FE_Timers_Update();
 
 
 /** Removes a timer and frees resources used
 *\param timer The timer to remove
 */
-int FE_RemoveTimer(FE_Timer *timer);
+int FE_Timer_Remove(FE_Timer *timer);
 
 
 /** Restarts a timer 
 *\param timer The timer to restart
 */
-void FE_RestartTimer(FE_Timer *timer);
+void FE_Timer_Restart(FE_Timer *timer);
 
 
 /** Pauses a timer 
 *\param timer The timer to pause
 */
-void FE_PauseTimer(FE_Timer *timer);
+void FE_Timer_Pause(FE_Timer *timer);
 
 
 /** Resumes or starts a paused timer 
 *\param timer The timer to pause
 */
-void FE_PauseTimer(FE_Timer *timer);
+void FE_Timer_Pause(FE_Timer *timer);
 
 
 /* Destroys all timers */
-int FE_CleanTimers();
+int FE_Timers_Clean();
 
 #endif

@@ -13,7 +13,7 @@ static FE_LoadedMap *map;
 
 static FE_Texture *flagtexture;
 
-FE_LoadedMap *FE_LoadMap(const char *name)
+FE_LoadedMap *FE_Map_Load(const char *name)
 {
     if (!name || mstrlen(name) < 1)
         return 0;
@@ -132,7 +132,7 @@ err:
     warn(feof(f) ? "Unexpected end of file in %s" : "Error loading map %s", name);
     fclose(f);
     
-    FE_CloseMap(m);
+    FE_Map_Close(m);
     
     return 0;
 }
@@ -144,7 +144,7 @@ void FE_Game_SetMap(FE_LoadedMap *m)
         return;
     }
     if (PresentGame->MapConfig.Loaded)
-        FE_CloseMap(map);
+        FE_Map_Close(map);
 
     map = m;
 
@@ -165,14 +165,14 @@ FE_LoadedMap *FE_Game_GetMap()
     return map;
 }
 
-void FE_RenderLoadedMap(FE_Camera *camera)
+void FE_Map_RenderLoaded(FE_Camera *camera)
 {
     if (!PresentGame->MapConfig.Loaded)
         return;
-    FE_RenderMap(map, camera);
+    FE_Map_Render(map, camera);
 }
 
-void FE_RenderMap(FE_LoadedMap *m, FE_Camera *camera)
+void FE_Map_Render(FE_LoadedMap *m, FE_Camera *camera)
 {
     if (!m)
         return;
@@ -198,16 +198,16 @@ void FE_RenderMap(FE_LoadedMap *m, FE_Camera *camera)
     }
 }
 
-void FE_RenderMapBackground(FE_Camera *camera) {
-    FE_RenderMapBG(camera, map);
+void FE_Map_RenderBackground(FE_Camera *camera) {
+    FE_Map_RenderBG(camera, map);
 }
 
-void FE_CloseLoadedMap()
+void FE_Map_CloseLoaded()
 {
     if (!PresentGame->MapConfig.Loaded)
         return;
 
-    FE_CloseMap(map);
+    FE_Map_Close(map);
 
     if (flagtexture)
         FE_DestroyResource(flagtexture->path);
@@ -217,7 +217,7 @@ void FE_CloseLoadedMap()
     map = 0;
 }
 
-void FE_CloseMap(FE_LoadedMap *map)
+void FE_Map_Close(FE_LoadedMap *map)
 {
     if (!map) {
         warn("Passing NULL map to CloseMap");
@@ -251,27 +251,7 @@ void FE_CloseMap(FE_LoadedMap *map)
     return;
 }
 
-static bool InBounds(SDL_Rect *r)// checks if rect is in map bounds
-{
-    if (!PresentGame->MapConfig.Loaded)
-        return false;
-
-     if (!r)
-        return false;
-
-    if (r->y < 0)
-        return false;
-    if (r->x < 0)
-        return false;
-    if (r->x + r->w > PresentGame->MapConfig.MapWidth)
-        return false;
-    if (r->y + r->h > PresentGame->MapConfig.MapHeight)
-        return false;
-    
-    return true;
-}
-
-static size_t LeftTileRange(SDL_Rect *r) // calculates the left-most tile near the player to check for collision
+static size_t LeftTileRange(SDL_FRect *r) // calculates the left-most tile near the player to check for collision
 {
     /*  check if the rect hasn't moved, if so we can just return the previous value
         Stores the last 5 calculations as we can return for 5 objects if there is no change. This is more
@@ -308,9 +288,10 @@ static size_t LeftTileRange(SDL_Rect *r) // calculates the left-most tile near t
     prev_mid[arr_pt] = mid;
 
     return mid;
+
 }
 
-static size_t RightTileRange(size_t left, SDL_Rect *r) /* calculates the right-most tile near the player to check for collision */
+static size_t RightTileRange(size_t left, SDL_FRect *r) /* calculates the right-most tile near the player to check for collision */
 {
     /* check if the rect hasn't moved, if so we can just return the previous value */
     static uint16_t prev_x[5];
@@ -339,107 +320,41 @@ static size_t RightTileRange(size_t left, SDL_Rect *r) /* calculates the right-m
     return map->tilecount -1;
 }
 
-vec2 FE_CheckMapCollisionLeft(SDL_Rect *r)
+void FE_Map_Collisions(Phys_AABB *aabb, FE_CollisionInfo *result)
 {
-    if (!InBounds(r)) return VEC_NULL;
+    result->count = 0;
+    result->collisions = 0;
 
-    size_t left = LeftTileRange(r);
-    size_t right = RightTileRange(left, r);
+    SDL_FRect tmp = (SDL_FRect) {aabb->min.x, aabb->min.y, aabb->max.x - aabb->min.x, aabb->max.y - aabb->min.y};
+    size_t left = LeftTileRange(&tmp);
+    size_t right = RightTileRange(left, &tmp);
 
+    /* Checks every tile in the range for collision with the player */
     for (size_t i = left; i < right; i++) {
-        // continue if tile is above or below player
-        if (map->tiles[i].position.y > r->h + r->y || map->tiles[i].position.y + map->tilesize < r->y)
-            continue;
+        FE_Map_Tile *t = &map->tiles[i];
+        SDL_FRect tile = (SDL_FRect){t->position.x, t->position.y, map->tilesize, map->tilesize};
         
-        SDL_Rect tilerect = (SDL_Rect){map->tiles[i].position.x, map->tiles[i].position.y, map->tilesize, map->tilesize};
-        SDL_Rect out;
-        if (!SDL_IntersectRect(r, &tilerect, &out)) {
-            continue;
+        SDL_FRect intersection;
+        if (SDL_IntersectFRect(&tmp, &tile, &intersection)) {
+            // calculate collision normal
+            vec2 normal = {0, 0};
+            // check if the player is above the tile
+            if (tmp.y + tmp.h < tile.y + tile.h / 2) {
+                normal.y = 1;
+            } else if (tmp.y > tile.y + tile.h / 2) {
+                normal.y = -1;
+            } else if (tmp.x + tmp.w < tile.x + tile.w / 2) {
+                normal.x = 1;
+            } else if (tmp.x > tile.x + tile.w / 2) {
+                normal.x = -1;
+            }
+
+            // calculate penetration depth
+            float depth = 0;
+            depth = intersection.w > intersection.h ? intersection.h : intersection.w;
+
+            result->collisions = xrealloc(result->collisions, sizeof(TileCollision) * (++result->count));
+            result->collisions[result->count -1] = (TileCollision) {t->position, normal, depth};
         }
-        if (out.h < 10 || out.w == 0)
-            continue;
-        if (tilerect.x < r->x && out.w > 0)
-            return vec(map->tiles[i].position.x + map->tilesize, map->tiles[i].position.y);
-    } 
-    return VEC_NULL;
-}
-
-vec2 FE_CheckMapCollisionRight(SDL_Rect *r)
-{
-    if (!InBounds(r)) return VEC_NULL;
-
-    size_t left = LeftTileRange(r);
-    size_t right = RightTileRange(left, r);
-
-    for (size_t i = left; i < right; i++) {
-        // continue if tile is above or below player
-        if (map->tiles[i].position.y > r->h + r->y || map->tiles[i].position.y + map->tilesize < r->y)
-            continue;
-
-        SDL_Rect tilerect = (SDL_Rect){map->tiles[i].position.x, map->tiles[i].position.y, map->tilesize, map->tilesize};
-        SDL_Rect out;
-        if (!SDL_IntersectRect(r, &tilerect, &out))
-            continue;
-        
-        if (out.h < 5 || out.w == 0)
-            continue;
-        if (tilerect.x > r->x && out.w > 0) {
-            return map->tiles[i].position;
-        }
-    } 
-    
-    return VEC_NULL;
-}
-
-vec2 FE_CheckMapCollisionAbove(SDL_Rect *r)
-{
-    if (!InBounds(r)) return VEC_NULL;
-    
-    // Only checks the tiles closest to the player's X coordinate to save performance
-    size_t left_tile = LeftTileRange(r);
-    size_t right_tile = RightTileRange(left_tile, r);
-
-    vec2 position = VEC_NULL;
-
-    // check if each tile is colliding from above with the rect
-    for (size_t i = left_tile; i < right_tile; i++) {
-        SDL_Rect tilerect = (SDL_Rect){map->tiles[i].position.x, map->tiles[i].position.y, map->tilesize, map->tilesize};
-        SDL_Rect collrect;
-
-        if (!SDL_IntersectRect(&tilerect, r, &collrect))
-            continue;
-
-        if (r->x + r->w < tilerect.x || r->x > tilerect.x + tilerect.w || collrect.h > map->tilesize)
-            continue;
-
-        if (collrect.h > 0) {
-            if (map->tiles[i].position.y > position.y)
-                position = map->tiles[i].position;
-        }
-
     }
-    return position;
-}
-
-vec2 FE_CheckMapCollisionBelow(SDL_Rect *r)
-{
-    if (!InBounds(r)) return VEC_NULL;
-
-    size_t left_tile = LeftTileRange(r);
-    size_t right_tile = RightTileRange(left_tile, r);
-
-
-    // check if each tile is colliding from below with the rect
-    for (size_t i = left_tile; i < right_tile; i++) {
-        SDL_Rect tilerect = (SDL_Rect){map->tiles[i].position.x, map->tiles[i].position.y, map->tilesize, map->tilesize};
-        SDL_Rect collrect;
-
-        if (!SDL_IntersectRect(&tilerect, r, &collrect))
-            continue;
-
-        if (collrect.h > 0 && (r->y > tilerect.y + (tilerect.h / 2)))
-            return vec(map->tiles[i].position.x, map->tiles[i].position.y + map->tilesize);
-    }
-    return VEC_NULL;
-
 }

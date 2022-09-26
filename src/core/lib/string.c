@@ -247,3 +247,25 @@ int mstrempty(char *str)
 	}
 	return 1;
 }
+
+char *mstrtrim(char *str)
+{
+	assert(str != NULL);
+	size_t len = mstrlen(str);
+	
+	char *end = 0;
+
+	// Trim leading spaces
+	while (isspace(*str)) str++;
+
+	if (*str == 0) return str;
+
+	// Trim trailing spaces
+	end = str + len - 1;
+	while (end > str && isspace(*end)) end--;
+
+	// Write new null terminator
+	*(end + 1) = 0;
+
+	return str;
+}

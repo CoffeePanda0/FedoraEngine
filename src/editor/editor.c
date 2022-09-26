@@ -720,10 +720,10 @@ void FE_Editor_Render()
     SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 0);
 
     if (parallax_set)
-        FE_RenderMapBG(camera, 0);
+        FE_Map_RenderBG(camera, 0);
 
-    FE_RenderParticles(camera);
-    FE_RenderMap(map, camera);
+    FE_Particles_Render(camera);
+    FE_Map_Render(map, camera);
     FE_GameObject_Render(camera);
 
     // render spawn
@@ -777,7 +777,7 @@ void FE_Editor_Init(char *path)
         map->ambientlight = 255;
         PresentGame->MapConfig.AmbientLight = 255;
     } else {
-        map = FE_LoadMap(path);
+        map = FE_Map_Load(path);
         if (!map)
             return;
         // set pre-loaded assets
@@ -820,7 +820,7 @@ void FE_Editor_Destroy()
     parallax_name = 0;
 
     if (map)
-        FE_CloseMap(map);
+        FE_Map_Close(map);
     map = 0;
     if (spawntexture)
         FE_DestroyResource(spawntexture->path);

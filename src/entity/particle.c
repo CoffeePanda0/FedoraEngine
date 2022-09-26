@@ -47,7 +47,7 @@ static void GenerateParticle(FE_ParticleSystem *p, size_t index)
     p->particles[index] = particle;
 }
 
-FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked)
+FE_ParticleSystem *FE_ParticleSystem_Create(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked)
 {
     FE_ParticleSystem *p = xmalloc(sizeof(FE_ParticleSystem));
     p->emission_area = emissionarea;
@@ -84,7 +84,7 @@ FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emissio
     return p;
 }
 
-void FE_UpdateParticles()
+void FE_Particles_Update()
 {
     if (!ParticleSystems)
         return;
@@ -124,7 +124,7 @@ void FE_UpdateParticles()
                     p->num_particles--;
                     if (!p->respawns) {
                         if (p->num_particles == 0) { // destroy particle systems if none remain
-                            FE_DestroyParticleSystem(p);
+                            FE_ParticleSystem_Destroy(p);
                             return;
                         }
                     }
@@ -141,7 +141,7 @@ void FE_UpdateParticles()
             particle->position.y += (particle->velocity.y * FE_DT_MULTIPLIER);
             particle->position.x += (particle->velocity.x * FE_DT_MULTIPLIER);
 
-            FE_DT_RECT(particle->position, &particle->body);
+            FE_UPDATE_RECT(particle->position, &particle->body);
 
             // kill particle if it's out of map bounds
             if (particle->body.x < 0 || particle->body.x > PresentGame->MapConfig.MapWidth ||  particle->body.y > (PresentGame->MapConfig.MapHeight - particle->body.h)) {
@@ -154,7 +154,7 @@ void FE_UpdateParticles()
     
 }
 
-void FE_RenderParticles(FE_Camera *camera)
+void FE_Particles_Render(FE_Camera *camera)
 {
     for (FE_List *l = ParticleSystems; l; l = l->next) {
         FE_ParticleSystem *p = l->data;
@@ -167,10 +167,10 @@ void FE_RenderParticles(FE_Camera *camera)
     }
 }
 
-bool FE_DestroyParticleSystem(FE_ParticleSystem *p)
+bool FE_ParticleSystem_Destroy(FE_ParticleSystem *p)
 {
     if (!p) {
-        warn("FE_DestroyParticleSystem() called with NULL particle system");
+        warn("FE_ParticleSystem_Destroy() called with NULL particle system");
         return false;
     }
 
@@ -183,7 +183,7 @@ bool FE_DestroyParticleSystem(FE_ParticleSystem *p)
     return true;
 }
 
-void FE_CleanParticles()
+void FE_Particles_Clean()
 {
     if (!ParticleSystems)
         return;

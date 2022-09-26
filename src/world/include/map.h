@@ -1,7 +1,8 @@
 #ifndef H_MAP
 #define H_MAP
 
-#include "../../physics/include/vector.h"
+#include "../../core/include/vector.h"
+#include "../../physics/include/physics.h"
 #include "../../core/include/texture.h"
 
 typedef struct FE_Map_Tile {
@@ -11,6 +12,18 @@ typedef struct FE_Map_Tile {
     Uint16 rotation;
     vec2 position;
 } FE_Map_Tile;
+
+
+typedef struct {
+    vec2 position;
+    vec2 normal;
+    float penetration;
+} TileCollision;
+
+typedef struct {
+    size_t count;
+    TileCollision *collisions;
+} FE_CollisionInfo;
 
 typedef struct FE_Map_Prefab {
     uint16_t x;
@@ -83,24 +96,31 @@ typedef struct FE_EndFlag {
  *\param name Name of map to load.
  *\returns the loaded map
  */
-FE_LoadedMap *FE_LoadMap(const char *name);
+FE_LoadedMap *FE_Map_Load(const char *name);
 
 
 /** Renders the map tiles
  *\param m The map to render 
 *\param camera The camera to render the map from
 */
-void FE_RenderMap(FE_LoadedMap *m, FE_Camera *camera);
+void FE_Map_Render(FE_LoadedMap *m, FE_Camera *camera);
 
 
 /** Renders the currently loaded map background
  * \param camera The camera to render the map from
  */
-void FE_RenderMapBackground(FE_Camera *camera);
+void FE_Map_RenderBackground(FE_Camera *camera);
 
 
 /* Closes and frees resources from a map */
-void FE_CloseMap(FE_LoadedMap *map);
+void FE_Map_Close(FE_LoadedMap *map);
+
+
+/** Checks the map for collisions with an AABB
+ * @param aabb The AABB to check for collisions with
+ * @param result The collision info to store the results in
+ */
+void FE_Map_Collisions(Phys_AABB *aabb, FE_CollisionInfo *result);
 
 
 /* Gets the current active map*/
@@ -108,40 +128,13 @@ FE_LoadedMap *FE_Game_GetMap();
 
 
 /* Destroys the currently loaded map */
-void FE_CloseLoadedMap();
-
-/** Checks if a rect is colliding above the map tiles
- *\param r The rectangle to check for collision
- *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
-*/
-vec2 FE_CheckMapCollisionAbove(SDL_Rect *r);
-
-
-/** Checks if a rect is colliding below the map tiles
- * \param r The rectangle to check for collision
- * \returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
- */
-vec2 FE_CheckMapCollisionBelow(SDL_Rect *r);
-
-
-/** Checks if a rect is colliding with the right-hand side of the rect
- *\param r The rectangle to check for collision
- *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
-*/
-vec2 FE_CheckMapCollisionRight(SDL_Rect *r);
-
-
-/** Checks if a rect is colliding with the left-hand side of the rect
- *\param r The rectangle to check for collision
- *\returns A vector containing the x&y of the collided tile on collision, or VEC_NULL on no collision
-*/
-vec2 FE_CheckMapCollisionLeft(SDL_Rect *r);
+void FE_Map_CloseLoaded();
 
 
 /** Renders the currently loaded map
  *\param camera The camera to render from
 */
-void FE_RenderLoadedMap(FE_Camera *camera);
+void FE_Map_RenderLoaded(FE_Camera *camera);
 
 
 /** Sets the world map

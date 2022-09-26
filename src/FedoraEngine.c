@@ -25,7 +25,7 @@ static void LoadArgs(int argc, char *argv[], FE_InitConfig *IC)
 int main(int argc, char* argv[])
 {
 	FE_InitConfig *IC = FE_NewInitConfig();
-	IC->vsync = false;
+	IC->vsync = true;
 
 	/* Check launch args */
 	LoadArgs(argc, argv, IC);

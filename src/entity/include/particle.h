@@ -2,7 +2,7 @@
 #define H_PARTICLE
 
 #include <SDL.h>
-#include "../../physics/include/vector.h"
+#include "../../core/include/vector.h"
 
 typedef struct FE_Particle {
     vec2 velocity; // Velocity of the particle
@@ -54,27 +54,27 @@ typedef struct FE_ParticleSystem {
 * \param initial_velocity - Initial velocity of the particles
 * \param camera_locked - If the particle system is not moved by the camera when the player moves
 */
-FE_ParticleSystem *FE_CreateParticleSystem(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked);
+FE_ParticleSystem *FE_ParticleSystem_Create(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked);
 
 
 /** Destroys a particle system, frees the pointer
  * \param p - Pointer to the particle system to destroy
  * \returns true on success, -false on failure
 */
-bool FE_DestroyParticleSystem(FE_ParticleSystem *p);
+bool FE_ParticleSystem_Destroy(FE_ParticleSystem *p);
 
 
 // Updates all particle systems' particles
-void FE_UpdateParticles();
+void FE_Particles_Update();
 
 
 /** Renders all particlesystems
 * \param camera - The camera to render from
 */
-void FE_RenderParticles(FE_Camera *camera);
+void FE_Particles_Render(FE_Camera *camera);
 
 
 // Destroys all particle systems
-void FE_CleanParticles();
+void FE_Particles_Clean();
 
 #endif

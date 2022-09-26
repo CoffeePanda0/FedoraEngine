@@ -13,6 +13,8 @@ static ENetHost *server;
 static FE_List *clients;
 static size_t client_count;
 
+static FE_StrArr *ip_spam;
+
 /* sends a packet to all clients other than the one who sent it
 	(set to 0 to send to all clients) */
 void BroadcastPacket(ENetPeer *peer, packet_type type, json_packet *p)
@@ -23,6 +25,18 @@ void BroadcastPacket(ENetPeer *peer, packet_type type, json_packet *p)
 			SendPacket(c->peer, type, p);
 		}
 	}
+}
+
+static size_t CheckClientCount(char *ip)
+{
+	size_t count = 0;
+	for (FE_List *l = clients; l; l = l->next) {
+		client_t *c = l->data;
+		if (mstrcmp(c->ip, ip) == 0) {
+			count++;
+		}
+	}
+	return count;
 }
 
 // gets a client info by their peer
@@ -63,9 +77,31 @@ static void HandleConnect(ENetEvent *event)
 	
 	// create player
 	mmemset(c->held_keys, 0, key_count);
-	c->player = FE_CreatePlayer(40, 18, (SDL_Rect){c->last_location.x, c->last_location.y, 120, 100});
+	c->player = FE_Player_Create(30, 50, 180, (SDL_Rect){c->last_location.x, c->last_location.y, 120, 100});
 
 	FE_List_Add(&clients, c);
+
+	// Check how many clients are connected from this IP
+	size_t count = CheckClientCount(c->ip);
+
+	if (count > 3) {
+		// too many clients from this IP
+		FE_StrArr_Add(ip_spam, c->ip);
+		
+		// check how many times this IP has spammed
+		size_t spam_count = 0;
+		for (size_t i = 0; i < ip_spam->items; i++) {
+			if (mstrcmp(ip_spam->data[i], c->ip)) {
+				spam_count++;
+			}
+		}
+		// If they've spammed more than 3 times, ban them
+		if (spam_count >= 3)
+			RCON_Ban(c, "Too many clients from this IP");
+		else
+			RCON_Kick(c, "Too many clients from this IP");
+		return;
+	}
 
 	// wait for client to send / receive state
 	Server_AuthenticateClient(server, c, &clients, &client_count);
@@ -197,6 +233,7 @@ static void HandleRecieve(ENetEvent *event)
 static void HandleDisconnect(ENetEvent *event)
 {
 	client_t *c = GetClient(event->peer);
+	if (!c) return;
 	info("[SERVER]: Client %s disconnected", c->username);
 
 	// send packet to all clients to remove the player
@@ -207,7 +244,7 @@ static void HandleDisconnect(ENetEvent *event)
 	JSONPacket_Destroy(p);
 
 	event->peer->data = NULL;
-	FE_DestroyPlayer(c->player);
+	FE_Player_Destroy(c->player);
 	FE_List_Remove(&clients, c);
 	free(c);
 	client_count--;
@@ -234,7 +271,7 @@ void DestroyServer()
 		// free clients
 		for (FE_List *l = clients; l; l = l->next) {
 			client_t *c = l->data;
-			FE_DestroyPlayer(c->player);
+			FE_Player_Destroy(c->player);
 			enet_peer_disconnect(c->peer, 0);
 			c->peer = 0;
 			free(c);
@@ -255,6 +292,10 @@ void DestroyServer()
 
 		client_count = 0;
 
+		if (ip_spam)
+			FE_StrArr_Destroy(ip_spam);
+		ip_spam = 0;
+
 		RCON_Destroy();
 		Server_DestroyConfig();
 	}
@@ -269,7 +310,7 @@ int InitServer()
 
 	// load the map
 	FE_LoadedMap *m;
-	if (!(m = FE_LoadMap(server_config.map))) {
+	if (!(m = FE_Map_Load(server_config.map))) {
 		warn("[SERVER]: Failed to load map");
 		return -1;
 	}
@@ -298,6 +339,8 @@ int InitServer()
 		printf("[SERVER] EXTERNAL IP: %s\n", ip);
 		free(ip);
 	}
+
+	ip_spam = FE_StrArr_Create();
 
 	FE_ResetDT();
 
@@ -371,15 +414,15 @@ static void UpdateHeldKeys()
 		FE_Player *p = c->player;
 
 		if (c->held_keys[0])
-			FE_MovePlayer(p, vec(-p->movespeed, 0));
+			FE_Player_Move(p, vec(-p->moveforce, 0));
 		if (c->held_keys[1])
-			FE_MovePlayer(p, vec(p->movespeed, 0));
+			FE_Player_Move(p, vec(p->moveforce, 0));
 		if (c->held_keys[2]) {
-			p->on_ground = FE_PlayerOnGround(p);
+			p->on_ground = p->PhysObj->grounded;
 			if (!p->jump_started)
-				FE_StartPlayerJump(p);
+				FE_Player_StartJump(p);
 			else
-				FE_UpdatePlayerJump(p);
+				FE_Player_UpdateJump(p);
 		}
 	}
 }
@@ -396,7 +439,7 @@ void UpdateServer()
 	UpdateHeldKeys();
 
 	// run main game loop
-	FE_RunPhysics();
+	FE_Physics_Update();
 	
 	// check if any clients have moved, if so then send them the new position
 	for (FE_List *l = clients; l; l = l->next) {
@@ -404,6 +447,8 @@ void UpdateServer()
 		if (!vec2_cmp(c->last_location, vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y))
 		|| !vec2_cmp(c->last_velocity, vec(c->player->PhysObj->velocity.x, c->player->PhysObj->velocity.y))) {
 			
+			c->player->on_ground = c->player->PhysObj->grounded;
+
 			c->last_location = vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y);
 			c->last_velocity = vec(c->player->PhysObj->velocity.x, c->player->PhysObj->velocity.y);
 

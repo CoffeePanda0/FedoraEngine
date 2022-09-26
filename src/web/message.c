@@ -28,10 +28,10 @@ void Server_ParseMessage(client_t *c, ENetEvent *event)
     }
 
     // if message is recieved from a client, send it to all clients
-    if (mstrlen(msg) < 80 && mstrlen(msg) > 1) {
+    if (mstrlen(msg) < 80 && mstrlen(msg) > 1 && !mstrempty(msg)) {
         json_packet *packet = JSONPacket_Create();
         JSONPacket_Add(packet, "username", c->username);
-        JSONPacket_Add(packet, "msg", msg);
+        JSONPacket_Add(packet, "msg", mstrtrim(msg));
         BroadcastPacket(0, PACKET_TYPE_MESSAGE, packet);
         JSONPacket_Destroy(packet);
     }

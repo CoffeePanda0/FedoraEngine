@@ -37,7 +37,7 @@ int FE_Prefab_Destroy(FE_Prefab *prefab)
     if (prefab->has_light)
         FE_Light_Destroy(prefab->light);
     if (prefab->has_particle)
-        FE_DestroyParticleSystem(prefab->ps);
+        FE_ParticleSystem_Destroy(prefab->ps);
     
     FE_List_Remove(&prefab_list, prefab);
     free(prefab);
@@ -147,7 +147,7 @@ FE_Prefab *FE_Prefab_Create(const char *name, int x, int y)
     }
     if (buffer_prefab->has_particle) {
         if (!light_effect) particle_texture = mstrdup("");
-        buffer_prefab->ps = FE_CreateParticleSystem((SDL_Rect){buffer_prefab->obj->phys->body.x - emission_radius, buffer_prefab->obj->phys->body.y - emission_radius, emission_radius * 2, emission_radius * 2}, emission_rate, max_particles, 2000, true, particle_texture, vec(15,15), vec(0,0), false);
+        buffer_prefab->ps = FE_ParticleSystem_Create((SDL_Rect){buffer_prefab->obj->phys->body.x - emission_radius, buffer_prefab->obj->phys->body.y - emission_radius, emission_radius * 2, emission_radius * 2}, emission_rate, max_particles, 2000, true, particle_texture, vec(15,15), vec(0,0), false);
     }
     if (light_effect)
         free(light_effect);
@@ -172,7 +172,7 @@ void FE_Prefab_Clean()
         if (obj->has_light)
             FE_Light_Destroy(obj->light);
         if (obj->has_particle)
-            FE_DestroyParticleSystem(obj->ps);
+            FE_ParticleSystem_Destroy(obj->ps);
 		free(obj);
 	}
 

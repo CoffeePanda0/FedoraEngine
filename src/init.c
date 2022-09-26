@@ -134,7 +134,7 @@ void FE_Init(FE_InitConfig *InitConfig)
 
 void FE_CleanAll() // Cleans all resources possible without exiting
 {
-	FE_CloseLoadedMap();
+	FE_Map_CloseLoaded();
 	FE_Prefab_Clean();
 	FE_Trigger_Clean();
 	FE_Light_Clean();
@@ -145,9 +145,9 @@ void FE_CleanAll() // Cleans all resources possible without exiting
 	FE_CleanCameras();
 	FE_GameObject_Clean();
 	FE_CleanAudio();
-	FE_CleanTimers();
-	FE_CleanAnimations();
-	FE_CleanParticles();
+	FE_Timers_Clean();
+	FE_Animations_Clean();
+	FE_Particles_Clean();
 }
 
 void FE_Clean() // Exits the game cleanly, freeing all resources

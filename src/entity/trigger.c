@@ -1,5 +1,6 @@
 #include "../core/include/include.h"
-#include "../world/include/physics.h"
+#include "../physics/include/physics.h"
+#include "../physics/include/collision.h"
 #include "include/trigger.h"
 
 static FE_List *triggers;

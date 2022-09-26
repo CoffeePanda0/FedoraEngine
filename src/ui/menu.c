@@ -177,8 +177,8 @@ void FE_Menu_Render()
 
     SDL_RenderCopy(PresentGame->Renderer, MenuTexture->Texture, NULL, NULL);
 
-    FE_UpdateParticles();
-    FE_RenderParticles(Camera);
+    FE_Particles_Update();
+    FE_Particles_Render(Camera);
 
     FE_UI_Render();
     FE_Console_Render();
@@ -194,7 +194,7 @@ void FE_Menu_LoadMenu(const char *page)
     MenuTexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/menu.jpg");
     Camera = FE_CreateCamera();
     
-    Particles = FE_CreateParticleSystem(
+    Particles = FE_ParticleSystem_Create(
 		(SDL_Rect){0, -20, PresentGame->WindowWidth, 20}, // Position for the whole screen, slightly above the top to create more random
 		300, // Emission rate
 		3000, // Max particles

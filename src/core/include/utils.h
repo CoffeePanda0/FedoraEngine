@@ -49,7 +49,7 @@ void die (enum dietypes, const char *, ...);
 char *IntToSTR (int i);
 
 #define clamp(value, min, max)\
-    (value < min ? min : (value > max ? max : value));
+    (value < min ? min : (value > max ? max : value))
 
 
 /** Safe random function - catches floating point exception if 0 is passed

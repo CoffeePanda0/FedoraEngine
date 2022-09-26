@@ -28,28 +28,28 @@ typedef struct FE_Animation {
  *\param active Whether the animation is active
  *\return The animation
 */
-FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint16 frame_width, Uint16 frame_height, Uint16 frame_duration, bool active);
+FE_Animation *FE_Animation_Create(char *spritesheet_name, Uint8 frame_count, Uint16 frame_width, Uint16 frame_height, Uint16 frame_duration, bool active);
 
 
 /* Updates the animations */
-void FE_UpdateAnimations();
+void FE_Animations_Update();
 
 /* Pauses the animation */
-void FE_PauseAnimation(FE_Animation *anim);
+void FE_Animation_Pause(FE_Animation *anim);
 
 /* Starts an animation sequence */
-void FE_PlayAnimation(FE_Animation *anim);
+void FE_Animation_Play(FE_Animation *anim);
 
 /* Stops and destroys an animation */
-int FE_DestroyAnimation(FE_Animation *anim);
+int FE_Animation_Destroy(FE_Animation *anim);
 
 
 /** Gets the current frame of an animation
  *\param anim The animation
  *\return The current frame as a rectangle for rendering
 */
-SDL_Rect FE_GetAnimationFrame(FE_Animation *anim);
+SDL_Rect FE_Animation_GetFrame(FE_Animation *anim);
 
-int FE_CleanAnimations();
+int FE_Animations_Clean();
 
 #endif

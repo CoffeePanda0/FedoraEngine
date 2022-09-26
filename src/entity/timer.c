@@ -40,7 +40,7 @@ static int AddToList(FE_Timer *t)
 }
 
 
-int FE_RemoveTimer(FE_Timer *t)
+int FE_Timer_Remove(FE_Timer *t)
 {
     if (t == 0) {
         warn("Attempted to remove a null timer");
@@ -84,7 +84,7 @@ int FE_RemoveTimer(FE_Timer *t)
 
 }
 
-void FE_StartTimer(FE_Timer *timer)
+void FE_Timer_Start(FE_Timer *timer)
 {
     if (timer == 0) {
         warn("Attempted to start a null timer");
@@ -94,7 +94,7 @@ void FE_StartTimer(FE_Timer *timer)
     timer->paused = false;
 }
 
-void FE_PauseTimer(FE_Timer *timer)
+void FE_Timer_Pause(FE_Timer *timer)
 {
     if (timer == 0) {
         warn("Attempted to stop a null timer");
@@ -104,7 +104,7 @@ void FE_PauseTimer(FE_Timer *timer)
     timer->paused = true;
 }
 
-void FE_RestartTimer(FE_Timer *timer)
+void FE_Timer_Restart(FE_Timer *timer)
 {
     if (timer == 0) {
         warn("Attempted to restart a null timer");
@@ -115,10 +115,10 @@ void FE_RestartTimer(FE_Timer *timer)
     timer->elapsed = 0;
 }
 
-FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, void (*callback)(), void *params)
+FE_Timer *FE_Timer_Create(unsigned long duration, bool started, bool repeats, void (*callback)(), void *params)
 {
     if (!callback) {
-        warn("Callback is null! (FE_CreateTimer)");
+        warn("Callback is null! (FE_Timer_Create)");
         return 0;
     }
 
@@ -135,7 +135,7 @@ FE_Timer *FE_CreateTimer(unsigned long duration, bool started, bool repeats, voi
     return t;
 }
 
-void FE_UpdateTimers() // Updates all timers, checked if time elapsed
+void FE_Timers_Update() // Updates all timers, checked if time elapsed
 {
     unsigned long time_passed = SDL_GetTicks() - FE_LastUpdate; // calculate time passed since last update
 
@@ -155,14 +155,14 @@ void FE_UpdateTimers() // Updates all timers, checked if time elapsed
             if (timers[i]->repeats) { // if the timer repeats, reset the timer
                 timers[i]->elapsed = 0;
             } else {
-                FE_RemoveTimer(timers[i]); // otherwise, remove the timer
+                FE_Timer_Remove(timers[i]); // otherwise, remove the timer
             }
         }
     }
     FE_LastUpdate = SDL_GetTicks();
 }
 
-int FE_CleanTimers() // Removes all timers, frees memory
+int FE_Timers_Clean() // Removes all timers, frees memory
 {
     if (timers == 0)
         return 0;

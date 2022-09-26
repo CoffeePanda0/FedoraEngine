@@ -3,16 +3,17 @@
 
 #include <SDL.h>
 #include <stdbool.h>
-#include "../../physics/include/vector.h"
+#include "../../core/include/vector.h"
 #include "animation.h"
 #include "../../world/include/camera.h"
-#include "../../world/include/physics.h"
+#include "../../physics/include/physics.h"
 #include "../../world/include/lighting.h"
 
 typedef struct FE_Player {
     int id;
 
-    float movespeed;
+    float moveforce;
+    float maxspeed;
     
     float jumpforce;
     float jump_elapsed;
@@ -23,7 +24,7 @@ typedef struct FE_Player {
     bool moving;
     bool facing_right;
 
-    FE_PhysObj *PhysObj;
+    FE_Phys_Rigidbody *PhysObj;
 
     SDL_Rect render_rect; // the location displayed on the screen
     FE_Light *Light;
@@ -39,15 +40,15 @@ typedef struct FE_Player {
 * \param player The player to render
 * \param camera The camera to render the player in
 */
-void FE_RenderPlayer(FE_Player *player, FE_Camera *camera);
+void FE_Player_Render(FE_Player *player, FE_Camera *camera);
 
 
 /** Creates a new player
- *\param movespeed - The speed that the player accelerates by when moving
+ *\param acceleration - The speed that the player accelerates by when moving
  *\param jumpforce - The force for the player to jump at
  *\param body - The rectangle for the player's size and position in the world
 */
-FE_Player *FE_CreatePlayer(float movespeed, float jumpforce, SDL_Rect body);
+FE_Player *FE_Player_Create(float acceleration, float maxspeed, float jumpforce, SDL_Rect body);
 
 
 /** Moves the player by a small amount (e.g walking, user input)
@@ -55,14 +56,14 @@ FE_Player *FE_CreatePlayer(float movespeed, float jumpforce, SDL_Rect body);
  *\param camera - The current camera in use
  *\param position - The force to be applied in each direction to the player
 */
-void FE_MovePlayer(FE_Player *player, vec2 movement);
+void FE_Player_Move(FE_Player *player, vec2 movement);
 
 
 /** The main update loop needed to update the player's properties and for the camera to follow
  *\param player - The player to update
  *\param camera - The current camera in use
 */
-void FE_UpdatePlayer(FE_Player *player);
+void FE_Player_Update(FE_Player *player);
 
 
 /** Makes the player jump if they are on the ground
@@ -76,25 +77,19 @@ void FE_PlayerJump(size_t jump_duration, FE_Player *player, FE_Camera *camera);
 /** Continues to jump higher when called
  *\param player - The player to jump
  */
-void FE_UpdatePlayerJump(FE_Player *player);
+void FE_Player_UpdateJump(FE_Player *player);
 
 
 /** Begins the player jumping sequence
  * \param player - The player to jump
  */
-void FE_StartPlayerJump(FE_Player *player);
+void FE_Player_StartJump(FE_Player *player);
 
 
 /** Destroys and frees all resources used by a player
  * \param player - The player to destroy
  */
-void FE_DestroyPlayer(FE_Player *player);
-
-
-/* Checks if a player is on the ground
- * \param player - The player to check
- */
-bool FE_PlayerOnGround(FE_Player *player);
+void FE_Player_Destroy(FE_Player *player);
 
 
 #endif

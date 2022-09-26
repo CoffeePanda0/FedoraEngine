@@ -215,7 +215,7 @@ bool Client_ReceiveMap(ENetHost *client, size_t len, size_t u_len)
 {
     // close open map
     if (PresentGame->MapConfig.Loaded)
-        FE_CloseMap(FE_Game_GetMap());
+        FE_Map_Close(FE_Game_GetMap());
     
     bool awaiting_map = true;
 
@@ -284,7 +284,7 @@ bool Client_ReceiveMap(ENetHost *client, size_t len, size_t u_len)
     fclose(f);
 
     // load map
-    FE_LoadedMap *m = FE_LoadMap("multiplayer/mapdata");
+    FE_LoadedMap *m = FE_Map_Load("multiplayer/mapdata");
     if (!m)
         goto fail;
     

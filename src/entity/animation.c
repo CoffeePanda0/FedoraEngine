@@ -5,7 +5,7 @@
 
 static FE_List *animation_list = NULL;
 
-void FE_UpdateAnimations()
+void FE_Animations_Update()
 {
     // loops through each animation, changes frame if needed
     for (FE_List *l = animation_list; l; l = l->next) {
@@ -20,7 +20,7 @@ void FE_UpdateAnimations()
     }
 }
 
-FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint16 frame_width, Uint16 frame_height, Uint16 frame_duration, bool active)
+FE_Animation *FE_Animation_Create(char *spritesheet_name, Uint8 frame_count, Uint16 frame_width, Uint16 frame_height, Uint16 frame_duration, bool active)
 {
     FE_Animation *anim = xmalloc(sizeof(FE_Animation));
 
@@ -41,7 +41,7 @@ FE_Animation *FE_CreateAnimation(char *spritesheet_name, Uint8 frame_count, Uint
     return anim;
 }
 
-SDL_Rect FE_GetAnimationFrame(FE_Animation *anim)
+SDL_Rect FE_Animation_GetFrame(FE_Animation *anim)
 {
     SDL_Rect frame;
     frame.x = anim->current_frame * anim->frame_width;
@@ -51,17 +51,17 @@ SDL_Rect FE_GetAnimationFrame(FE_Animation *anim)
     return frame;
 }
 
-void FE_PauseAnimation(FE_Animation *anim)
+void FE_Animation_Pause(FE_Animation *anim)
 {
     anim->active = false;
 }
 
-void FE_PlayAnimation(FE_Animation *anim)
+void FE_Animation_Play(FE_Animation *anim)
 {
     anim->active = true;
 }
 
-int FE_DestroyAnimation(FE_Animation *anim)
+int FE_Animation_Destroy(FE_Animation *anim)
 {
     if (!anim) {
         warn("Tried to destroy a NULL animation");
@@ -74,7 +74,7 @@ int FE_DestroyAnimation(FE_Animation *anim)
     return 1;
 }
 
-int FE_CleanAnimations()
+int FE_Animations_Clean()
 {
     if (!animation_list)
         return 0;

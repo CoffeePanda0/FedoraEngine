@@ -30,6 +30,20 @@ bool Server_AuthenticateClient(ENetHost *server, client_t *c, FE_List **clients,
                     return false;
                 }
 
+                // Validate username
+                if (mstrlen(username) > 16) {
+                    info("[SERVER]: Client joined with invalid username");
+                    return false;
+                }
+                // Check username is not empty
+                if (mstrempty(username)) {
+                    info("[SERVER]: Client joined with invalid username");
+                    return false;
+                }
+
+                // Strip leading and trailing whitespace
+                username = mstrtrim(username);
+
 				// check if the username is already taken
 				bool set = false;
 				for (FE_List *l = *clients; l; l = l->next) {
