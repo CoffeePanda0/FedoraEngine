@@ -47,7 +47,7 @@ static void GenerateParticle(FE_ParticleSystem *p, size_t index)
     p->particles[index] = particle;
 }
 
-FE_ParticleSystem *FE_ParticleSystem_Create(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked)
+FE_ParticleSystem *FE_ParticleSystem_Create(GPU_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked)
 {
     FE_ParticleSystem *p = xmalloc(sizeof(FE_ParticleSystem));
     p->emission_area = emissionarea;
@@ -162,7 +162,7 @@ void FE_Particles_Render(FE_Camera *camera)
             if (p->particles[i].is_dead)
                 continue;
 
-            FE_RenderCopyEx(camera, p->camera_locked, p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, SDL_FLIP_NONE);
+            FE_RenderCopyEx(camera, p->camera_locked, p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, GPU_FLIP_NONE);
         }
     }
 }

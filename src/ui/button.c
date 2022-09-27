@@ -55,12 +55,13 @@ FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE 
 
     // create label from text
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, text, (SDL_Color){106,113,111, 255});
-    b->label = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    b->label = GPU_CopyImageFromSurface(text_surface);
     SDL_FreeSurface(text_surface);
 
 
     // calculate label rect from texture size
-    SDL_QueryTexture(b->label, NULL, NULL, &b->label_rect.w, &b->label_rect.h); 
+    b->label_rect.w = b->label->w;
+    b->label_rect.h = b->label->h;
 
     // centre label inside button
     b->label_rect.y = y + (b->r.h - b->label_rect.h) / 2;
@@ -88,9 +89,9 @@ void FE_UI_DestroyButton(FE_UI_Button *b, bool global)
         return;
     }
 
-    SDL_DestroyTexture(b->text);
-    SDL_DestroyTexture(b->hover_text);
-    SDL_DestroyTexture(b->label);
+    GPU_FreeImage(b->text);
+    GPU_FreeImage(b->hover_text);
+    GPU_FreeImage(b->label);
 
     // Check if this label exists in the global list, if so remove it
     if (global) {
@@ -183,8 +184,8 @@ void FE_UI_MoveButton(FE_UI_Button *b, int x, int y)
 void FE_UI_RenderButton(FE_UI_Button *b) // Renders all buttons and their labels
 {
     if (b->hover)
-        SDL_RenderCopy(PresentGame->Renderer, b->hover_text, NULL, &b->r);
+        GPU_BlitRect(b->hover_text, NULL, PresentGame->Screen, &b->r);
     else
-        SDL_RenderCopy(PresentGame->Renderer, b->text, NULL, &b->r);
-    SDL_RenderCopy(PresentGame->Renderer, b->label, NULL, &b->label_rect);
+        GPU_BlitRect(b->text, NULL, PresentGame->Screen, &b->r);
+    GPU_BlitRect(b->label, NULL, PresentGame->Screen, &b->label_rect);
 }

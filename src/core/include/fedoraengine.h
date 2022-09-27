@@ -2,6 +2,7 @@
 #define H_FEDORAENGINE
 
 #include <stdint.h>
+#include <SDL_gpu.h>
 #include <stdbool.h>
 #include "../../core/include/vector.h"
 #include "../../ui/include/font.h"
@@ -84,7 +85,7 @@ typedef struct FE_Game {
     int DialogueSpeed;
     
     SDL_Window *Window;
-    SDL_Renderer *Renderer;
+    GPU_Target *Screen;
     
     bool GameActive;
     FE_GAMESTATE GameState;

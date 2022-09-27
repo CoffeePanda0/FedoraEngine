@@ -70,7 +70,7 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
     MB->type = type;
 
     // calculate display rect
-    MB->displayrect = (SDL_Rect){
+    MB->displayrect = (GPU_Rect){
         (PresentGame->WindowWidth / 2) - (MB_WIDTH / 2),
         (PresentGame->WindowHeight / 2) - (MB_HEIGHT / 2),
         MB_WIDTH,
@@ -117,7 +117,7 @@ void FE_Messagebox_Render()
     if (!PresentGame->UIConfig.MBShown)
         return;
 
-    SDL_RenderCopy(PresentGame->Renderer, MB->texture->Texture, NULL, &MB->displayrect);
+    GPU_BlitRect(MB->texture->Texture, NULL, PresentGame->Screen, &MB->displayrect);
     FE_UI_RenderLabel(MB->title);
     FE_UI_RenderLabel(MB->content);
     

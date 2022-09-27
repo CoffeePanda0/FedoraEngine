@@ -1,7 +1,7 @@
 #ifndef H_CAMERA
 #define H_CAMERA
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include <stdbool.h>
 
 
@@ -13,14 +13,14 @@ typedef struct FE_Camera {
     int x_bound, y_bound;
     bool movement_locked;
 
-    SDL_Rect *follow;
+    GPU_Rect *follow;
 } FE_Camera;
 
 // Moves camera taking clamps into account
 void FE_MoveCamera(float x, float y, FE_Camera *c);
 
 // Returns false if r is not inside dsrct
-bool FE_Camera_Inbounds(SDL_Rect *r, SDL_Rect *dsrct);
+bool FE_Camera_Inbounds(GPU_Rect *r, GPU_Rect *dsrct);
 
 
 /** Sets the zoom level of the camera
@@ -48,7 +48,7 @@ void FE_UpdateCamera(FE_Camera *camera);
  * \param camera The camera to move
  * \param rect The rect to folloe
 */
-void FE_Camera_Follow(FE_Camera *camera, SDL_Rect *rect);
+void FE_Camera_Follow(FE_Camera *camera, GPU_Rect *rect);
 
 
 /* Creates and returns a new camera */
@@ -69,6 +69,6 @@ void FE_CleanCameras();
  * \param camera The camera to get the rect for
  * \return A rect for the current area of the camera
 */
-SDL_Rect SCREEN_RECT(FE_Camera *camera);
+GPU_Rect SCREEN_RECT(FE_Camera *camera);
 
 #endif

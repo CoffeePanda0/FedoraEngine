@@ -1,7 +1,7 @@
 #ifndef _H_NET
 #define _H_NET
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include <stdbool.h>
 
 typedef enum {

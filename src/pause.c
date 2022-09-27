@@ -8,15 +8,13 @@ static FE_Texture *BGTexture = 0;
 
 void FE_Pause_Render()
 {
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 255);
-	SDL_RenderClear(PresentGame->Renderer);
+    GPU_ClearRGBA(PresentGame->Screen, 0, 0, 0, 255);
 
-    SDL_RenderCopy(PresentGame->Renderer, BGTexture->Texture, NULL, NULL);
-
+    GPU_BlitRect(BGTexture->Texture, NULL, PresentGame->Screen, NULL);
     FE_UI_Render();
     FE_Console_Render();
 
-    SDL_RenderPresent(PresentGame->Renderer);
+    GPU_Flip(PresentGame->Screen);
 }
 
 void FE_ResumeGame()

@@ -2,7 +2,7 @@
 #define H_MEM
 
 #include <stdlib.h>
-#include <SDL.h>
+#include <SDL_gpu.h>
 
 /* Custom memory allocation, returns a pointer to allocated memory
 *\param size size of memory to allocate

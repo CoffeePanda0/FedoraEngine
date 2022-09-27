@@ -38,7 +38,7 @@ FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)(), void *peer)
     }
 
     FE_UI_Chatbox *chatbox = xmalloc(sizeof(FE_UI_Chatbox));
-    chatbox->body = (SDL_Rect) {
+    chatbox->body = (GPU_Rect) {
         .x = 0,
         .y = PresentGame->WindowHeight - CHATBOX_HEIGHT,
         .w = CHATBOX_WIDTH,
@@ -93,7 +93,7 @@ void FE_UI_ChatboxMessage(FE_UI_Chatbox *chatbox, char *message)
 void FE_UI_RenderChatbox(FE_UI_Chatbox *chatbox)
 {
     if (chatbox->visible) {
-        SDL_RenderCopy(PresentGame->Renderer, chatbox->texture, NULL, &chatbox->body);
+        GPU_BlitRect(chatbox->texture, NULL, PresentGame->Screen, &chatbox->body);
         for (size_t i = 0; i < chatbox->message_count; i++)
             if (chatbox->messages[i]->r.y > chatbox->body.y)
                 FE_UI_RenderLabel(chatbox->messages[i]);
@@ -112,7 +112,7 @@ void FE_UI_DestroyChatbox(FE_UI_Chatbox *chatbox)
 
     if (chatbox->visible)
         FE_UI_DestroyTextbox(chatbox->input, true);
-    SDL_DestroyTexture(chatbox->texture);
+    GPU_FreeImage(chatbox->texture);
 
     free(chatbox);
 }

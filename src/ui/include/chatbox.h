@@ -1,11 +1,11 @@
 #ifndef _CHATBOX_H
 #define _CHATBOX_H
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 
 typedef struct {
-    SDL_Rect body;
-    SDL_Texture *texture;
+    GPU_Rect body;
+    GPU_Image *texture;
     
     FE_UI_Textbox *input;
 

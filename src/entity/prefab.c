@@ -6,7 +6,7 @@
 #define PREFAB_DIRECTORY "game/prefabs/"
 
 static FE_Prefab *buffer_prefab = 0; // used for loading a new prefab to return a pointer
-static SDL_Rect buffer_rect;
+static GPU_Rect buffer_rect;
 
 static FE_List *prefab_list = 0; // list of all prefabs
 
@@ -84,7 +84,7 @@ static int ConfigParser(void *user, const char *section, const char *name, const
     return 1;
 }
 
-SDL_Texture *FE_Prefab_Thumbnail(const char *name)
+GPU_Image *FE_Prefab_Thumbnail(const char *name)
 {
     // Load prefab file
     buffer_prefab = xmalloc(sizeof(FE_Prefab));
@@ -106,7 +106,7 @@ SDL_Texture *FE_Prefab_Thumbnail(const char *name)
     free(buffer_prefab);
 
     char *path = mstradd("game/sprites/", texture_path);
-    SDL_Texture *t = FE_TextureFromFile(path);
+    GPU_Image *t = FE_TextureFromFile(path);
 
     if (texture_path)
         free(texture_path);
@@ -117,7 +117,7 @@ SDL_Texture *FE_Prefab_Thumbnail(const char *name)
 
 FE_Prefab *FE_Prefab_Create(const char *name, int x, int y)
 {
-    buffer_rect = (SDL_Rect){x,y,0,0};
+    buffer_rect = (GPU_Rect){x,y,0,0};
     buffer_prefab = xmalloc(sizeof(FE_Prefab));
     buffer_prefab->has_light = false;
     buffer_prefab->has_particle = false;
@@ -147,7 +147,7 @@ FE_Prefab *FE_Prefab_Create(const char *name, int x, int y)
     }
     if (buffer_prefab->has_particle) {
         if (!light_effect) particle_texture = mstrdup("");
-        buffer_prefab->ps = FE_ParticleSystem_Create((SDL_Rect){buffer_prefab->obj->phys->body.x - emission_radius, buffer_prefab->obj->phys->body.y - emission_radius, emission_radius * 2, emission_radius * 2}, emission_rate, max_particles, 2000, true, particle_texture, vec(15,15), vec(0,0), false);
+        buffer_prefab->ps = FE_ParticleSystem_Create((GPU_Rect){buffer_prefab->obj->phys->body.x - emission_radius, buffer_prefab->obj->phys->body.y - emission_radius, emission_radius * 2, emission_radius * 2}, emission_rate, max_particles, 2000, true, particle_texture, vec(15,15), vec(0,0), false);
     }
     if (light_effect)
         free(light_effect);

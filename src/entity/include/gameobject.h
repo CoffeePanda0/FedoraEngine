@@ -1,7 +1,7 @@
 #ifndef H_GAMEOBJECT
 #define H_GAMEOBJECT
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include "../../physics/include/physics.h"
 #include "../../world/include/camera.h"
 #include "../../core/include/texture.h"
@@ -37,6 +37,6 @@ int FE_GameObject_Destroy(FE_GameObject *obj);
  *\param mass - The mass to be applied to the physics of the object (or 0 to not fall)
  *\returns A pointer to the new object
 */
-FE_GameObject *FE_GameObject_Create(SDL_Rect r, const char *texture_path, int mass);
+FE_GameObject *FE_GameObject_Create(GPU_Rect r, const char *texture_path, int mass);
 
 #endif

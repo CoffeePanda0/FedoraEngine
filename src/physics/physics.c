@@ -225,7 +225,7 @@ static void FE_PhysLoop()
 
 }
 
-FE_Phys_Rigidbody *FE_Physics_CreateBody(float mass, SDL_Rect body)
+FE_Phys_Rigidbody *FE_Physics_CreateBody(float mass, GPU_Rect body)
 {
     FE_Phys_Rigidbody *p = xmalloc(sizeof(FE_Phys_Rigidbody));
     p->mass = mass;
@@ -306,7 +306,7 @@ void FE_Physics_Update()
     }
 }
 
-void FE_UPDATE_RECT(vec2 position, SDL_Rect *rect)
+void FE_UPDATE_RECT(vec2 position, GPU_Rect *rect)
 {
     rect->x = position.x;
     rect->y = position.y;

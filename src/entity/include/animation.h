@@ -48,7 +48,7 @@ int FE_Animation_Destroy(FE_Animation *anim);
  *\param anim The animation
  *\return The current frame as a rectangle for rendering
 */
-SDL_Rect FE_Animation_GetFrame(FE_Animation *anim);
+GPU_Rect FE_Animation_GetFrame(FE_Animation *anim);
 
 int FE_Animations_Clean();
 

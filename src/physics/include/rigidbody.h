@@ -2,7 +2,7 @@
 #define _H_FE_Phys_Rigidbody
 
 #include "../../core/include/vector.h"
-#include <SDL.h>
+#include <SDL_gpu.h>
 
 typedef struct {
     float mass; // Mass of the object
@@ -22,7 +22,7 @@ typedef struct {
     vec2 last_position; // Last position of the object (used internally for interpolation)
     vec2 last_collision; // Last collision check (used internally for collision detection)
     
-    SDL_Rect body; // The body of the object (used for rendering)
+    GPU_Rect body; // The body of the object (used for rendering)
 
 } FE_Phys_Rigidbody;
 

@@ -83,10 +83,10 @@ FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, char *value) // Makes a 
     temp->text = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, TEXTURE);
     temp->active_text = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, TEXTURE_ACTIVE);
 
-    temp->r = (SDL_Rect){x,y,w,PresentGame->UIConfig.UIFont->size * 1.5};
+    temp->r = (GPU_Rect){x,y,w,PresentGame->UIConfig.UIFont->size * 1.5};
     
     // make box label
-    int y_ = FE_GetCentre((SDL_Rect){0,0,0, PresentGame->UIConfig.UIFont->size}, temp->r).y;
+    int y_ = FE_GetCentre((GPU_Rect){0,0,0, PresentGame->UIConfig.UIFont->size}, temp->r).y;
     
     temp->label = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, value, w, x, y_ -5, COLOR_WHITE);
 
@@ -124,13 +124,14 @@ void FE_UI_SetTextboxContent(FE_UI_Textbox *tb, char *value) // Sets the content
     tb->content = mstrdup(value);
 
     // redo label texture
-    SDL_DestroyTexture(tb->label->texture);
+    GPU_FreeImage(tb->label->texture);
     
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, tb->content, COLOR_WHITE); 
-    tb->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    tb->label->texture = GPU_CopyImageFromSurface(text_surface);
     SDL_FreeSurface(text_surface);
 
-    SDL_QueryTexture(tb->label->texture, NULL, NULL, &tb->label->r.w, &tb->label->r.h); // Get w and h for rect
+    tb->label->r.w = tb->label->texture->w;
+    tb->label->r.h = tb->label->texture->h;
 }
 
 void FE_UI_UpdateTextbox(char c) // Adds or subtracts a character from the text of active box
@@ -159,8 +160,8 @@ void FE_UI_UpdateTextbox(char c) // Adds or subtracts a character from the text 
     } else { // for adding text
         if (t->content && mstrlen(t->content) > 0) { // if content already exists, realloc
             // check if textbox is full, and work out average char width to prevent overflow
-            int w, h;
-            SDL_QueryTexture(t->label->texture, NULL, NULL, &w, &h);
+            int w = t->label->texture->w;
+            int h = t->label->texture->h;
             float avgchar = (w / mstrlen(t->content));
             if (w >= t->r.w - avgchar - 5)
                 return;
@@ -178,13 +179,14 @@ void FE_UI_UpdateTextbox(char c) // Adds or subtracts a character from the text 
     }
     
     // redo label textures
-    SDL_DestroyTexture(t->label->texture);
+    GPU_FreeImage(t->label->texture);
     
     SDL_Surface *text_surface = FE_RenderText(t->label->font, t->content, COLOR_WHITE); 
-    t->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    t->label->texture = GPU_CopyImageFromSurface(text_surface);
     SDL_FreeSurface(text_surface);
 
-    SDL_QueryTexture(t->label->texture, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
+    t->label->r.w = t->label->texture->w;
+    t->label->r.h = t->label->texture->h;
 }
 
 void FE_UI_DestroyTextbox(FE_UI_Textbox *tb, bool global)
@@ -222,7 +224,7 @@ void FE_UI_MoveTextbox(FE_UI_Textbox *tb, int x, int y)
     tb->r.x = x;
     tb->r.y = y;
     tb->label->r.x = x + 5;
-    tb->label->r.y = FE_GetCentre((SDL_Rect){0,0,0, PresentGame->UIConfig.UIFont->size}, tb->r).y - 5;
+    tb->label->r.y = FE_GetCentre((GPU_Rect){0,0,0, PresentGame->UIConfig.UIFont->size}, tb->r).y - 5;
 }
 
 void FE_UI_RenderTextbox(FE_UI_Textbox *tb)
@@ -233,7 +235,7 @@ void FE_UI_RenderTextbox(FE_UI_Textbox *tb)
     }
 
     if (tb->active) {
-        SDL_RenderCopy(PresentGame->Renderer, tb->active_text->Texture, NULL, &tb->r);
+        GPU_BlitRect(tb->active_text->Texture, NULL, PresentGame->Screen, &tb->r);
 
         // draw a cursor at end of text
         if (tb->content && mstrlen(tb->content) > 0) {
@@ -241,16 +243,12 @@ void FE_UI_RenderTextbox(FE_UI_Textbox *tb)
             if (time > 0.5f) {
                 time = -0.5f;
             } else if (time > 0.0f) {
-                uint8_t r, g, b, a;
-                SDL_GetRenderDrawColor(PresentGame->Renderer, &r, &g, &b, &a);
-                SDL_SetRenderDrawColor(PresentGame->Renderer, 255, 255, 255, 255);
-                SDL_RenderDrawLine(PresentGame->Renderer, tb->label->r.x + tb->label->r.w + 2, tb->label->r.y, tb->label->r.x + tb->label->r.w + 2, tb->label->r.y + tb->label->r.h);
-                SDL_SetRenderDrawColor(PresentGame->Renderer, r, g, b, a);
+                GPU_Line(PresentGame->Screen, tb->label->r.x + tb->label->r.w + 2, tb->label->r.y, tb->label->r.x + tb->label->r.w + 2, tb->label->r.y + tb->label->r.h, COLOR_WHITE);
             }
             time += FE_DT;
         }
 
     } else
-        SDL_RenderCopy(PresentGame->Renderer, tb->text->Texture, NULL, &tb->r);
+        GPU_BlitRect(tb->text->Texture, NULL, PresentGame->Screen, &tb->r);
     FE_UI_RenderLabel(tb->label);
 }

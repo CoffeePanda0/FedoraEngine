@@ -77,7 +77,7 @@ static void HandleConnect(ENetEvent *event)
 	
 	// create player
 	mmemset(c->held_keys, 0, key_count);
-	c->player = FE_Player_Create(30, 50, 180, (SDL_Rect){c->last_location.x, c->last_location.y, 120, 100});
+	c->player = FE_Player_Create(30, 50, 180, (GPU_Rect){c->last_location.x, c->last_location.y, 120, 100});
 
 	FE_List_Add(&clients, c);
 

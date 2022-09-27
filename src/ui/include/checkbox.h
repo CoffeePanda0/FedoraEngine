@@ -1,16 +1,16 @@
 #ifndef _CHECKBOX_H
 #define _CHECKBOX_H
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 
 typedef struct { 
-    SDL_Rect r; // rect containing the checkbox
+    GPU_Rect r; // rect containing the checkbox
     bool checked; // is the checkbox checked?
     void (*onclick)(); // callback function on checkbox click
     void *onclick_data; // data passed to callback func
 
-    SDL_Texture *label;
-    SDL_Rect label_rect;
+    GPU_Image *label;
+    GPU_Rect label_rect;
 } FE_UI_Checkbox;
 
 

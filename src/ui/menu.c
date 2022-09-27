@@ -172,18 +172,16 @@ void FE_MenuPage_Main()
 
 void FE_Menu_Render()
 {
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 255);
-	SDL_RenderClear(PresentGame->Renderer);
+    GPU_Clear(PresentGame->Screen);
 
-    SDL_RenderCopy(PresentGame->Renderer, MenuTexture->Texture, NULL, NULL);
-
+    GPU_BlitRect(MenuTexture->Texture, NULL, PresentGame->Screen, NULL);
     FE_Particles_Update();
     FE_Particles_Render(Camera);
 
     FE_UI_Render();
     FE_Console_Render();
 
-    SDL_RenderPresent(PresentGame->Renderer);
+    GPU_Flip(PresentGame->Screen);
 }
 
 void FE_Menu_LoadMenu(const char *page)
@@ -195,7 +193,7 @@ void FE_Menu_LoadMenu(const char *page)
     Camera = FE_CreateCamera();
     
     Particles = FE_ParticleSystem_Create(
-		(SDL_Rect){0, -20, PresentGame->WindowWidth, 20}, // Position for the whole screen, slightly above the top to create more random
+		(GPU_Rect){0, -20, PresentGame->WindowWidth, 20}, // Position for the whole screen, slightly above the top to create more random
 		300, // Emission rate
 		3000, // Max particles
 		10000, // Max lifetime

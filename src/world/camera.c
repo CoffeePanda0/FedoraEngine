@@ -11,7 +11,7 @@ static float zoom_rate;
 // keeps track of cameras for freeing if we want to later on
 static yList(FE_Camera*) cameras = 0;
 
-bool FE_Camera_Inbounds(SDL_Rect *r, SDL_Rect *dsrct)
+bool FE_Camera_Inbounds(GPU_Rect *r, GPU_Rect *dsrct)
 {
     if (r->x + r->w < dsrct->x) // to the left of dsrct
         return false;
@@ -109,7 +109,7 @@ void FE_UpdateCamera(FE_Camera *camera)
     if (camera->movement_locked || !camera->follow)
         return;
 
-    SDL_Rect *r = camera->follow;
+    GPU_Rect *r = camera->follow;
     
     if (r) {
         int initial_x = r->x;
@@ -161,9 +161,9 @@ void FE_Camera_SmoothZoom(FE_Camera *camera, float amount, uint16_t time)
     }
 }
 
-SDL_Rect SCREEN_RECT(FE_Camera *camera)
+GPU_Rect SCREEN_RECT(FE_Camera *camera)
 {
-    return (SDL_Rect){0, 0, PresentGame->WindowWidth / camera->zoom, PresentGame->WindowHeight / camera->zoom};
+    return (GPU_Rect){0, 0, PresentGame->WindowWidth / camera->zoom, PresentGame->WindowHeight / camera->zoom};
 }
 
 void FE_MoveCamera(float x, float y, FE_Camera *c)

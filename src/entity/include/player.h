@@ -1,7 +1,7 @@
 #ifndef H_PLAYER
 #define H_PLAYER
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include <stdbool.h>
 #include "../../core/include/vector.h"
 #include "animation.h"
@@ -26,7 +26,7 @@ typedef struct FE_Player {
 
     FE_Phys_Rigidbody *PhysObj;
 
-    SDL_Rect render_rect; // the location displayed on the screen
+    GPU_Rect render_rect; // the location displayed on the screen
     FE_Light *Light;
     
     FE_Animation *idle_animation;
@@ -48,7 +48,7 @@ void FE_Player_Render(FE_Player *player, FE_Camera *camera);
  *\param jumpforce - The force for the player to jump at
  *\param body - The rectangle for the player's size and position in the world
 */
-FE_Player *FE_Player_Create(float acceleration, float maxspeed, float jumpforce, SDL_Rect body);
+FE_Player *FE_Player_Create(float acceleration, float maxspeed, float jumpforce, GPU_Rect body);
 
 
 /** Moves the player by a small amount (e.g walking, user input)

@@ -34,7 +34,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.StartedInput = false,
 		.DialogueSpeed = 85,
 		.Window = NULL,
-		.Renderer = NULL,
+		.Screen = NULL,
 		.GameActive = false,
 		.GameState = GAME_STATE_MENU,
 		.DisconnectInfo = {false, 0, 0},
@@ -68,7 +68,6 @@ void FE_Init(FE_InitConfig *InitConfig)
 		
 		PresentGame->config->vsync = false; // disable vsync so we can cap at constant 60hz/ups
 		PresentGame->GameActive = true;
-		
 		return;
 	}
 
@@ -81,7 +80,7 @@ void FE_Init(FE_InitConfig *InitConfig)
 			InitConfig->window_title,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			InitConfig->WindowWidth, InitConfig->WindowHeight,
-			SDL_WINDOW_ALLOW_HIGHDPI
+			SDL_WINDOW_OPENGL
 		);
 		
 		PresentGame->WindowHeight = InitConfig->WindowHeight;
@@ -92,22 +91,16 @@ void FE_Init(FE_InitConfig *InitConfig)
 		} else 
 			error("Window could not be created! SDL_Error: %s", SDL_GetError());
 		
-		if (InitConfig->vsync)
-			PresentGame->Renderer = SDL_CreateRenderer(PresentGame->Window, -1, SDL_RENDERER_PRESENTVSYNC);
-		else
-			PresentGame->Renderer = SDL_CreateRenderer(PresentGame->Window, -1, SDL_RENDERER_ACCELERATED);
-		
 
-		if (PresentGame->Renderer)
-			info("Renderer Created");
-		else
-			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
+		/* Initialise SDL_gpu */
+		GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
 
-		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-			warn("Nearest texture filtering not enabled! SDL_Error: %s", SDL_GetError());
+		int windowID = SDL_GetWindowID(PresentGame->Window);
+		GPU_SetInitWindow(windowID); // set the window to render to as the one we just created
 
-		if (!SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1"))
-			warn("Texture batching could not be enabled! SDL_Error: %s", SDL_GetError());
+		PresentGame->Screen = GPU_Init(PresentGame->WindowWidth, PresentGame->WindowHeight, SDL_RENDERER_PRESENTVSYNC);
+		if (!PresentGame->Screen)
+			error("GPU_Init failed");
 
 		if (IMG_Init(IMG_INIT_PNG) == 0)
     		error("IMG Failed to initialize. SDL_Error: %s", IMG_GetError());
@@ -162,7 +155,7 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		FE_Key_Clean();
 		free(PresentGame->UIConfig.ActiveElements);
 		FE_Console_Destroy();
-		SDL_DestroyRenderer(PresentGame->Renderer);
+		GPU_CloseCurrentRenderer();
 		SDL_DestroyWindow(PresentGame->Window);
 		FE_CleanFonts();
 		free(PresentGame->config);
@@ -170,6 +163,7 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 	}
 	FE_GameInitialised = false;
 	SDL_Quit();
+	GPU_Quit();
 	exit(0);
 
 }

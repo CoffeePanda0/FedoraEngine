@@ -7,27 +7,22 @@
 
 #define ATLAS_PATH "game/map/textures/"
 
-SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a file
+GPU_Image *FE_TextureFromFile(const char *path) // Returns a texture from a file
 {
     if (!path) {
         warn("TextureManager: Passing NULL to FE_TextureFromFile");
         return FE_TextureFromRGBA(COLOR_PINK);
     }
-    
 
-    SDL_Surface* s = IMG_Load(path); // we have this to check the image is valid
-    if (s) {
-        SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
-        SDL_FreeSurface(s);
-        return text;
-    } else {
-        free(s);
+    GPU_Image *i = GPU_LoadImage(path);
+    if (!i) {
         warn("Texture %s not found", path);
         return FE_TextureFromRGBA(COLOR_PINK);
     }
+    return i;
 }
 
-SDL_Texture *FE_TextureFromAtlas(FE_TextureAtlas *atlas, size_t index)
+GPU_Image *FE_TextureFromAtlas(FE_TextureAtlas *atlas, size_t index)
 {
     // Generates an SDL texture from a texture atlas
     if (!atlas) {
@@ -41,22 +36,22 @@ SDL_Texture *FE_TextureFromAtlas(FE_TextureAtlas *atlas, size_t index)
 
     // Calculate the position of the texture in the atlas
     vec2 pos = FE_GetTexturePosition(atlas, index);
-    SDL_Rect rect = {pos.x, pos.y, atlas->texturesize, atlas->texturesize};
+    GPU_Rect rect = {pos.x, pos.y, atlas->texturesize, atlas->texturesize};
 
     // create new texture to draw to
-    SDL_Texture *t = FE_CreateRenderTexture(atlas->texturesize, atlas->texturesize);
-    SDL_SetRenderTarget(PresentGame->Renderer, t);
-    SDL_RenderCopy(PresentGame->Renderer, atlas->atlas, &rect, NULL);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
+    GPU_Image *t = GPU_CreateImage(atlas->texturesize, atlas->texturesize, GPU_FORMAT_RGBA);
+    GPU_LoadTarget(t);
+    GPU_BlitRect(atlas->atlas, &rect, PresentGame->Screen, 0);
+    GPU_FreeTarget(t->target);
 
     return t;
 }
 
-SDL_Texture* FE_TextureFromRGBA(SDL_Color color) // Returns a plain texture from a color
+GPU_Image* FE_TextureFromRGBA(SDL_Color color) // Returns a plain texture from a color
 {
     SDL_Surface* s = SDL_CreateRGBSurface(0,1,1,32,0,0,0,0);
     SDL_FillRect(s, NULL, SDL_MapRGBA(s->format, color.r, color.g, color.b, color.a));
-    SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
+    GPU_Image* text = GPU_CopyImageFromSurface(s);
     SDL_FreeSurface(s);
 
     if (!text) {
@@ -75,7 +70,7 @@ int FE_DestroyTexture(FE_Texture *texture)
     }
 
     if (texture->Texture)
-        SDL_DestroyTexture(texture->Texture);
+        GPU_FreeImage(texture->Texture);
     if (texture->path)
         free(texture->path);
     
@@ -88,23 +83,10 @@ int FE_QueryTexture(FE_Texture *t, int *w, int *h)
 {
     if (!t || !t->Texture || !t->path) return -1;
 
-    return SDL_QueryTexture(t->Texture, NULL, NULL, w, h);
-}
+    *w = t->Texture->w;
+    *h = t->Texture->h;
 
-void FE_FillTexture(SDL_Texture *texture, int r, int g, int b, int a)
-{
-    SDL_SetRenderTarget(PresentGame->Renderer, texture);
-    SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_NONE);
-    SDL_SetRenderDrawColor(PresentGame->Renderer, r, g, b, a);
-    SDL_RenderFillRect(PresentGame->Renderer, NULL);
-}
-
-SDL_Texture *FE_CreateRenderTexture(int w, int h)
-{
-    SDL_Texture *t = SDL_CreateTexture(PresentGame->Renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
-    FE_FillTexture(t, 0, 0, 0, 0);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
-    return t;
+    return 0;
 }
 
 vec2 FE_GetTexturePosition(FE_TextureAtlas *atlas, size_t index)
@@ -157,7 +139,7 @@ FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)
 	return atlas;
 }
 
-void FE_RenderAtlasTexture(FE_TextureAtlas *atlas, size_t index, SDL_Rect *dst)
+void FE_RenderAtlasTexture(FE_TextureAtlas *atlas, size_t index, GPU_Rect *dst)
 {
     if (!atlas) {
         warn("NULL atlas being passed (FE_RenderAtlasTexture)");
@@ -168,7 +150,7 @@ void FE_RenderAtlasTexture(FE_TextureAtlas *atlas, size_t index, SDL_Rect *dst)
         return;
     
     vec2 pos = FE_GetTexturePosition(atlas, index);
-    SDL_RenderCopy(PresentGame->Renderer, atlas->atlas, &(SDL_Rect){pos.x, pos.y, atlas->texturesize, atlas->texturesize}, dst);
+    GPU_BlitRect(atlas->atlas,  &(GPU_Rect){pos.x, pos.y, atlas->texturesize, atlas->texturesize}, PresentGame->Screen, dst);
 }
 
 void FE_DestroyTextureAtlas(FE_TextureAtlas *atlas)
@@ -181,6 +163,6 @@ void FE_DestroyTextureAtlas(FE_TextureAtlas *atlas)
     if (atlas->path)
         free(atlas->path);
     if (atlas->atlas)
-        SDL_DestroyTexture(atlas->atlas);
+        GPU_FreeImage(atlas->atlas);
     free(atlas);
 }

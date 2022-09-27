@@ -7,8 +7,8 @@
 #define CHECKBOX_TEXTURE "game/ui/checkbox.png"
 #define CHECKBOX_ACTIVE_TEXTURE "game/ui/checkbox_active.png"
 
-static SDL_Texture *checkbox_texture = 0;
-static SDL_Texture *checkbox_active_texture = 0;
+static GPU_Image *checkbox_texture = 0;
+static GPU_Image *checkbox_active_texture = 0;
 
 FE_UI_Checkbox *FE_UI_CreateCheckbox(const char *label, int x, int y, bool checked, void (*onclick)(), void *onclick_data)
 {
@@ -19,7 +19,7 @@ FE_UI_Checkbox *FE_UI_CreateCheckbox(const char *label, int x, int y, bool check
     }
 
     FE_UI_Checkbox *c = xmalloc(sizeof(FE_UI_Checkbox));
-    c->r = (SDL_Rect){x, y, CHECKBOX_SIZE, CHECKBOX_SIZE};
+    c->r = (GPU_Rect){x, y, CHECKBOX_SIZE, CHECKBOX_SIZE};
 
     if (!onclick) {
         warn("Passing NULL onclick callback (CreateCheckbox)");
@@ -32,11 +32,12 @@ FE_UI_Checkbox *FE_UI_CreateCheckbox(const char *label, int x, int y, bool check
 
     // create label from text
     SDL_Surface *text_surface = FE_RenderText(PresentGame->font, label, COLOR_BLACK); 
-    SDL_Texture *button_label = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    GPU_Image *button_label = GPU_CopyImageFromSurface(text_surface);
 
     // calculate label rect from texture size
-    SDL_Rect label_rect;
-    SDL_QueryTexture(button_label, NULL, NULL, &label_rect.w, &label_rect.h); 
+    GPU_Rect label_rect;
+    label_rect.w = button_label->w;
+    label_rect.h = button_label->h;
     label_rect.x = x + CHECKBOX_SIZE + 8;
     label_rect.y = y + (CHECKBOX_SIZE - label_rect.h) / 2;
 
@@ -89,12 +90,12 @@ bool FE_UI_CheckboxClick(int x, int y)
 void FE_UI_RenderCheckbox(FE_UI_Checkbox *c)
 {
     if (c->checked) {
-        SDL_RenderCopy(PresentGame->Renderer, checkbox_active_texture, NULL, &c->r);
+        GPU_BlitRect(checkbox_active_texture, NULL, PresentGame->Screen, &c->r);
     } else {
-        SDL_RenderCopy(PresentGame->Renderer, checkbox_texture, NULL, &c->r);
+        GPU_BlitRect(checkbox_texture, NULL, PresentGame->Screen, &c->r);
     }
 
-    SDL_RenderCopy(PresentGame->Renderer, c->label, NULL, &c->label_rect); // render label
+    GPU_BlitRect(c->label, NULL, PresentGame->Screen, &c->label_rect);
 }
 
 void FE_UI_DestroyCheckbox(FE_UI_Checkbox *c, bool global)
@@ -104,7 +105,7 @@ void FE_UI_DestroyCheckbox(FE_UI_Checkbox *c, bool global)
         return;
     }
 
-    SDL_DestroyTexture(c->label);
+    GPU_FreeImage(c->label);
     
     if (global) {
         FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Checkboxes , c);

@@ -5,7 +5,7 @@ static FE_Camera *GameCamera;
 static FE_Player *GamePlayer;
 
 static FE_ParticleSystem *SnowParticles;
-SDL_Texture *world;
+GPU_Image *world;
 
 /* Starts the main game */
 void FE_StartGame(const char *mapname)
@@ -31,12 +31,12 @@ void FE_StartGame(const char *mapname)
 	GameCamera->minzoom = 1.0f;
 
 	// player setup
-	GamePlayer = FE_Player_Create(30, 50, 180, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y - 200, 120, 100});
+	GamePlayer = FE_Player_Create(30, 50, 180, (GPU_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y - 200, 120, 100});
 	GameCamera->follow = &GamePlayer->render_rect;
 
 	// test particle system
 	SnowParticles = FE_ParticleSystem_Create(
-		(SDL_Rect){0, -20, PresentGame->MapConfig.MapWidth, 20}, // Position for the whole screen, slightly above the top to create more random
+		(GPU_Rect){0, -20, PresentGame->MapConfig.MapWidth, 20}, // Position for the whole screen, slightly above the top to create more random
 		350, // Emission rate
 		3000, // Max particles
 		10000, // Max lifetime
@@ -47,10 +47,10 @@ void FE_StartGame(const char *mapname)
 		false
 	);
 
-	world = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
+	world = GPU_CreateImage(PresentGame->WindowWidth, PresentGame->WindowHeight, GPU_FORMAT_RGBA);
 	FE_ResetDT();
 
-	FE_GameObject_Create((SDL_Rect){1000, -300, 160, 160}, "cube.png", 10);
+	FE_GameObject_Create((GPU_Rect){1000, -300, 160, 160}, "cube.png", 10);
 
 	PresentGame->GameState = GAME_STATE_PLAY;
 }
@@ -59,8 +59,8 @@ void FE_StartGame(const char *mapname)
 void FE_RenderGame()
 {
 	if (PresentGame->DebugConfig.LightingEnabled)
-		SDL_SetRenderTarget(PresentGame->Renderer, world);
-	SDL_RenderClear(PresentGame->Renderer);
+		GPU_LoadTarget(world);
+	GPU_Clear(PresentGame->Screen);
 	FE_Map_RenderBackground(GameCamera);
 	FE_Particles_Render(GameCamera);
 	FE_Map_RenderLoaded(GameCamera);
@@ -72,7 +72,7 @@ void FE_RenderGame()
 	if (PresentGame->DebugConfig.LightingEnabled)
 		FE_Light_Render(GameCamera, world);
 	FE_UI_Render();
-	SDL_RenderPresent(PresentGame->Renderer);
+	GPU_Flip(PresentGame->Screen);
 }
 
 void FE_GameLoop()

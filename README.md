@@ -1,4 +1,6 @@
-# FedoraEngine (WIP)
+# FedoraEngine (WIP)  
+# PLEASE NOTE: THIS BRANCH IS VERY WIP AND DOES NOT WORK YET  
+
 The *most advanced game engine* to ever be released *now with multiplayer*
 
 https://user-images.githubusercontent.com/34898787/184728240-b5c2a3c5-3122-4528-b23e-138c1df67482.mp4
@@ -30,7 +32,7 @@ FedoraEngine is still very much in development. Current groundbreaking features 
 
 # Requirements
 - A C compiler (e.g gcc)
-- SDL2, SDL_TTF, SDL_Mixer and SDL_Image
+- SDL2, SDL_gpu, SDL_TTF, SDL_Mixer and SDL_Image
 - ~~a will to live~~  
 
 # Todo  

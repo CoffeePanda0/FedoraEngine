@@ -14,7 +14,7 @@ static char *username;
 // Game vars
 static FE_Player *GamePlayer;
 static FE_Camera *GameCamera;
-static SDL_Texture *world;
+static GPU_Image *world;
 
 // ui elements
 static FE_UI_Label *ping_label;
@@ -27,11 +27,11 @@ static FE_List *players;
 static bool Connect(int port, char *addr)
 {
     // show connecting status
-    SDL_RenderClear(PresentGame->Renderer);
+    GPU_Clear(PresentGame->Screen);
     connecting_label = FE_UI_CreateLabel(0, "Connecting...", 300, midx(256), 50, COLOR_WHITE);
     FE_UI_AddElement(FE_UI_LABEL, connecting_label);
     FE_UI_Render();
-    SDL_RenderPresent(PresentGame->Renderer);
+    GPU_Flip(PresentGame->Screen);
 
     ENetAddress address = {0};
     ENetEvent event;
@@ -126,7 +126,7 @@ static void HandleRecieve(ENetEvent *event)
             if (mstrcmp(cmd, "addplayer") == 0) {
                 // add player to list
                 player *p = xmalloc(sizeof(player));
-                p->rect = (SDL_Rect) {
+                p->rect = (GPU_Rect) {
                     .x = atoi(JSONPacket_GetValue(event, "x")),
                     .y = atoi(JSONPacket_GetValue(event, "y")),
                     .w = 120,
@@ -292,7 +292,7 @@ void DestroyClient()
     GamePlayer = 0;
     GameCamera = 0;
     if (world)
-        SDL_DestroyTexture(world);
+        GPU_FreeImage(world);
     world = 0;
 }
 
@@ -306,12 +306,12 @@ static bool CreateGame()
 	GameCamera->minzoom = 1.0f;
 
 	// player setup
-	GamePlayer = FE_Player_Create(30, 50, 180, (SDL_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
+	GamePlayer = FE_Player_Create(30, 50, 180, (GPU_Rect){PresentGame->MapConfig.PlayerSpawn.x, PresentGame->MapConfig.PlayerSpawn.y, 120, 100});
 	GameCamera->follow = &GamePlayer->render_rect;
 
 	// test particle system
 	FE_ParticleSystem_Create(
-		(SDL_Rect){0, -20, PresentGame->MapConfig.MapWidth, 20}, // Position for the whole screen, slightly above the top to create more random
+		(GPU_Rect){0, -20, PresentGame->MapConfig.MapWidth, 20}, // Position for the whole screen, slightly above the top to create more random
 		350, // Emission rate
 		3000, // Max particles
 		10000, // Max lifetime
@@ -322,7 +322,7 @@ static bool CreateGame()
 		false
 	);
 
-	world = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
+	world = GPU_CreateImage(PresentGame->WindowWidth, PresentGame->WindowHeight, GPU_FORMAT_RGBA);
 	FE_ResetDT();
 
     return true;
@@ -339,16 +339,16 @@ static void RenderPlayers()
 void ClientRender()
 {
     if (!connected) {
-        SDL_RenderClear(PresentGame->Renderer);
+        GPU_Clear(PresentGame->Screen);
         FE_UI_Render();
-        SDL_RenderPresent(PresentGame->Renderer);
+        GPU_Flip(PresentGame->Screen);
     } else {
         PresentGame->Timing.RenderTime = SDL_GetPerformanceCounter();
 
         if (PresentGame->DebugConfig.LightingEnabled)
-            SDL_SetRenderTarget(PresentGame->Renderer, world);
+            GPU_LoadTarget(world);
 
-        SDL_RenderClear(PresentGame->Renderer);
+        GPU_Clear(PresentGame->Screen);
         FE_Map_RenderBackground(GameCamera);
         FE_Particles_Render(GameCamera);
         FE_Map_RenderLoaded(GameCamera);
@@ -365,7 +365,7 @@ void ClientRender()
         FE_UI_RenderChatbox(chatbox);
         FE_UI_Render();
 
-        SDL_RenderPresent(PresentGame->Renderer);
+        GPU_Flip(PresentGame->Screen);
 
 	    PresentGame->Timing.RenderTime = ((SDL_GetPerformanceCounter() - PresentGame->Timing.RenderTime) / SDL_GetPerformanceFrequency()) * 1000;
     }

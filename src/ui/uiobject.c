@@ -31,7 +31,7 @@ FE_UI_Object *FE_UI_CreateObject(int x, int y, int w, int h, char *texture_path)
     tmp->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     free(path);
 
-    SDL_Rect r = {x, y, w, h};
+    GPU_Rect r = {x, y, w, h};
     tmp->r = r;
     
     return tmp;
@@ -39,5 +39,5 @@ FE_UI_Object *FE_UI_CreateObject(int x, int y, int w, int h, char *texture_path)
 
 void FE_UI_RenderObject(FE_UI_Object *o)
 {
-    SDL_RenderCopy(PresentGame->Renderer, o->texture->Texture, NULL, &o->r);
+    GPU_BlitRect(o->texture->Texture, NULL, PresentGame->Screen, &o->r); // output label
 }

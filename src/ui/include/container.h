@@ -1,15 +1,15 @@
 #ifndef _CONTAINER_H
 #define _CONTAINER_H
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include "label.h"
 #include "ui.h"
 #include "button.h"
 #include "../../core/include/texture.h"
 
 typedef struct {
-    SDL_Rect body; // For rendering
-    SDL_Rect inner_rect; // For elements to go into
+    GPU_Rect body; // For rendering
+    GPU_Rect inner_rect; // For elements to go into
 
     FE_Texture *texture;
 
@@ -62,7 +62,7 @@ void FE_UI_RenderContainer(FE_UI_Container *c);
  * \param container The container to centre within
  * \return A vector containing the position for r to be centred
 */
-vec2 FE_GetCentre(SDL_Rect r, SDL_Rect container);
+vec2 FE_GetCentre(GPU_Rect r, GPU_Rect container);
 
 
 /** Adds an invisible height spacer for a container

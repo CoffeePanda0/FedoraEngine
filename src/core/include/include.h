@@ -1,7 +1,7 @@
 #ifndef H_PRIMARY_CORE
 #define H_PRIMARY_CORE
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 
 #include "../lib/string.h"
 #include <stdbool.h>

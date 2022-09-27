@@ -1,7 +1,7 @@
 #ifndef _LABEL_H
 #define _LABEL_H
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include <stdbool.h>
 #include "font.h"
 
@@ -9,12 +9,12 @@ typedef struct {
     FE_Font *font;
     uint16_t linewidth;
 
-    SDL_Texture *texture;
+    GPU_Image *texture;
     SDL_Color color;
 
     char *text;
 
-    SDL_Rect r;
+    GPU_Rect r;
     SDL_Color backcolor;
     bool showbackground;
 } FE_UI_Label;
@@ -46,12 +46,12 @@ void FE_UI_UpdateLabel(FE_UI_Label *l, char *text);
 void FE_UI_DestroyLabel(FE_UI_Label *l, bool global);
 
 
-/** Generates an SDL_Texture from the default font with given text
+/** Generates an GPU_Image from the default font with given text
  *\param text The text to convert to a texture
  *\param color The color of the text
  *\returns A pointer to the new texture
 */
-SDL_Texture *FE_TextureFromText(char *text, SDL_Color color);
+GPU_Image *FE_TextureFromText(char *text, SDL_Color color);
 
 
 /** Renders a label to the screen

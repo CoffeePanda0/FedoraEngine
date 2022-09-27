@@ -34,7 +34,7 @@ typedef struct {
 /* the player struct for each connected player to the client */
 typedef struct {
     char username[18];
-    SDL_Rect rect;
+    GPU_Rect rect;
     FE_Texture *texture;
 } player;
 

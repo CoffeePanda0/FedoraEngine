@@ -8,8 +8,8 @@ typedef struct FE_Map_Parallax {
     float scale;
     FE_Texture *texture;
     
-    SDL_Rect r1; // two rects to give infinite scrolling
-    SDL_Rect r2;
+    GPU_Rect r1; // two rects to give infinite scrolling
+    GPU_Rect r2;
 } FE_Map_Parallax;
 
 /** Renders the parallax layers (if added) or static bg image

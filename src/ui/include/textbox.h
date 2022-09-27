@@ -8,7 +8,7 @@ typedef struct {
     FE_Texture *text;
     FE_Texture *active_text;
     
-    SDL_Rect r;
+    GPU_Rect r;
     char *content;
     FE_UI_Label *label;
     bool active;

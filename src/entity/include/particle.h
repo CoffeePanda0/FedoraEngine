@@ -1,13 +1,13 @@
 #ifndef H_PARTICLE
 #define H_PARTICLE
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include "../../core/include/vector.h"
 
 typedef struct FE_Particle {
     vec2 velocity; // Velocity of the particle
 
-    SDL_Rect body; // Body of the particle
+    GPU_Rect body; // Body of the particle
     vec2 position; // Position of the particle
     
     Uint16 rotation; // Rotation of the particle
@@ -28,7 +28,7 @@ typedef struct FE_ParticleSystem {
     vec2 initial_velocity; // Initial velocity of the particles
     Uint16 particle_life; // Life of the particles in ms
 
-    SDL_Rect emission_area; // Area to emit particles from
+    GPU_Rect emission_area; // Area to emit particles from
     vec2 max_size; // Max size of the particles
 
     Uint16 max_particles; // Maximum number of particles
@@ -54,7 +54,7 @@ typedef struct FE_ParticleSystem {
 * \param initial_velocity - Initial velocity of the particles
 * \param camera_locked - If the particle system is not moved by the camera when the player moves
 */
-FE_ParticleSystem *FE_ParticleSystem_Create(SDL_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked);
+FE_ParticleSystem *FE_ParticleSystem_Create(GPU_Rect emissionarea, Uint16 emission_rate, Uint16 max_particles, Uint16 particle_life, bool respawns, char *texture, vec2 max_size, vec2 initial_velocity, bool camera_locked);
 
 
 /** Destroys a particle system, frees the pointer

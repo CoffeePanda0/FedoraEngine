@@ -41,9 +41,9 @@ FE_Animation *FE_Animation_Create(char *spritesheet_name, Uint8 frame_count, Uin
     return anim;
 }
 
-SDL_Rect FE_Animation_GetFrame(FE_Animation *anim)
+GPU_Rect FE_Animation_GetFrame(FE_Animation *anim)
 {
-    SDL_Rect frame;
+    GPU_Rect frame;
     frame.x = anim->current_frame * anim->frame_width;
     frame.y = 0;
     frame.w = anim->frame_width;

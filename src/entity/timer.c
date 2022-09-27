@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include "include/timer.h"
 #include "../core/include/utils.h"
 

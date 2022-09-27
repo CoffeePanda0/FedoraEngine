@@ -12,7 +12,7 @@ static const int PLAYER_MASS = 50;
 
 static size_t PlayerCount = 0;
 
-FE_Player *FE_Player_Create(float acceleration, float maxspeed, float jumpforce, SDL_Rect body)
+FE_Player *FE_Player_Create(float acceleration, float maxspeed, float jumpforce, GPU_Rect body)
 {
     // basic player vars
     FE_Player *p = xmalloc(sizeof(FE_Player));
@@ -70,9 +70,9 @@ void FE_Player_Render(FE_Player *player, FE_Camera *camera)
         return;
 
     // direction that player is facing
-    SDL_RendererFlip flip = SDL_FLIP_NONE;
+    GPU_FlipEnum flip = GPU_FLIP_NONE;
     if (!player->facing_right)
-        flip = SDL_FLIP_HORIZONTAL;
+        flip = GPU_FLIP_HORIZONTAL;
     
     FE_Animation *current_animation = 0;
 
@@ -85,13 +85,16 @@ void FE_Player_Render(FE_Player *player, FE_Camera *camera)
 
     // render the player
 
-    SDL_Rect player_srcrct = FE_Animation_GetFrame(current_animation);
+    GPU_Rect player_srcrct = FE_Animation_GetFrame(current_animation);
     const SDL_Point center = (SDL_Point){player->render_rect.w/2, player->render_rect.h/2};
-    SDL_RenderCopyEx(PresentGame->Renderer,
-        current_animation->spritesheet->Texture,
+    GPU_BlitRectX(current_animation->spritesheet->Texture,
         &player_srcrct,
-        &(SDL_Rect){player->render_rect.x * camera->zoom, player->render_rect.y * camera->zoom, player->render_rect.w * camera->zoom, player->render_rect.h * camera->zoom},
-        0, &center, flip
+        PresentGame->Screen,
+        &(GPU_Rect){player->render_rect.x * camera->zoom, player->render_rect.y * camera->zoom, player->render_rect.w * camera->zoom, player->render_rect.h * camera->zoom},
+        0,
+        center.x,
+        center.y,
+        flip
     );
 
 }

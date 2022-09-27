@@ -1,5 +1,5 @@
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include "../core/include/include.h"
 #include "include/include.h"
 
@@ -10,7 +10,7 @@ static const int Padding = 10;
 
 static FE_UI_Container *close_container = 0; // container with close button for key close
 
-vec2 FE_GetCentre(SDL_Rect r, SDL_Rect container)
+vec2 FE_GetCentre(GPU_Rect r, GPU_Rect container)
 {
     return vec(container.x + (container.w - r.w) / 2, container.y + (container.h - r.h) / 2);
 }
@@ -52,13 +52,13 @@ FE_UI_Container *FE_UI_CreateContainer(int x, int y, int w, int h, char *title, 
     c->children = 0;
     c->children_count = 0;
 
-    c->body = (SDL_Rect){x,y,w,h};
+    c->body = (GPU_Rect){x,y,w,h};
     c->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/container_outer.png");
     c->title = FE_UI_CreateLabel(TitleFont, title, w, 0, 0, PresentGame->UIConfig.UIFontColor);
     c->title->r.x = FE_GetCentre(c->title->r, c->body).x;
-    c->title->r.y = FE_GetCentre(c->title->r, (SDL_Rect){x, y, w - BorderWidth, BorderHeight}).y;
+    c->title->r.y = FE_GetCentre(c->title->r, (GPU_Rect){x, y, w - BorderWidth, BorderHeight}).y;
 
-    c->inner_rect = (SDL_Rect){
+    c->inner_rect = (GPU_Rect){
         .x = c->body.x + BorderWidth,
         .y = c->body.y + BorderHeight,
         .w = w - (BorderWidth * 2),
@@ -72,7 +72,7 @@ FE_UI_Container *FE_UI_CreateContainer(int x, int y, int w, int h, char *title, 
     return c;
 }
 
-static inline int calc_location(FE_UI_LOCATION location, SDL_Rect *r, SDL_Rect *container)
+static inline int calc_location(FE_UI_LOCATION location, GPU_Rect *r, GPU_Rect *container)
 {
     if (location == FE_LOCATION_CENTRE)
         return FE_GetCentre(*r, *container).x;
@@ -92,7 +92,7 @@ void FE_UI_AddChild(FE_UI_Container *container, FE_UI_Type type, void *element, 
         return;
     }
 
-    SDL_Rect *child_r = 0;
+    GPU_Rect *child_r = 0;
 
     /* Calculate the position of the child relative to the previous child */
     int newy = container->last_child_bottom + Padding;
@@ -218,7 +218,7 @@ void FE_UI_RenderContainer(FE_UI_Container *c)
     }
 
     // Render the container
-    SDL_RenderCopy(PresentGame->Renderer, c->texture->Texture, NULL, &c->body);
+    GPU_BlitRect(c->texture->Texture, NULL, PresentGame->Screen, &c->body);
     FE_UI_RenderLabel(c->title);
 
     // Render the children

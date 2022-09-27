@@ -3,7 +3,7 @@
 
 typedef struct {
 	vec2 position; // The position in the world of the trigger
-	SDL_Rect range;
+	GPU_Rect range;
 	void (*event)(); // The function to call once the rect reaches the trigger
     void *event_data;
 
@@ -11,7 +11,7 @@ typedef struct {
 	bool triggered; // Whether or not the trigger is currently being triggered
 
 	bool visible;
-	SDL_Rect display_rect;
+	GPU_Rect display_rect;
 	FE_Texture *display_texture;
 } FE_Trigger;
 
@@ -37,7 +37,7 @@ void FE_Trigger_Render(FE_Camera *camera);
  * \param rect The rect to check
  * \returns True if the the trigger was intersected, false otherwise
 */
-bool FE_Trigger_Check(SDL_Rect *rect);
+bool FE_Trigger_Check(GPU_Rect *rect);
 
 
 /** Destroys a trigger and frees memory

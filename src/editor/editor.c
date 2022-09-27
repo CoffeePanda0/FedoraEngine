@@ -19,7 +19,7 @@ typedef struct Editor_Save_Config {
 static bool Editor_Initialised = false;
 static FE_LoadedMap *map = 0; // map for editing
 static Editor_Save_Config *config = 0;
-static SDL_Texture *world = 0;
+static GPU_Image *world = 0;
 
 // Parallax
 static FE_StrArr *parallaxes = 0;
@@ -41,7 +41,7 @@ typedef enum {
     PREFAB
 } MODE;
 static MODE mode = TILE;
-static SDL_Texture *thumbnail = 0;
+static GPU_Image *thumbnail = 0;
 static FE_Texture *spawntexture;
 static int selected_tile = -1;
 static char *selected_prefab = 0;
@@ -262,16 +262,16 @@ static void SelectTile(int index)
 
     // Generate texture with border to save render time
     if (selected_tile == index) return;
-    if (thumbnail) SDL_DestroyTexture(thumbnail);
+    if (thumbnail) GPU_FreeImage(thumbnail);
 
-    SDL_Texture *t = FE_TextureFromAtlas(map->atlas, (size_t)index);
-    thumbnail = FE_CreateRenderTexture(72, 72);
-    SDL_SetRenderTarget(PresentGame->Renderer, thumbnail);
-    FE_RenderBorder(4, (SDL_Rect){0, 0, 72, 72}, COLOR_WHITE);
-    SDL_Rect r = {4,4,64,64};
-    SDL_RenderCopy(PresentGame->Renderer, t, NULL, &r);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
-    SDL_DestroyTexture(t);
+    GPU_Image *t = FE_TextureFromAtlas(map->atlas, (size_t)index);
+    thumbnail = GPU_CreateImage(72, 72, GPU_FORMAT_RGBA);
+    GPU_LoadTarget(thumbnail);
+    FE_RenderBorder(4, (GPU_Rect){0, 0, 72, 72}, COLOR_WHITE);
+    GPU_Rect r = {4,4,64,64};
+    GPU_BlitRect(t, NULL, PresentGame->Screen, &r);
+    GPU_FreeTarget(thumbnail->target);
+    GPU_FreeImage(t);
 
     FE_UI_DestroyContainer(tile_container, true, true);
 
@@ -291,16 +291,16 @@ static void SelectPrefab(char *name)
 {
     // Generate texture with border to save render time
     if (selected_prefab == name) return;
-    if (thumbnail) SDL_DestroyTexture(thumbnail);
+    if (thumbnail) GPU_FreeImage(thumbnail);
 
-    SDL_Texture *t = FE_Prefab_Thumbnail(name);
-    thumbnail = FE_CreateRenderTexture(72, 72);
-    SDL_SetRenderTarget(PresentGame->Renderer, thumbnail);
-    FE_RenderBorder(4, (SDL_Rect){0, 0, 72, 72}, COLOR_WHITE);
-    SDL_Rect r = {4,4,64,64};
-    SDL_RenderCopy(PresentGame->Renderer, t, NULL, &r);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
-    SDL_DestroyTexture(t);
+    GPU_Image *t = FE_Prefab_Thumbnail(name);
+    thumbnail = GPU_CreateImage(72, 72, GPU_FORMAT_RGBA);
+    GPU_LoadTarget(thumbnail);
+    FE_RenderBorder(4, (GPU_Rect){0, 0, 72, 72}, COLOR_WHITE);
+    GPU_Rect r = {4,4,64,64};
+    GPU_BlitRect(t, NULL, PresentGame->Screen, &r);
+    GPU_FreeTarget(thumbnail);
+    GPU_FreeImage(t);
 
     mode = PREFAB;
     selected_tile = -1;
@@ -466,7 +466,7 @@ static void UI_Tile_Selector()
 
     // Fill the grid with tiles
     for (size_t i = 0; i < tilecount; i++) {
-        SDL_Texture *t = FE_TextureFromAtlas(map->atlas, i);
+        GPU_Image *t = FE_TextureFromAtlas(map->atlas, i);
         FE_UI_AddTile(g, t);
     }
 
@@ -683,27 +683,23 @@ static void RenderGrid()
 {
     if (!render_grid) return;
 
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 255, 255, 255, 255);
-
 	// render grid on map with camera - note this is inefficient and renders the whole screen regardless of zoom
 	for (int i = 0; i < 20960 + PresentGame->WindowWidth; i += map->tilesize) {
         int x = (i - camera->x) * camera->zoom;
         int y = ((PresentGame->WindowWidth + 10240) - camera->y) * camera->zoom;
-		SDL_RenderDrawLine(PresentGame->Renderer, x, 0, x, y);
+        GPU_Line(PresentGame->Screen, x, 0, x, y, COLOR_WHITE);
     }
 	for (int i = 0; i < 20960 + PresentGame->WindowHeight; i += map->tilesize) {
         int y = (i - camera->y) * camera->zoom;
         int x = ((10240 + PresentGame->WindowWidth) - camera->x) * camera->zoom;
-		SDL_RenderDrawLine(PresentGame->Renderer, 0, y, x, y);
+		GPU_Line(PresentGame->Screen, 0, y, x, y, COLOR_WHITE);
     }
-        
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 255);
 }
 
 static void RenderThumbnail()
 {
-    SDL_Rect r = {0, PresentGame->WindowHeight - 72, 72,72};
-    SDL_RenderCopyEx(PresentGame->Renderer, thumbnail, NULL, &r, rotation, NULL, SDL_FLIP_NONE);
+    GPU_Rect r = {0, PresentGame->WindowHeight - 72, 72,72};
+    GPU_BlitRectX(thumbnail, NULL, PresentGame->Screen, &r, rotation, 0, 0, GPU_FLIP_NONE);
 }
 
 void FE_Editor_Render()
@@ -714,10 +710,9 @@ void FE_Editor_Render()
     FE_UpdateCamera(camera);
     FE_Prefab_Update();
 
-    SDL_SetRenderTarget(PresentGame->Renderer, world);
+    GPU_LoadTarget(world);
 
-    SDL_RenderClear(PresentGame->Renderer);
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 0);
+    GPU_Clear(PresentGame->Screen);
 
     if (parallax_set)
         FE_Map_RenderBG(camera, 0);
@@ -728,7 +723,7 @@ void FE_Editor_Render()
 
     // render spawn
 	if (!vec2_null(map->PlayerSpawn)) {
-		SDL_Rect spawnrect = (SDL_Rect){map->PlayerSpawn.x, map->PlayerSpawn.y, map->tilesize, map->tilesize};
+		GPU_Rect spawnrect = (GPU_Rect){map->PlayerSpawn.x, map->PlayerSpawn.y, map->tilesize, map->tilesize};
 		FE_RenderCopy(camera, false, spawntexture, NULL, &spawnrect);
 	}
 
@@ -738,7 +733,7 @@ void FE_Editor_Render()
     RenderThumbnail();
     FE_UI_Render();
     
-    SDL_RenderPresent(PresentGame->Renderer);
+    GPU_Flip(PresentGame->Screen);
 }
 
 /****/
@@ -753,7 +748,7 @@ void FE_Editor_Init(char *path)
     PresentGame->GameState = GAME_STATE_EDITOR;
 
     UI_ToolBar_Create();
-	world = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
+	world = GPU_CreateImage(PresentGame->WindowWidth, PresentGame->WindowHeight, GPU_FORMAT_RGBA);
 
     camera = FE_CreateCamera();
     camera->x = 0;
@@ -810,7 +805,7 @@ void FE_Editor_Destroy()
     if (config)
         free(config);
     if (world)
-        SDL_DestroyTexture(world);
+        GPU_FreeImage(world);
         
     world = 0;
     config = 0;
@@ -826,7 +821,7 @@ void FE_Editor_Destroy()
         FE_DestroyResource(spawntexture->path);
     spawntexture = 0;
     if (thumbnail)
-        SDL_DestroyTexture(thumbnail);
+        GPU_FreeImage(thumbnail);
     thumbnail = 0;
 
     parallax_set = false;

@@ -3,7 +3,7 @@
 
 #define LIGHT_DIRECTORY "game/sprites/lightfx/"
 
-static SDL_Texture *light_layer;
+static GPU_Image *light_layer;
 static bool light_layer_dirty = true;
 
 static FE_List *lights;
@@ -21,7 +21,7 @@ void FE_Light_Move(FE_Light *light, int x, int y)
         return;
     }
     // set the light to the new position, taking into account the light's radius
-    light->Rect = (SDL_Rect) {
+    light->Rect = (GPU_Rect) {
         x + light->x_offset - (light->Rect.w / 2),
         y + light->y_offset - (light->Rect.h / 2),
         light->Rect.w,
@@ -41,10 +41,10 @@ void FE_Light_Toggle(FE_Light *light)
     light_layer_dirty = true;
 }
 
-FE_Light *FE_Light_Create(SDL_Rect rect, int radius, const char *texture)
+FE_Light *FE_Light_Create(GPU_Rect rect, int radius, const char *texture)
 {
     if (!light_layer) {
-        light_layer = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
+        light_layer = GPU_CreateImage(PresentGame->WindowWidth, PresentGame->WindowHeight, GPU_FORMAT_RGBA);
     }
 
     // Create new light object
@@ -52,7 +52,7 @@ FE_Light *FE_Light_Create(SDL_Rect rect, int radius, const char *texture)
     light->x_offset = rect.w / 2;
     light->y_offset = rect.h / 2;
 
-    light->Rect = (SDL_Rect) {
+    light->Rect = (GPU_Rect) {
         rect.x + light->x_offset - radius,
         rect.y + light->y_offset - radius,
         radius * 2,
@@ -89,16 +89,15 @@ static void CheckIfLightDirty(FE_Camera *camera)
     }
 }
 
-void FE_Light_Render(FE_Camera *camera, SDL_Texture *world)
+void FE_Light_Render(FE_Camera *camera, GPU_Image *world)
 {
 	Uint8 brightness = PresentGame->MapConfig.AmbientLight;
-    SDL_Rect vis_rect = SCREEN_RECT(camera);
+    GPU_Rect vis_rect = SCREEN_RECT(camera);
 
     /* Disable lighting if brightness is 0 */
     if (brightness == 255) {
-        SDL_SetRenderTarget(PresentGame->Renderer, NULL);
         // Only render the part of the world that is visible
-        SDL_RenderCopy(PresentGame->Renderer, world, &vis_rect, NULL);
+        GPU_BlitRect(world, &vis_rect, PresentGame->Screen, NULL);
         return;
     }
 
@@ -106,10 +105,9 @@ void FE_Light_Render(FE_Camera *camera, SDL_Texture *world)
 
     /* Create an layer to render the lighting to. Only re-render if lighting has changed. */
     if (light_layer_dirty || PresentGame->GameState == GAME_STATE_EDITOR) {
-        SDL_SetRenderTarget(PresentGame->Renderer, light_layer);
-        SDL_SetTextureBlendMode(light_layer, SDL_BLENDMODE_MOD);
-        SDL_SetRenderDrawColor(PresentGame->Renderer, brightness, brightness, brightness, 0);
-        SDL_RenderClear(PresentGame->Renderer);
+        GPU_LoadTarget(light_layer);
+        GPU_SetBlendMode(light_layer, GPU_BLEND_MOD_ALPHA);
+        GPU_ClearRGBA(PresentGame->Screen, brightness, brightness, brightness, 0);
 	
         // render the lights
         for (FE_List *l = lights; l; l = l->next) {
@@ -124,10 +122,8 @@ void FE_Light_Render(FE_Camera *camera, SDL_Texture *world)
     }
 
     // Render the world with the applied light effects
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
-    SDL_RenderCopy(PresentGame->Renderer, world,  &vis_rect, NULL);
-    SDL_RenderCopy(PresentGame->Renderer, light_layer,  &vis_rect, NULL);
-    SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_NONE);
+    GPU_BlitRect(world, &vis_rect, PresentGame->Screen, NULL);
+    GPU_BlitRect(light_layer, &vis_rect, PresentGame->Screen, NULL);
 }
 
 void FE_Light_Destroy(FE_Light *light)
@@ -141,7 +137,7 @@ void FE_Light_Destroy(FE_Light *light)
 void FE_Light_Clean()
 {
     if (light_layer)    
-        SDL_DestroyTexture(light_layer);
+        GPU_FreeImage(light_layer);
     light_layer = 0;
 
     if (lights) {

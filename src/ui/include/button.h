@@ -2,13 +2,13 @@
 #define _BUTTON_H
 
 typedef struct {
-    SDL_Texture *text;
-    SDL_Texture *hover_text;
+    GPU_Image *text;
+    GPU_Image *hover_text;
 
-    SDL_Texture *label;
-    SDL_Rect label_rect;
+    GPU_Image *label;
+    GPU_Rect label_rect;
 
-    SDL_Rect r;
+    GPU_Rect r;
     void (*onclick)();
     void *onclick_data;
 

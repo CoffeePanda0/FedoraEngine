@@ -4,7 +4,7 @@
 #include "../../core/include/texture.h"
 
 typedef struct {
-    SDL_Rect r;
+    GPU_Rect r;
     FE_Texture *texture;
 } FE_UI_Object;
 

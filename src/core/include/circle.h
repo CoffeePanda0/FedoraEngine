@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include <SDL.h>
+#include <SDL_gpu.h>
 
 typedef struct FE_Circle {
     int32_t x, y; // x and y centre of circle

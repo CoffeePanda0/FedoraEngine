@@ -87,7 +87,7 @@ typedef struct FE_LoadedMap {
 
 typedef struct FE_EndFlag {
     FE_Texture *texture;
-    SDL_Rect r;
+    GPU_Rect r;
 } FE_EndFlag;
 
 

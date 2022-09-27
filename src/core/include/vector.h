@@ -1,7 +1,7 @@
 #ifndef _VEC2_H
 #define _VEC2_H
 
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include <stdbool.h>
 #include <math.h>
 
@@ -13,7 +13,7 @@ typedef struct vec2 {
 #define VEC_NULL (vec2){-1,-1}
 #define VEC_EMPTY (vec2){0,0}
 
-void FE_UPDATE_RECT(vec2 position, SDL_Rect *rect);
+void FE_UPDATE_RECT(vec2 position, GPU_Rect *rect);
 
 #define vec2_add(a, b) (vec2){a.x + b.x, a.y + b.y}
 #define vec2_sub(a, b) (vec2){a.x - b.x, a.y - b.y}

@@ -3,7 +3,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL.h>
+#include <SDL_gpu.h>
+#include <SDL_gpu.h>
 #include "../core/lib/string.h"
 #include <stdbool.h>
 

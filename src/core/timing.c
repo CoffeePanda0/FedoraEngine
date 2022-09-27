@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include <stdio.h>
 #include "include/fedoraengine.h"
 

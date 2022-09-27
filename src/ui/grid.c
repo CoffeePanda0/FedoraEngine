@@ -24,7 +24,7 @@ int FE_UI_GetFreeTile(FE_UI_Grid *grid)
     return -1;
 }
 
-void FE_UI_UpdateTile(FE_UI_Grid *grid, SDL_Texture *texture, size_t index)
+void FE_UI_UpdateTile(FE_UI_Grid *grid, GPU_Image *texture, size_t index)
 {
     if (!grid) {
         warn("NULL passed to grid");
@@ -55,7 +55,7 @@ void FE_UI_UpdateGridBorder(FE_UI_Grid *grid, SDL_Color color, int thickness)
     grid->buffer_dirty = true;
 }
 
-void FE_UI_AddTile(FE_UI_Grid *grid, SDL_Texture *texture)
+void FE_UI_AddTile(FE_UI_Grid *grid, GPU_Image *texture)
 {
     if (FE_UI_GridFull(grid)) {
         info("Unable to add tile - Grid is full");
@@ -157,60 +157,46 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
 
     if (grid->buffer_dirty) { // only redraw if buffer is dirty (grid has changed)
         
-        SDL_Texture *prev_target = SDL_GetRenderTarget(PresentGame->Renderer);
         if (grid->buffer_texture) {
-            SDL_DestroyTexture(grid->buffer_texture);
+            GPU_FreeImage(grid->buffer_texture);
         }
-        grid->buffer_texture = FE_CreateRenderTexture(grid->r.w, grid->r.h);
-        SDL_SetRenderTarget(PresentGame->Renderer, grid->buffer_texture);
-        SDL_SetTextureBlendMode(grid->buffer_texture, SDL_BLENDMODE_BLEND);
+        grid->buffer_texture = GPU_CreateImage(grid->r.w, grid->r.h, GPU_FORMAT_RGBA);
+        GPU_LoadTarget(grid->buffer_texture);
+        GPU_SetBlendMode(grid->buffer_texture, GPU_BLEND_NORMAL);
 
         // Render tiles
         for (size_t i = 0; i < grid->tile_count; i++) {
             FE_UI_Tile *t = &grid->tiles[i];
             if (t->empty) continue;
-            SDL_RenderCopy(PresentGame->Renderer, t->texture, NULL, &t->r);
+            GPU_BlitRect(t->texture, NULL, PresentGame->Screen, &t->r);
         }
 
         // Render outside border
-        SDL_Rect border_r = {0, 0, grid->r.w, grid->r.h};
+        GPU_Rect border_r = {0, 0, grid->r.w, grid->r.h};
         FE_RenderBorder(grid->border_width, border_r, grid->color);
-
-        Uint8 r, g, b, a;
-        SDL_GetRenderDrawColor(PresentGame->Renderer, &r, &g, &b, &a);
-        SDL_SetRenderDrawColor(PresentGame->Renderer, grid->color.r, grid->color.g, grid->color.b, grid->color.a);
 
         // Render Border for cols
         for (size_t i = 0; i < grid->cols; i++) {
             if (i == 0 || i == grid->cols) continue;
-            SDL_Rect r = {((grid->tile_w + grid->border_width)* i), 0, grid->border_width, grid->r.h};
-            SDL_RenderFillRect(PresentGame->Renderer, &r);
+            GPU_Rect r = {((grid->tile_w + grid->border_width)* i), 0, grid->border_width, grid->r.h};
+            GPU_RectangleFilled2(PresentGame->Screen, r, grid->color);
         }
         // Render Border for rows
         for (size_t i = 0; i < grid->rows; i++) {
             if (i == 0 || i == grid->rows) continue;
-            SDL_Rect r = {0, ((grid->tile_h + grid->border_width)* i), grid->r.w, grid->border_width};
-            SDL_RenderFillRect(PresentGame->Renderer, &r);
+            GPU_Rect r = {0, ((grid->tile_h + grid->border_width)* i), grid->r.w, grid->border_width};
+            GPU_RectangleFilled2(PresentGame->Screen, r, grid->color);
         }
 
-        SDL_SetRenderTarget(PresentGame->Renderer, prev_target);
-        SDL_SetRenderDrawColor(PresentGame->Renderer, r, g, b, a);
         grid->buffer_dirty = false;
     }
 
-    SDL_RenderCopy(PresentGame->Renderer, grid->buffer_texture, NULL, &grid->r);
+    GPU_BlitRect(grid->buffer_texture, NULL, PresentGame->Screen, &grid->r);
 
     // Render transulcent square behind hovered tile
     if (!vec2_null(grid->hovered)) {
-        SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_BLEND);
-        Uint8 prev_r, prev_g, prev_b, prev_a;
-        SDL_GetRenderDrawColor(PresentGame->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);
-        SDL_SetRenderDrawColor(PresentGame->Renderer, grid->hover_color.r, grid->hover_color.g, grid->hover_color.b, grid->hover_color.a);
-
-        SDL_Rect r = {grid->r.x + (grid->hovered.x * grid->tile_w) + ((grid->hovered.x +1 )* grid->border_width), grid->r.y + (grid->hovered.y * grid->tile_h) + ((grid->hovered.y +1 )* grid->border_width), grid->tile_w , grid->tile_h};
-        SDL_RenderFillRect(PresentGame->Renderer, &r);
-
-        SDL_SetRenderDrawColor(PresentGame->Renderer, prev_r, prev_g, prev_b, prev_a);
+        GPU_Rect r = {grid->r.x + (grid->hovered.x * grid->tile_w) + ((grid->hovered.x +1 )* grid->border_width), grid->r.y + (grid->hovered.y * grid->tile_h) + ((grid->hovered.y +1 )* grid->border_width), grid->tile_w , grid->tile_h};
+        GPU_RectangleFilled2(PresentGame->Screen, r, grid->hover_color);
     }
     
     FE_UI_CheckGridHover();
@@ -240,7 +226,7 @@ FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int 
 {
     // Create new grid
     FE_UI_Grid *grid = xmalloc(sizeof(FE_UI_Grid));
-    grid->r = (SDL_Rect){x,y,w,h};
+    grid->r = (GPU_Rect){x,y,w,h};
     grid->tile_count = tile_count;
     grid->onclick = onclick;
     grid->color = COLOR_WHITE;
@@ -271,7 +257,7 @@ FE_UI_Grid *FE_UI_CreateGrid(int x, int y, int w, int h, size_t tile_count, int 
         }
         grid->tiles[idx].empty = true;
         grid->tiles[idx].texture = 0;
-        grid->tiles[idx].r = (SDL_Rect){(grid->tile_w * cur_col) + ((cur_col + 1) * grid->border_width), (grid->tile_h * cur_row) + ((cur_row + 1) * grid->border_width), grid->tile_w, grid->tile_h};
+        grid->tiles[idx].r = (GPU_Rect){(grid->tile_w * cur_col) + ((cur_col + 1) * grid->border_width), (grid->tile_h * cur_row) + ((cur_row + 1) * grid->border_width), grid->tile_w, grid->tile_h};
         if (++cur_col >= grid->cols) {
             cur_col = 0; // todo - all tiles are slightly off-center
             cur_row++;
@@ -286,14 +272,14 @@ void FE_UI_DestroyGrid(FE_UI_Grid *grid, bool global)
     for (size_t i = 0; i < grid->tile_count; i++) {
         FE_UI_Tile *t = &grid->tiles[i];
         if (!t->empty)
-            SDL_DestroyTexture(t->texture);
+            GPU_FreeImage(t->texture);
     }
     grid->tile_count = 0;
     free(grid->tiles);
     grid->tiles = 0;
 
     if (grid->buffer_texture) {
-        SDL_DestroyTexture(grid->buffer_texture);
+        GPU_FreeImage(grid->buffer_texture);
         grid->buffer_texture = 0;
     }
 

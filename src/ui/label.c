@@ -4,14 +4,14 @@
 void FE_UI_RenderLabel(FE_UI_Label *l)
 {
     if (l->showbackground)
-        FE_RenderRect(&l->r, l->backcolor);
-    SDL_RenderCopy(PresentGame->Renderer, l->texture, NULL, &l->r);
+        GPU_RectangleFilled2(PresentGame->Screen, l->r, l->backcolor);
+    GPU_BlitRect(l->texture, NULL, PresentGame->Screen, &l->r);
 }
 
-SDL_Texture *FE_TextureFromText(char *text, SDL_Color color)
+GPU_Image *FE_TextureFromText(char *text, SDL_Color color)
 {
     SDL_Surface *s = FE_RenderText(PresentGame->font, text, color);
-    SDL_Texture *t = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
+    GPU_Image *t = GPU_CopyImageFromSurface(s);
     SDL_FreeSurface(s);
     if (!t)
         warn("Could not create texture from text");
@@ -23,7 +23,7 @@ static void GenerateTexture(FE_UI_Label *l)
 {
     SDL_Surface **surfaces = 0;
     size_t surface_count = 0;
-    SDL_Texture **layer_textures = 0;
+    GPU_Image **layer_textures = 0;
     
     // Check if the text is too long to fit on one line
     int char_width = 0;
@@ -40,7 +40,7 @@ static void GenerateTexture(FE_UI_Label *l)
 
     // Load each line as a surface and then export to texture
     surfaces = xmalloc(sizeof(SDL_Surface*) * surface_count);
-    layer_textures = xmalloc(sizeof(SDL_Texture*) * surface_count);
+    layer_textures = xmalloc(sizeof(GPU_Image*) * surface_count);
 
     int largest_w = 0;
 
@@ -50,7 +50,7 @@ static void GenerateTexture(FE_UI_Label *l)
         int w, h;
         TTF_SizeText(l->font->font, lines[i], &w, &h);
         largest_w = w > largest_w ? w : largest_w;
-        layer_textures[i] = SDL_CreateTextureFromSurface(PresentGame->Renderer, surfaces[i]);
+        layer_textures[i] = GPU_CopyImageFromSurface(surfaces[i]);
         SDL_FreeSurface(surfaces[i]);
         free(lines[i]);
     }
@@ -58,23 +58,23 @@ static void GenerateTexture(FE_UI_Label *l)
     free(surfaces);
 
     int h = TTF_FontHeight(l->font->font);
-    l->texture = FE_CreateRenderTexture(largest_w, h * surface_count);
+    l->texture = GPU_CreateImage(largest_w, h * surface_count, GPU_FORMAT_RGBA);
     
     // Create buffer texture to render each line of text to
-    SDL_SetRenderTarget(PresentGame->Renderer, l->texture);
-    SDL_SetTextureBlendMode(l->texture, SDL_BLENDMODE_BLEND);
+    GPU_LoadTarget(l->texture);
 
     // Render each line of text to the buffer texture
     for (size_t i = 0; i < surface_count; i++) {
-        SDL_Rect r = {0,l->font->size * i,0,0};
-        SDL_QueryTexture(layer_textures[i], NULL, NULL, &r.w, &r.h); // Get w and h for rect
-        SDL_RenderCopy(PresentGame->Renderer, layer_textures[i], NULL, &r);
-        SDL_DestroyTexture(layer_textures[i]);
+        GPU_Rect r = {0,l->font->size * i,0,0};
+        r.w = layer_textures[i]->w;
+        r.h = layer_textures[i]->h;
+        GPU_BlitRect(layer_textures[i], NULL, PresentGame->Screen, &r);
+        GPU_FreeImage(layer_textures[i]);
     }
     free(layer_textures);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
+    GPU_FreeTarget(l->texture->target);
 
-    l->r = (SDL_Rect){l->r.x, l->r.y, largest_w, h * surface_count};
+    l->r = (GPU_Rect){l->r.x, l->r.y, largest_w, h * surface_count};
 }
 
 FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, int x, int y, SDL_Color color)
@@ -83,7 +83,7 @@ FE_UI_Label *FE_UI_CreateLabel(FE_Font *font, char *text, uint16_t linewidth, in
     newlabel->text = text ? mstrdup(text) : mstrdup(" ");
     newlabel->linewidth = linewidth;
     newlabel->color = color;
-    newlabel->r = (SDL_Rect){x, y, 0, 0};
+    newlabel->r = (GPU_Rect){x, y, 0, 0};
 
     newlabel->font = font ? font : PresentGame->font;
 
@@ -117,7 +117,7 @@ void FE_UI_UpdateLabel(FE_UI_Label *l, char *text) // Updates a pre-existing lab
         return;
 
     // Remove old texture and text
-    SDL_DestroyTexture(l->texture);
+    GPU_FreeImage(l->texture);
     free(l->text);
 
     // Update label text
@@ -132,7 +132,7 @@ void FE_UI_DestroyLabel(FE_UI_Label *l, bool global)
         return;
     }
 
-    SDL_DestroyTexture(l->texture);
+    GPU_FreeImage(l->texture);
     if (l->text)
         free(l->text);
 

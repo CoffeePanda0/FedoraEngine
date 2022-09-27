@@ -7,7 +7,7 @@
 
 static FE_List *FE_GameObjects = 0; // list of all gameobjects
 
-FE_GameObject *FE_GameObject_Create(SDL_Rect r, const char *texture_path, int mass)
+FE_GameObject *FE_GameObject_Create(GPU_Rect r, const char *texture_path, int mass)
 {
 	if (!texture_path) {
 		warn("NULL texture_path passed to FE_GameObject_Create");

@@ -4,7 +4,7 @@
 #include <time.h>
 #include "lib/string.h"
 #include <errno.h>
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include "include/utils.h"
 #include "include/fedoraengine.h"
 #include "../include/init.h"

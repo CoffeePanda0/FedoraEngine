@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include "include/include.h"
 #include "../core/include/include.h"
 
@@ -133,7 +133,8 @@ void FE_Parallax_Add(const char *layer_name, float scale)
     parallax[parallax_layers].texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, path);
     free(path);
 
-    SDL_QueryTexture(parallax[0].texture->Texture, NULL, NULL, &layer_width, &layer_height);
+    layer_height = parallax[0].texture->Texture->w;
+    layer_width = parallax[0].texture->Texture->h;
 
     layer_width *= layer_scale;
     layer_height *= layer_scale;
@@ -141,8 +142,8 @@ void FE_Parallax_Add(const char *layer_name, float scale)
     parallax[parallax_layers].scale = scale;
 
     int ypos = PresentGame->MapConfig.Loaded ? PresentGame->MapConfig.MapHeight - layer_height : 0;
-    parallax[parallax_layers].r1 = (SDL_Rect){0, ypos, layer_width, layer_height};
-    parallax[parallax_layers++].r2 = (SDL_Rect){-layer_width, ypos, layer_width, layer_height};
+    parallax[parallax_layers].r1 = (GPU_Rect){0, ypos, layer_width, layer_height};
+    parallax[parallax_layers++].r2 = (GPU_Rect){-layer_width, ypos, layer_width, layer_height};
     parallax_dirty = true;
 }
 
@@ -174,14 +175,14 @@ static void FE_Parallax_Render(FE_Camera *camera)
 {
     if (!parallax) return;
 
-    SDL_Rect vis_rect = SCREEN_RECT(camera);
+    GPU_Rect vis_rect = SCREEN_RECT(camera);
 
-    static SDL_Texture *buff = 0;
+    static GPU_Image *buff = 0;
 
     // Render to a buffer so we can just re-render texture if camera hasn't moved
     if (!buff) {
-        buff = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowWidth);
-        SDL_SetTextureBlendMode(buff, SDL_BLENDMODE_BLEND);
+        buff = GPU_CreateImage(PresentGame->WindowWidth, PresentGame->WindowWidth, GPU_FORMAT_RGBA);
+        GPU_SetBlendMode(buff, GPU_BLEND_NORMAL);
     }
 
 
@@ -192,7 +193,7 @@ static void FE_Parallax_Render(FE_Camera *camera)
             float scale = parallax[i].scale * parallax_speed;
             
             // Apply scale to the camera position
-            SDL_Rect dst1 = {
+            GPU_Rect dst1 = {
                 .x = (parallax[i].r1.x - (camera->x * scale)) * camera->zoom,
                 .y = (parallax[i].r1.y -camera->y) * camera->zoom,
                 .w = layer_width * camera->zoom,
@@ -200,7 +201,7 @@ static void FE_Parallax_Render(FE_Camera *camera)
             };
 
             // Apply scale to the camera position (second rect for infinite scrolling)
-            SDL_Rect dst2 = {
+            GPU_Rect dst2 = {
                 .x = (parallax[i].r2.x - (camera->x * scale)) * camera->zoom,
                 .y = dst1.y,
                 .w = layer_width * camera->zoom,
@@ -217,17 +218,15 @@ static void FE_Parallax_Render(FE_Camera *camera)
             if (dst2.x > PresentGame->WindowWidth)
                 parallax[i].r2.x = parallax[i].r1.x - parallax[i].r1.w;
 
-            SDL_Texture *prev = SDL_GetRenderTarget(PresentGame->Renderer);
-            SDL_SetRenderTarget(PresentGame->Renderer, buff);
+            GPU_LoadTarget(buff);
 
-            SDL_RenderCopy(PresentGame->Renderer, parallax[i].texture->Texture, &vis_rect, &dst1);
-            SDL_RenderCopy(PresentGame->Renderer, parallax[i].texture->Texture, &vis_rect, &dst2);
+            GPU_BlitRect(parallax[i].texture->Texture, &vis_rect, PresentGame->Screen, &dst1);
+            GPU_BlitRect(parallax[i].texture->Texture, &vis_rect, PresentGame->Screen, &dst2);
 
-            SDL_SetRenderTarget(PresentGame->Renderer, prev);
             parallax_dirty = false;
         }
     }
-    SDL_RenderCopy(PresentGame->Renderer, buff, &vis_rect, NULL);
+    GPU_BlitRect(buff, &vis_rect, PresentGame->Screen, NULL);
 }
 
 char *FE_Parallax_GetName()
@@ -259,13 +258,13 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
         return;
     }
     
-    SDL_Rect vis_rect = SCREEN_RECT(camera);
+    GPU_Rect vis_rect = SCREEN_RECT(camera);
 
-    static SDL_Texture *buffer = 0;
+    static GPU_Image *buffer = 0;
 
     static bool set = false;
-    static SDL_Rect r1 = {0, 0, 0, 0};
-    static SDL_Rect r2 = {0, 0, 0, 0};
+    static GPU_Rect r1 = {0, 0, 0, 0};
+    static GPU_Rect r2 = {0, 0, 0, 0};
 
     if (!set) {
         r1.w = layer_width; r1.h = layer_height;
@@ -276,18 +275,17 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
 
 
     if (!buffer)
-        buffer = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
+        buffer = GPU_CreateImage(PresentGame->WindowWidth, PresentGame->WindowHeight, GPU_FORMAT_RGBA);
     
-    SDL_Texture *prev = SDL_GetRenderTarget(PresentGame->Renderer);
-    SDL_SetRenderTarget(PresentGame->Renderer, buffer);
+    GPU_LoadTarget(buffer);
 
     if (last_x != camera->x || last_y != camera->y) {
         // note: this code is a monster and should not be reckoned with
         last_x = camera->x;
         last_y = camera->y;
 
-        SDL_Rect bg1 = r1;
-        SDL_Rect bg2 = r2;
+        GPU_Rect bg1 = r1;
+        GPU_Rect bg2 = r2;
 
         if (bg2.x - camera->x + bg2.w < 0)
             r2.x = r1.x + bg1.w;
@@ -304,11 +302,10 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
         bg2 = bg1;
         bg2.x = (r2.x - camera->x) * camera->zoom;
 
-        SDL_RenderCopy(PresentGame->Renderer, map->bg->Texture, &vis_rect, &bg1);
-        SDL_RenderCopy(PresentGame->Renderer, map->bg->Texture, &vis_rect, &bg2);
+        GPU_BlitRect(map->bg->Texture, &vis_rect, PresentGame->Screen, &bg1);
+        GPU_BlitRect(map->bg->Texture, &vis_rect, PresentGame->Screen, &bg2);
     }
     
-    SDL_SetRenderTarget(PresentGame->Renderer, prev);
-    SDL_RenderCopy(PresentGame->Renderer, buffer, &vis_rect, NULL);
+    GPU_BlitRect(buffer, &vis_rect, PresentGame->Screen, NULL);
     
 }

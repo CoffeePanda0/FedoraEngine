@@ -52,7 +52,7 @@ bool Phys_AABBvsAABB(FE_Phys_Rigidbody *a, FE_Phys_Rigidbody *b, Phys_Manifold *
     return false;
 }
 
-bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b)
+bool FE_AABB_Collision(GPU_Rect *a, GPU_Rect *b)
 {
     if (a->x + a->w < b->x) // to the left of b
         return false;

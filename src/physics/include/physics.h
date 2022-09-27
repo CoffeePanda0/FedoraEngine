@@ -18,7 +18,7 @@ extern const float PHYS_SCALE;
  * \param body The body of the rigidbody
  * \param returns The rigidbody
  */
-FE_Phys_Rigidbody *FE_Physics_CreateBody(float mass, SDL_Rect body);
+FE_Phys_Rigidbody *FE_Physics_CreateBody(float mass, GPU_Rect body);
 
 
 /** Adds a rigidbody to the physics engine

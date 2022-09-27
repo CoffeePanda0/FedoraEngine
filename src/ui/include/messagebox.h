@@ -14,7 +14,7 @@ typedef enum {
 typedef struct {
     FE_UI_MBType type;
 
-    SDL_Rect displayrect;
+    GPU_Rect displayrect;
 
     FE_Texture *texture;
 

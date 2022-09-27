@@ -3,12 +3,12 @@
 
 typedef struct {
     bool empty;
-    SDL_Rect r;
-    SDL_Texture *texture;
+    GPU_Rect r;
+    GPU_Image *texture;
 } FE_UI_Tile;
 
 typedef struct {
-    SDL_Rect r;
+    GPU_Rect r;
 
     size_t tile_count;
     size_t tiles_set;
@@ -21,7 +21,7 @@ typedef struct {
     int tile_w;
     int tile_h;
 
-    SDL_Texture *buffer_texture;
+    GPU_Image *buffer_texture;
     bool buffer_dirty;
 
     vec2 hovered;
@@ -50,14 +50,14 @@ int FE_UI_GetFreeTile(FE_UI_Grid *grid);
  * \param texture The texture to set the tile to
  * \param index The index of the tile to update
  */
-void FE_UI_UpdateTile(FE_UI_Grid *grid, SDL_Texture *texture, size_t index);
+void FE_UI_UpdateTile(FE_UI_Grid *grid, GPU_Image *texture, size_t index);
 
 
 /** Adds a tile to the first free slot in the grid
  * \param grid The grid to add to
  * \param texture The texture to set the tile to
  */
-void FE_UI_AddTile(FE_UI_Grid *grid, SDL_Texture *texture);
+void FE_UI_AddTile(FE_UI_Grid *grid, GPU_Image *texture);
 
 
 /** Clears a tile in the grid, setting it to empty

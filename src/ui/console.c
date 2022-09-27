@@ -11,16 +11,16 @@ static FE_Font *Font;
 
 typedef struct {
     // output text
-    SDL_Texture *output_label_text;
-    SDL_Rect output_label_rect;
+    GPU_Image *output_label_text;
+    GPU_Rect output_label_rect;
 
     // input text
-    SDL_Texture *input_label_text;
-    SDL_Rect input_label_rect;
+    GPU_Image *input_label_text;
+    GPU_Rect input_label_rect;
 
     // console object
-    SDL_Texture *console_texture;
-    SDL_Rect console_rect;
+    GPU_Image *console_texture;
+    GPU_Rect console_rect;
 } console;
 
 static console Console;
@@ -39,7 +39,7 @@ int FE_Console_Init()
     console_output = mstrdup("");
     console_input = mstrdup("");
 
-    Console.console_rect = (SDL_Rect){0, PresentGame->WindowHeight - CONSOLE_HEIGHT, PresentGame->WindowWidth, CONSOLE_HEIGHT};
+    Console.console_rect = (GPU_Rect){0, PresentGame->WindowHeight - CONSOLE_HEIGHT, PresentGame->WindowWidth, CONSOLE_HEIGHT};
 
     PresentGame->ConsoleVisible = false;
     info("Initialised Console");
@@ -54,29 +54,32 @@ static void GenerateConsoleLabel()
     if (!PresentGame->GameActive) return;
 
     if (Console.output_label_text)
-        SDL_DestroyTexture(Console.output_label_text);
+        GPU_FreeImage(Console.output_label_text);
 
     SDL_Surface *text_surface = FE_RenderText(Font, console_output, COLOR_WHITE); 
-    Console.output_label_text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    Console.output_label_text = GPU_CopyImageFromSurface(text_surface);
     SDL_FreeSurface(text_surface);
 
     Console.output_label_rect.x = 0;
     Console.output_label_rect.y = (PresentGame->WindowHeight - CONSOLE_HEIGHT) + 10;
-    SDL_QueryTexture(Console.output_label_text, NULL, NULL, &Console.output_label_rect.w, &Console.output_label_rect.h);
+
+    Console.output_label_rect.w = Console.output_label_text->w;
+    Console.output_label_rect.h = Console.output_label_text->h;
 }
 
 static void GenerateInputLabel()
 {
     if (Console.input_label_text)
-        SDL_DestroyTexture(Console.input_label_text);
+        GPU_FreeImage(Console.input_label_text);
     
     SDL_Surface *text_surface = FE_RenderText(Font, console_input, COLOR_WHITE); 
-    Console.input_label_text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    Console.input_label_text = GPU_CopyImageFromSurface(text_surface);
     SDL_FreeSurface(text_surface);
 
     Console.input_label_rect.x = 0;
     Console.input_label_rect.y = (PresentGame->WindowHeight - CONSOLE_HEIGHT) + CONSOLE_HEIGHT -40;
-    SDL_QueryTexture(Console.input_label_text, NULL, NULL, &Console.input_label_rect.w, &Console.input_label_rect.h);
+    Console.input_label_rect.w = Console.input_label_text->w;
+    Console.input_label_rect.h = Console.input_label_text->h;
 }
 
 void FE_Console_UpdateInput(char *in)
@@ -124,11 +127,11 @@ void FE_Console_Hide()
     PresentGame->ConsoleVisible = false;
 
     if (Console.output_label_text) {
-        SDL_DestroyTexture(Console.output_label_text);
+        GPU_FreeImage(Console.output_label_text);
         Console.output_label_text = 0;
     }
     if (Console.input_label_text) {
-        SDL_DestroyTexture(Console.input_label_text);
+        GPU_FreeImage(Console.input_label_text);
         Console.input_label_text = 0;
     }
 }
@@ -136,15 +139,15 @@ void FE_Console_Hide()
 void FE_Console_Destroy()
 {
     if (Console.output_label_text)
-        SDL_DestroyTexture(Console.output_label_text);
+        GPU_FreeImage(Console.output_label_text);
     Console.output_label_text = 0;
     
     if (Console.input_label_text)
-        SDL_DestroyTexture(Console.input_label_text);
+        GPU_FreeImage(Console.input_label_text);
     Console.input_label_text = 0;
 
     if (Console.console_texture)
-        SDL_DestroyTexture(Console.console_texture);
+        GPU_FreeImage(Console.console_texture);
     Console.console_texture = 0;
 
     if (Font)
@@ -161,8 +164,8 @@ void FE_Console_Destroy()
 void FE_Console_Render()
 {
     if (PresentGame->ConsoleVisible) {
-        SDL_RenderCopy(PresentGame->Renderer, Console.console_texture, NULL, &Console.console_rect); // console texture
-        SDL_RenderCopy(PresentGame->Renderer, Console.output_label_text, NULL, &Console.output_label_rect); // output label
-        SDL_RenderCopy(PresentGame->Renderer, Console.input_label_text, NULL, &Console.input_label_rect); // input label
+        GPU_BlitRect(Console.console_texture, NULL, PresentGame->Screen, &Console.console_rect);
+        GPU_BlitRect(Console.output_label_text, NULL, PresentGame->Screen, &Console.output_label_rect); // output label
+        GPU_BlitRect(Console.output_label_text, NULL, PresentGame->Screen, &Console.output_label_rect); // input label
     }
 }

@@ -10,7 +10,7 @@ FE_Trigger *FE_Trigger_Create(vec2 position, int range, void (*event)(), void *e
 {
 	FE_Trigger *t = xmalloc(sizeof(FE_Trigger));
 	t->position = position;
-	t->range = (SDL_Rect) {
+	t->range = (GPU_Rect) {
 		.x = position.x + (range / 2),
 		.y = position.y + (range / 2),
 		.w = range / 2,
@@ -22,7 +22,7 @@ FE_Trigger *FE_Trigger_Create(vec2 position, int range, void (*event)(), void *e
 	t->triggered = false;
 
 	t->visible = visible;
-	t->display_rect = (SDL_Rect) {
+	t->display_rect = (GPU_Rect) {
 		.x = t->range.x,
 		.y = t->range.y,
 		.w = 128,
@@ -68,7 +68,7 @@ void FE_Trigger_Destroy(FE_Trigger *trigger)
 	free(trigger);
 }
 
-bool FE_Trigger_Check(SDL_Rect *rect)
+bool FE_Trigger_Check(GPU_Rect *rect)
 {
 	bool result = false;
 

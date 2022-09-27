@@ -1,4 +1,4 @@
-#include <SDL.h>
+#include <SDL_gpu.h>
 #include "include/include.h"
 #include "../include/audio.h"
 #include "../ext/hashtbl.h"

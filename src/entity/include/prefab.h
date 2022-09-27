@@ -48,9 +48,9 @@ void FE_Prefab_Update();
 
 /** Generates a texture for the thumbnail of a prefab
  * \param name The name of the prefab
- * \returns the SDL_Texture
+ * \returns the GPU_Image
 */
-SDL_Texture *FE_Prefab_Thumbnail(const char *name);
+GPU_Image *FE_Prefab_Thumbnail(const char *name);
 
 
 /** Returns the list of prefabs

@@ -2,7 +2,7 @@
 #define H_LIGHTING
 
 typedef struct FE_Light {
-    SDL_Rect Rect;
+    GPU_Rect Rect;
     FE_Texture *Texture;
     uint8_t intensity;
     
@@ -17,7 +17,7 @@ typedef struct FE_Light {
  * \param camera The camera to render from
  * \param world The world to render
 */
-void FE_Light_Render(FE_Camera *camera, SDL_Texture *world);
+void FE_Light_Render(FE_Camera *camera, GPU_Image *world);
 
 
 /** Creates a new light effect and adds it to the world
@@ -26,7 +26,7 @@ void FE_Light_Render(FE_Camera *camera, SDL_Texture *world);
  * \param texture The texture to render the light effect with
  * \returns The new light effect
 */
-FE_Light *FE_Light_Create(SDL_Rect rect, int radius, const char *texture);
+FE_Light *FE_Light_Create(GPU_Rect rect, int radius, const char *texture);
 
 
 /** Destroys a light and frees memory
