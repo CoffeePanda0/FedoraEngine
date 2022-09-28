@@ -47,6 +47,11 @@ static void GenerateTexture(FE_UI_Label *l)
     // here we go
     for (size_t i = 0; i < surface_count; i++) {
         surfaces[i] = FE_RenderText(l->font, lines[i], l->color);
+        if (!surfaces[i]) {
+            warn("Could not render text surface");
+            return;
+        }
+        
         int w, h;
         TTF_SizeText(l->font->font, lines[i], &w, &h);
         largest_w = w > largest_w ? w : largest_w;
@@ -61,18 +66,21 @@ static void GenerateTexture(FE_UI_Label *l)
     l->texture = GPU_CreateImage(largest_w, h * surface_count, GPU_FORMAT_RGBA);
     
     // Create buffer texture to render each line of text to
-    GPU_LoadTarget(l->texture);
+    GPU_Target *target = GPU_LoadTarget(l->texture);
+
+    if (!target)
+        warn("Could not create target texture");
 
     // Render each line of text to the buffer texture
     for (size_t i = 0; i < surface_count; i++) {
         GPU_Rect r = {0,l->font->size * i,0,0};
         r.w = layer_textures[i]->w;
-        r.h = layer_textures[i]->h;
-        GPU_BlitRect(layer_textures[i], NULL, PresentGame->Screen, &r);
+        r.h = layer_textures[i]->h; // todo GPU textures being NULL
+        GPU_BlitRect(layer_textures[i], NULL, target, &r);
         GPU_FreeImage(layer_textures[i]);
     }
     free(layer_textures);
-    GPU_FreeTarget(l->texture->target);
+    GPU_FreeTarget(target);
 
     l->r = (GPU_Rect){l->r.x, l->r.y, largest_w, h * surface_count};
 }

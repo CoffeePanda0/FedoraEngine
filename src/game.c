@@ -4,6 +4,7 @@
 static FE_Camera *GameCamera;
 static FE_Player *GamePlayer;
 
+
 static FE_ParticleSystem *SnowParticles;
 GPU_Image *world;
 
@@ -60,7 +61,9 @@ void FE_RenderGame()
 {
 	if (PresentGame->DebugConfig.LightingEnabled)
 		GPU_LoadTarget(world);
+
 	GPU_Clear(PresentGame->Screen);
+
 	FE_Map_RenderBackground(GameCamera);
 	FE_Particles_Render(GameCamera);
 	FE_Map_RenderLoaded(GameCamera);
@@ -72,6 +75,7 @@ void FE_RenderGame()
 	if (PresentGame->DebugConfig.LightingEnabled)
 		FE_Light_Render(GameCamera, world);
 	FE_UI_Render();
+
 	GPU_Flip(PresentGame->Screen);
 }
 

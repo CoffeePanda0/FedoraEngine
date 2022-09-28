@@ -291,8 +291,12 @@ void DestroyClient()
         FE_Player_Destroy(GamePlayer);
     GamePlayer = 0;
     GameCamera = 0;
+    
     if (world)
         GPU_FreeImage(world);
+    if (world->target)
+        GPU_FreeTarget(world->target);
+
     world = 0;
 }
 
@@ -332,7 +336,7 @@ static void RenderPlayers()
 {
     for (FE_List *l = players; l; l = l->next) {
         player *p = l->data;
-        FE_RenderCopy(GameCamera, false, p->texture, NULL, &p->rect);
+        FE_RenderCopy(0, GameCamera, false, p->texture, NULL, &p->rect);
     }
 }
 

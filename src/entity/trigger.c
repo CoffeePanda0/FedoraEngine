@@ -42,7 +42,7 @@ void FE_Trigger_Render(FE_Camera *camera)
 	for (FE_List *l = triggers; l; l = l->next) {
 		FE_Trigger *t = l->data;
 		if (!PresentGame->DebugConfig.ShowTriggers || t->visible)
-			FE_RenderCopy(camera, false, t->display_texture, NULL, &t->display_rect);
+			FE_RenderCopy(0, camera, false, t->display_texture, NULL, &t->display_rect);
 	}
 }
 

@@ -218,12 +218,13 @@ static void FE_Parallax_Render(FE_Camera *camera)
             if (dst2.x > PresentGame->WindowWidth)
                 parallax[i].r2.x = parallax[i].r1.x - parallax[i].r1.w;
 
-            GPU_LoadTarget(buff);
+            GPU_Target *target = GPU_LoadTarget(buff);
 
-            GPU_BlitRect(parallax[i].texture->Texture, &vis_rect, PresentGame->Screen, &dst1);
-            GPU_BlitRect(parallax[i].texture->Texture, &vis_rect, PresentGame->Screen, &dst2);
+            GPU_BlitRect(parallax[i].texture->Texture, &vis_rect, target, &dst1);
+            GPU_BlitRect(parallax[i].texture->Texture, &vis_rect, target, &dst2);
 
             parallax_dirty = false;
+            GPU_FreeTarget(target);
         }
     }
     GPU_BlitRect(buff, &vis_rect, PresentGame->Screen, NULL);
@@ -277,9 +278,10 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
     if (!buffer)
         buffer = GPU_CreateImage(PresentGame->WindowWidth, PresentGame->WindowHeight, GPU_FORMAT_RGBA);
     
-    GPU_LoadTarget(buffer);
 
     if (last_x != camera->x || last_y != camera->y) {
+        GPU_Target *target = GPU_LoadTarget(buffer);
+
         // note: this code is a monster and should not be reckoned with
         last_x = camera->x;
         last_y = camera->y;
@@ -302,10 +304,10 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
         bg2 = bg1;
         bg2.x = (r2.x - camera->x) * camera->zoom;
 
-        GPU_BlitRect(map->bg->Texture, &vis_rect, PresentGame->Screen, &bg1);
-        GPU_BlitRect(map->bg->Texture, &vis_rect, PresentGame->Screen, &bg2);
+        GPU_BlitRect(map->bg->Texture, &vis_rect, target, &bg1);
+        GPU_BlitRect(map->bg->Texture, &vis_rect, target, &bg2);
+        GPU_FreeTarget(target);
     }
-    
     GPU_BlitRect(buffer, &vis_rect, PresentGame->Screen, NULL);
     
 }

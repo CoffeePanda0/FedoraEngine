@@ -161,34 +161,36 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
             GPU_FreeImage(grid->buffer_texture);
         }
         grid->buffer_texture = GPU_CreateImage(grid->r.w, grid->r.h, GPU_FORMAT_RGBA);
-        GPU_LoadTarget(grid->buffer_texture);
+        
+        GPU_Target *target = GPU_LoadTarget(grid->buffer_texture);
         GPU_SetBlendMode(grid->buffer_texture, GPU_BLEND_NORMAL);
 
         // Render tiles
         for (size_t i = 0; i < grid->tile_count; i++) {
             FE_UI_Tile *t = &grid->tiles[i];
             if (t->empty) continue;
-            GPU_BlitRect(t->texture, NULL, PresentGame->Screen, &t->r);
+            GPU_BlitRect(t->texture, NULL, target, &t->r);
         }
 
         // Render outside border
         GPU_Rect border_r = {0, 0, grid->r.w, grid->r.h};
-        FE_RenderBorder(grid->border_width, border_r, grid->color);
+        FE_RenderBorder(target, grid->border_width, border_r, grid->color);
 
         // Render Border for cols
         for (size_t i = 0; i < grid->cols; i++) {
             if (i == 0 || i == grid->cols) continue;
             GPU_Rect r = {((grid->tile_w + grid->border_width)* i), 0, grid->border_width, grid->r.h};
-            GPU_RectangleFilled2(PresentGame->Screen, r, grid->color);
+            GPU_RectangleFilled2(target, r, grid->color);
         }
         // Render Border for rows
         for (size_t i = 0; i < grid->rows; i++) {
             if (i == 0 || i == grid->rows) continue;
             GPU_Rect r = {0, ((grid->tile_h + grid->border_width)* i), grid->r.w, grid->border_width};
-            GPU_RectangleFilled2(PresentGame->Screen, r, grid->color);
+            GPU_RectangleFilled2(target, r, grid->color);
         }
 
         grid->buffer_dirty = false;
+        GPU_FreeTarget(target);
     }
 
     GPU_BlitRect(grid->buffer_texture, NULL, PresentGame->Screen, &grid->r);

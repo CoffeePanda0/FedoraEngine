@@ -40,7 +40,7 @@ void FE_GameObject_Render(FE_Camera *c)
 {
 	for (FE_List *o = FE_GameObjects; o; o = o->next) {
 		FE_GameObject *obj = o->data;
-		FE_RenderCopy(c, false, obj->texture, NULL, &obj->phys->body);
+		FE_RenderCopy(0, c, false, obj->texture, NULL, &obj->phys->body);
 	}
 }
 

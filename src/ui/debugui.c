@@ -83,7 +83,7 @@ void FE_DebugUI_Update(FE_Player *player)
                 sprintf(fps_text, "FPS: %i (VSYNC)", FE_FPS);
             else
                 sprintf(fps_text, "FPS: %i", FE_FPS);
-            sprintf(coord_text, "X: %i Y: %i", player->PhysObj->body.x, player->PhysObj->body.y);
+            sprintf(coord_text, "X: %.0f Y: %.0f", player->PhysObj->body.x, player->PhysObj->body.y);
             sprintf(velocity_text, "Velocity: (%.2f, %.2f)", player->PhysObj->velocity.x, player->PhysObj->velocity.y);
 
             FE_UI_UpdateLabel(update_label, update_text);

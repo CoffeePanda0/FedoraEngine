@@ -8,6 +8,7 @@
     #include <math.h>
 #endif
 
+
 GPU_Rect FE_ApplyZoom(GPU_Rect *r, FE_Camera *camera, bool locked)
 {
     // use ceil to prevent floating point rounding causing anomyous pixels
@@ -27,8 +28,10 @@ GPU_Rect FE_ApplyZoom(GPU_Rect *r, FE_Camera *camera, bool locked)
     return RenderRect;
 }
 
-int FE_RenderCopy(FE_Camera *camera, bool locked, FE_Texture *texture, GPU_Rect *src, GPU_Rect *dst) // Renders a texture to the screen if in camera bounds
+int FE_RenderCopy(GPU_Target *target, FE_Camera *camera, bool locked, FE_Texture *texture, GPU_Rect *src, GPU_Rect *dst) // Renders a texture to the screen if in camera bounds
 {
+    GPU_Target *screen = target == 0 ? PresentGame->Screen : target;
+
     if (!texture || !dst || !texture->Texture) {
         error("FE_RenderCopy: NULL texture or dst");
         return -1;
@@ -48,18 +51,20 @@ int FE_RenderCopy(FE_Camera *camera, bool locked, FE_Texture *texture, GPU_Rect 
 
     // Check if rect is in screen bounds
     if (FE_Camera_Inbounds(&RenderRect, &(GPU_Rect){0,0,PresentGame->WindowWidth, PresentGame->WindowHeight})) {
-        GPU_BlitRect(texture->Texture, &s, PresentGame->Screen, &RenderRect);
+        GPU_BlitRect(texture->Texture, &s, screen, &RenderRect);
         return 1;
     } else
         return 0;
 }
 
-int FE_RenderCopyEx(FE_Camera *camera, bool locked, FE_Texture *texture, GPU_Rect *src, GPU_Rect *dst, double angle, GPU_FlipEnum flip)
+int FE_RenderCopyEx(GPU_Target *target, FE_Camera *camera, bool locked, FE_Texture *texture, GPU_Rect *src, GPU_Rect *dst, double angle, GPU_FlipEnum flip)
 {
     if (!texture || !dst || !texture->Texture) {
         error("FE_RenderCopyEx: NULL texture or dst");
         return -1;
     }
+
+    GPU_Target *screen = target == 0 ? PresentGame->Screen : target;
 
     GPU_Rect RenderRect = *dst;
     if (camera->zoom != 0)
@@ -74,28 +79,30 @@ int FE_RenderCopyEx(FE_Camera *camera, bool locked, FE_Texture *texture, GPU_Rec
         s = *src;
 
     if (FE_Camera_Inbounds(&RenderRect, &(GPU_Rect){0,0, PresentGame->WindowWidth, PresentGame->WindowHeight})) {
-        GPU_BlitRectX(texture->Texture, &s, PresentGame->Screen, &RenderRect, angle, 0, 0, flip); // todo check pivot
+        GPU_BlitRectX(texture->Texture, &s, screen, &RenderRect, angle, 0, 0, flip); // todo check pivot
         return 1;
     } else
         return 0;
 }
 
-void FE_RenderBorder(int thickness, GPU_Rect r, SDL_Color color)
+void FE_RenderBorder(GPU_Target *target, int thickness, GPU_Rect r, SDL_Color color)
 {
+    GPU_Target *screen = target == 0 ? PresentGame->Screen : target;
+
     /* Border top */
     GPU_Rect top = (GPU_Rect){r.x, r.y, r.w, thickness};
-    GPU_RectangleFilled2(PresentGame->Screen, top, color);
+    GPU_RectangleFilled2(screen, top, color);
 
     /* Border bottom */
     GPU_Rect bottom = (GPU_Rect){r.x, r.y + r.h - thickness, r.w, thickness};
-    GPU_RectangleFilled2(PresentGame->Screen, bottom, color);
+    GPU_RectangleFilled2(screen, bottom, color);
 
     /* Border left */
     GPU_Rect left = (GPU_Rect){r.x, r.y, thickness, r.h};
-    GPU_RectangleFilled2(PresentGame->Screen, left, color);
+    GPU_RectangleFilled2(screen, left, color);
 
     /* Border right */
     GPU_Rect right = (GPU_Rect){r.x + r.w - thickness, r.y, thickness, r.h};
-    GPU_RectangleFilled2(PresentGame->Screen, right, color);
+    GPU_RectangleFilled2(screen, right, color);
 
 }

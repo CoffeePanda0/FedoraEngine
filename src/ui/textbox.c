@@ -161,7 +161,7 @@ void FE_UI_UpdateTextbox(char c) // Adds or subtracts a character from the text 
         if (t->content && mstrlen(t->content) > 0) { // if content already exists, realloc
             // check if textbox is full, and work out average char width to prevent overflow
             int w = t->label->texture->w;
-            int h = t->label->texture->h;
+
             float avgchar = (w / mstrlen(t->content));
             if (w >= t->r.w - avgchar - 5)
                 return;

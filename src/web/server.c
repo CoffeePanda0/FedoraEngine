@@ -457,8 +457,8 @@ void UpdateServer()
 			
 			// attatch the player's position to the packet
 			char x[8], y[8], velx[8], vely[8];
-			sprintf(x, "%i", c->player->PhysObj->body.x);
-			sprintf(y, "%i", c->player->PhysObj->body.y);
+			sprintf(x, "%.0f", c->player->PhysObj->body.x);
+			sprintf(y, "%.0f", c->player->PhysObj->body.y);
 			sprintf(velx, "%.2f", c->player->PhysObj->velocity.x);
 			sprintf(vely, "%.2f", c->player->PhysObj->velocity.y);
 			JSONPacket_Add(packet, "x", x);

@@ -194,7 +194,7 @@ void FE_Map_Render(FE_LoadedMap *m, FE_Camera *camera)
     // render finish flag
     if (!vec2_null(m->EndFlag)) {
         GPU_Rect r = (GPU_Rect){m->EndFlag.x, m->EndFlag.y, m->tilesize, m->tilesize};
-        FE_RenderCopy(camera, false, flagtexture, NULL, &r);
+        FE_RenderCopy(0, camera, false, flagtexture, NULL, &r);
     }
 }
 

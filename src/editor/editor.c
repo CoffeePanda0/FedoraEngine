@@ -1,4 +1,5 @@
 #include <math.h>
+#include <ctype.h>
 #include "../ui/include/include.h"
 #include "../ui/include/menu.h"
 #include "../include/init.h"
@@ -266,11 +267,12 @@ static void SelectTile(int index)
 
     GPU_Image *t = FE_TextureFromAtlas(map->atlas, (size_t)index);
     thumbnail = GPU_CreateImage(72, 72, GPU_FORMAT_RGBA);
-    GPU_LoadTarget(thumbnail);
-    FE_RenderBorder(4, (GPU_Rect){0, 0, 72, 72}, COLOR_WHITE);
+
+    GPU_Target *target = GPU_LoadTarget(thumbnail);
+    FE_RenderBorder(target, 4, (GPU_Rect){0, 0, 72, 72}, COLOR_WHITE);
     GPU_Rect r = {4,4,64,64};
-    GPU_BlitRect(t, NULL, PresentGame->Screen, &r);
-    GPU_FreeTarget(thumbnail->target);
+    GPU_BlitRect(t, NULL, target, &r);
+    GPU_FreeTarget(target);
     GPU_FreeImage(t);
 
     FE_UI_DestroyContainer(tile_container, true, true);
@@ -295,11 +297,13 @@ static void SelectPrefab(char *name)
 
     GPU_Image *t = FE_Prefab_Thumbnail(name);
     thumbnail = GPU_CreateImage(72, 72, GPU_FORMAT_RGBA);
-    GPU_LoadTarget(thumbnail);
-    FE_RenderBorder(4, (GPU_Rect){0, 0, 72, 72}, COLOR_WHITE);
+
+    GPU_Target *target = GPU_LoadTarget(thumbnail);
+    FE_RenderBorder(target, 4, (GPU_Rect){0, 0, 72, 72}, COLOR_WHITE);
     GPU_Rect r = {4,4,64,64};
-    GPU_BlitRect(t, NULL, PresentGame->Screen, &r);
-    GPU_FreeTarget(thumbnail);
+    GPU_BlitRect(t, NULL, target, &r);
+    
+    GPU_FreeTarget(target);
     GPU_FreeImage(t);
 
     mode = PREFAB;
@@ -710,7 +714,7 @@ void FE_Editor_Render()
     FE_UpdateCamera(camera);
     FE_Prefab_Update();
 
-    GPU_LoadTarget(world);
+    GPU_Target *target = GPU_LoadTarget(world);
 
     GPU_Clear(PresentGame->Screen);
 
@@ -724,7 +728,7 @@ void FE_Editor_Render()
     // render spawn
 	if (!vec2_null(map->PlayerSpawn)) {
 		GPU_Rect spawnrect = (GPU_Rect){map->PlayerSpawn.x, map->PlayerSpawn.y, map->tilesize, map->tilesize};
-		FE_RenderCopy(camera, false, spawntexture, NULL, &spawnrect);
+		FE_RenderCopy(target, camera, false, spawntexture, NULL, &spawnrect);
 	}
 
     FE_Light_Render(camera, world);

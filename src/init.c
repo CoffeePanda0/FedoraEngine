@@ -80,7 +80,7 @@ void FE_Init(FE_InitConfig *InitConfig)
 			InitConfig->window_title,
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			InitConfig->WindowWidth, InitConfig->WindowHeight,
-			SDL_WINDOW_OPENGL
+			SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI
 		);
 		
 		PresentGame->WindowHeight = InitConfig->WindowHeight;
@@ -98,7 +98,9 @@ void FE_Init(FE_InitConfig *InitConfig)
 		int windowID = SDL_GetWindowID(PresentGame->Window);
 		GPU_SetInitWindow(windowID); // set the window to render to as the one we just created
 
-		PresentGame->Screen = GPU_Init(PresentGame->WindowWidth, PresentGame->WindowHeight, SDL_RENDERER_PRESENTVSYNC);
+		PresentGame->Screen = GPU_Init(PresentGame->WindowWidth, PresentGame->WindowHeight, GPU_DEFAULT_INIT_FLAGS);
+		SDL_GL_SetSwapInterval(InitConfig->vsync ? 1 : 0);
+
 		if (!PresentGame->Screen)
 			error("GPU_Init failed");
 

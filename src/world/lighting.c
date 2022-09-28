@@ -105,20 +105,23 @@ void FE_Light_Render(FE_Camera *camera, GPU_Image *world)
 
     /* Create an layer to render the lighting to. Only re-render if lighting has changed. */
     if (light_layer_dirty || PresentGame->GameState == GAME_STATE_EDITOR) {
-        GPU_LoadTarget(light_layer);
+        GPU_Target *target = GPU_LoadTarget(light_layer);
+
         GPU_SetBlendMode(light_layer, GPU_BLEND_MOD_ALPHA);
-        GPU_ClearRGBA(PresentGame->Screen, brightness, brightness, brightness, 0);
+        GPU_ClearRGBA(target, brightness, brightness, brightness, 0);
 	
         // render the lights
         for (FE_List *l = lights; l; l = l->next) {
             FE_Light *light = l->data;
             if (!light->enabled) continue;
             // apply intensity
-            SDL_SetTextureAlphaMod(light->Texture->Texture, light->intensity);
-            FE_RenderCopy(camera, false, light->Texture,  NULL, &light->Rect);
-            SDL_SetTextureAlphaMod(light->Texture->Texture, 255);
+            GPU_SetRGBA(light->Texture->Texture, 255, 255, 255, light->intensity);
+            FE_RenderCopy(0, camera, false, light->Texture,  NULL, &light->Rect);
+            GPU_SetRGBA(light->Texture->Texture, 255, 255, 255, 255);
         }
         light_layer_dirty = false;
+
+        GPU_FreeTarget(target);
     }
 
     // Render the world with the applied light effects

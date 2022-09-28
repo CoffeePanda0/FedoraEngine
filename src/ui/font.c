@@ -85,8 +85,10 @@ SDL_Surface *FE_RenderText(FE_Font *font, const char *str, SDL_Color color)
         return NULL;
     }
 
-    if (!str || mstrlen(str) == 0)
-        return NULL;
+    if (!str || mstrlen(str) == 0) {
+        // return blank surface
+        return SDL_CreateRGBSurface(0, 1, 1, 32, 0, 0, 0, 0);
+    }
 
     SDL_Surface *text = TTF_RenderText_Blended(font->font, str, color);
     if (!text) {

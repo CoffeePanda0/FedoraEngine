@@ -5,6 +5,7 @@
 
 /* TODO:
     bouncing off walls
+    investigate low FPS while in the air
     stop players being sticky on walls
     fix object-on-object collisions
     fix jumping

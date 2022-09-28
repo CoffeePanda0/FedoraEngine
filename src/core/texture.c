@@ -15,6 +15,9 @@ GPU_Image *FE_TextureFromFile(const char *path) // Returns a texture from a file
     }
 
     GPU_Image *i = GPU_LoadImage(path);
+    // enable texture filtering
+    GPU_SetImageFilter(i, GPU_FILTER_NEAREST);
+
     if (!i) {
         warn("Texture %s not found", path);
         return FE_TextureFromRGBA(COLOR_PINK);
@@ -40,9 +43,10 @@ GPU_Image *FE_TextureFromAtlas(FE_TextureAtlas *atlas, size_t index)
 
     // create new texture to draw to
     GPU_Image *t = GPU_CreateImage(atlas->texturesize, atlas->texturesize, GPU_FORMAT_RGBA);
-    GPU_LoadTarget(t);
-    GPU_BlitRect(atlas->atlas, &rect, PresentGame->Screen, 0);
-    GPU_FreeTarget(t->target);
+    
+    GPU_Target *target = GPU_LoadTarget(t);
+    GPU_BlitRect(atlas->atlas, &rect, target, 0);
+    GPU_FreeTarget(target);
 
     return t;
 }
@@ -128,7 +132,9 @@ FE_TextureAtlas *FE_LoadTextureAtlas(const char *name)
     atlas->path = mstrdup(name);
 	free(path);
 
-	SDL_QueryTexture(atlas->atlas, NULL, NULL, &atlas->width, &atlas->height);
+    atlas->width = atlas->atlas->w;
+    atlas->height = atlas->atlas->h;
+
 	atlas->texturesize = 64;
     
     // calculate max number of textures
