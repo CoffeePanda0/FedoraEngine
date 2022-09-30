@@ -40,7 +40,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.MapConfig = {false, ic->WindowWidth, ic->WindowHeight, 0, VEC_EMPTY, 0.0f, 20},
 		.AudioConfig = {50, false},
 		.Timing = {0,0,0},
-		.DebugConfig = {false, true, false},
+		.DebugConfig = {false, false, false},
 		.UIConfig = {0, 0, COLOR_WHITE, false, false, false}
 	};
 	return Game;
@@ -149,11 +149,12 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 	if (FE_GameInitialised) {
 		PresentGame->GameActive = false;
 		FE_CleanAll();
+		SDL_DestroyWindow(PresentGame->Window);
 		FE_Key_Clean();
 		free(PresentGame->UIConfig.ActiveElements);
 		FE_Console_Destroy();
 		GPU_CloseCurrentRenderer();
-		SDL_DestroyWindow(PresentGame->Window);
+		GPU_FreeTarget(PresentGame->Screen);
 		FE_CleanFonts();
 		free(PresentGame->config);
 		free(PresentGame);

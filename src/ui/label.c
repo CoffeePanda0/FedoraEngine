@@ -63,19 +63,18 @@ static void GenerateTexture(FE_UI_Label *l)
     free(surfaces);
 
     int h = TTF_FontHeight(l->font->font);
+    if (largest_w == 0) largest_w = 1; // prevent divide by zero during texture creation
+
     l->texture = GPU_CreateImage(largest_w, h * surface_count, GPU_FORMAT_RGBA);
     
     // Create buffer texture to render each line of text to
     GPU_Target *target = GPU_LoadTarget(l->texture);
 
-    if (!target)
-        warn("Could not create target texture");
-
     // Render each line of text to the buffer texture
     for (size_t i = 0; i < surface_count; i++) {
         GPU_Rect r = {0,l->font->size * i,0,0};
         r.w = layer_textures[i]->w;
-        r.h = layer_textures[i]->h; // todo GPU textures being NULL
+        r.h = layer_textures[i]->h;
         GPU_BlitRect(layer_textures[i], NULL, target, &r);
         GPU_FreeImage(layer_textures[i]);
     }

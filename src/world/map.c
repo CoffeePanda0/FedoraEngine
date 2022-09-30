@@ -26,6 +26,7 @@ FE_LoadedMap *FE_Map_Load(const char *name)
     FILE *f = fopen(map_path, "rb");
     if (f == NULL) {
         warn("Failed to open map file: %s", name);
+        free(m);
         free(map_path);
         return 0;
     }

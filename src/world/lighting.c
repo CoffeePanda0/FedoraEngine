@@ -139,8 +139,11 @@ void FE_Light_Destroy(FE_Light *light)
 
 void FE_Light_Clean()
 {
-    if (light_layer)    
-        GPU_FreeImage(light_layer);
+    if (light_layer) {
+        GPU_FreeImage(light_layer); // for some reason this leaks memory from the target. which is great
+                                    // as sdl_gpu is meant to free the target when the image is freed.
+                                    // but it doesn't. infact all targets seem to leak memory.
+    }
     light_layer = 0;
 
     if (lights) {
