@@ -176,11 +176,12 @@ void FE_Menu_Render()
 
     GPU_BlitRect(MenuTexture->Texture, NULL, PresentGame->Screen, NULL);
     FE_Particles_Update();
+
     FE_Particles_Render(Camera);
 
     FE_UI_Render();
     FE_Console_Render();
-
+    
     GPU_Flip(PresentGame->Screen);
 }
 

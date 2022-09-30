@@ -1,5 +1,4 @@
 #include "include/game.h"
-#include <SDL_image.h>
 
 /* Contains functions for initializing and exiting the game */
 
@@ -99,13 +98,10 @@ void FE_Init(FE_InitConfig *InitConfig)
 		GPU_SetInitWindow(windowID); // set the window to render to as the one we just created
 
 		PresentGame->Screen = GPU_Init(PresentGame->WindowWidth, PresentGame->WindowHeight, GPU_DEFAULT_INIT_FLAGS);
-		SDL_GL_SetSwapInterval(InitConfig->vsync ? 1 : 0);
+		SDL_GL_SetSwapInterval(InitConfig->vsync ? -1 : 0);
 
 		if (!PresentGame->Screen)
 			error("GPU_Init failed");
-
-		if (IMG_Init(IMG_INIT_PNG) == 0)
-    		error("IMG Failed to initialize. SDL_Error: %s", IMG_GetError());
 
 		if (TTF_Init() != 0)
 			error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
@@ -152,7 +148,6 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 
 	if (FE_GameInitialised) {
 		PresentGame->GameActive = false;
-		IMG_Quit();
 		FE_CleanAll();
 		FE_Key_Clean();
 		free(PresentGame->UIConfig.ActiveElements);

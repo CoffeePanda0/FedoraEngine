@@ -98,6 +98,7 @@ void FE_Light_Render(FE_Camera *camera, GPU_Image *world)
     if (brightness == 255) {
         // Only render the part of the world that is visible
         GPU_BlitRect(world, &vis_rect, PresentGame->Screen, NULL);
+        GPU_Clear(camera->target);
         return;
     }
 
@@ -107,26 +108,25 @@ void FE_Light_Render(FE_Camera *camera, GPU_Image *world)
     if (light_layer_dirty || PresentGame->GameState == GAME_STATE_EDITOR) {
         GPU_Target *target = GPU_LoadTarget(light_layer);
 
-        GPU_SetBlendMode(light_layer, GPU_BLEND_MOD_ALPHA);
-        GPU_ClearRGBA(target, brightness, brightness, brightness, 0);
-	
+        GPU_Clear(target);
+
         // render the lights
         for (FE_List *l = lights; l; l = l->next) {
             FE_Light *light = l->data;
             if (!light->enabled) continue;
             // apply intensity
-            GPU_SetRGBA(light->Texture->Texture, 255, 255, 255, light->intensity);
-            FE_RenderCopy(0, camera, false, light->Texture,  NULL, &light->Rect);
-            GPU_SetRGBA(light->Texture->Texture, 255, 255, 255, 255);
+            FE_SetTextureAlphaMod(light->Texture->Texture, light->intensity);
+            FE_RenderCopy(target, camera, false, light->Texture,  NULL, &light->Rect);
+            GPU_SetRGBA(light->Texture->Texture, light->Texture->Texture->color.r, light->Texture->Texture->color.g, light->Texture->Texture->color.b, 255);
         }
         light_layer_dirty = false;
 
-        GPU_FreeTarget(target);
     }
 
     // Render the world with the applied light effects
     GPU_BlitRect(world, &vis_rect, PresentGame->Screen, NULL);
     GPU_BlitRect(light_layer, &vis_rect, PresentGame->Screen, NULL);
+    GPU_Clear(camera->target);
 }
 
 void FE_Light_Destroy(FE_Light *light)

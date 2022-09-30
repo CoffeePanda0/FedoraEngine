@@ -161,7 +161,7 @@ void FE_Particles_Render(FE_Camera *camera)
         for (size_t i = 0; i < p->max_particles; i++) {
             if (p->particles[i].is_dead)
                 continue;
-
+        
             FE_RenderCopyEx(0, camera, p->camera_locked, p->particles[i].texture, NULL, &p->particles[i].body, p->particles[i].rotation, GPU_FLIP_NONE);
         }
     }

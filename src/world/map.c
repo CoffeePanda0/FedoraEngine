@@ -187,14 +187,14 @@ void FE_Map_Render(FE_LoadedMap *m, FE_Camera *camera)
         r = FE_ApplyZoom(&r, camera, false);
         // check if we need to render the tile
         if (FE_Camera_Inbounds(&r, &(GPU_Rect){0,0,PresentGame->WindowWidth, PresentGame->WindowHeight})) {
-            GPU_BlitRectX(m->atlas->atlas, &src, PresentGame->Screen, &r, m->tiles[i].rotation, 0, 0, GPU_FLIP_NONE);
+            GPU_BlitRectX(m->atlas->atlas, &src, camera->target, &r, m->tiles[i].rotation, 0, 0, GPU_FLIP_NONE);
         }
 	}
 
     // render finish flag
     if (!vec2_null(m->EndFlag)) {
         GPU_Rect r = (GPU_Rect){m->EndFlag.x, m->EndFlag.y, m->tilesize, m->tilesize};
-        FE_RenderCopy(0, camera, false, flagtexture, NULL, &r);
+        FE_RenderCopy(camera->target, camera, false, flagtexture, NULL, &r);
     }
 }
 

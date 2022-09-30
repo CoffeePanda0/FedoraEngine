@@ -89,7 +89,7 @@ void FE_Player_Render(FE_Player *player, FE_Camera *camera)
     const SDL_Point center = (SDL_Point){player->render_rect.w/2, player->render_rect.h/2};
     GPU_BlitRectX(current_animation->spritesheet->Texture,
         &player_srcrct,
-        PresentGame->Screen,
+        camera->target,
         &(GPU_Rect){player->render_rect.x * camera->zoom, player->render_rect.y * camera->zoom, player->render_rect.w * camera->zoom, player->render_rect.h * camera->zoom},
         0,
         center.x,

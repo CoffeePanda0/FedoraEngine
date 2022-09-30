@@ -185,7 +185,6 @@ static void FE_Parallax_Render(FE_Camera *camera)
         GPU_SetBlendMode(buff, GPU_BLEND_NORMAL);
     }
 
-
     if (last_x != camera->x || last_y != camera->y || parallax_dirty || last_zoom != camera->zoom) {
         last_x = camera->x; last_y = camera->y; last_zoom = camera->zoom;
 
@@ -220,14 +219,13 @@ static void FE_Parallax_Render(FE_Camera *camera)
 
             GPU_Target *target = GPU_LoadTarget(buff);
 
-            GPU_BlitRect(parallax[i].texture->Texture, &vis_rect, target, &dst1);
-            GPU_BlitRect(parallax[i].texture->Texture, &vis_rect, target, &dst2);
+            GPU_BlitRect(parallax[i].texture->Texture, 0, target, &dst1);
+            GPU_BlitRect(parallax[i].texture->Texture, 0, target, &dst2);
 
             parallax_dirty = false;
-            GPU_FreeTarget(target);
         }
     }
-    GPU_BlitRect(buff, &vis_rect, PresentGame->Screen, NULL);
+    GPU_BlitRect(buff, 0, camera->target, NULL);
 }
 
 char *FE_Parallax_GetName()
@@ -308,6 +306,6 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
         GPU_BlitRect(map->bg->Texture, &vis_rect, target, &bg2);
         GPU_FreeTarget(target);
     }
-    GPU_BlitRect(buffer, &vis_rect, PresentGame->Screen, NULL);
+    GPU_BlitRect(buffer, &vis_rect, camera->target, NULL);
     
 }

@@ -350,7 +350,9 @@ void ClientRender()
         PresentGame->Timing.RenderTime = SDL_GetPerformanceCounter();
 
         if (PresentGame->DebugConfig.LightingEnabled)
-            GPU_LoadTarget(world);
+            GameCamera->target = GPU_LoadTarget(world);
+        else
+            GameCamera->target = PresentGame->Screen;
 
         GPU_Clear(PresentGame->Screen);
         FE_Map_RenderBackground(GameCamera);
@@ -364,7 +366,6 @@ void ClientRender()
 
         if (PresentGame->DebugConfig.LightingEnabled)
             FE_Light_Render(GameCamera, world);
-
 
         FE_UI_RenderChatbox(chatbox);
         FE_UI_Render();

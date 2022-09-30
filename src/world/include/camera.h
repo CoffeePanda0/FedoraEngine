@@ -14,6 +14,7 @@ typedef struct FE_Camera {
     bool movement_locked;
 
     GPU_Rect *follow;
+    GPU_Target *target;
 } FE_Camera;
 
 // Moves camera taking clamps into account

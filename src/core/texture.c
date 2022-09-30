@@ -1,4 +1,3 @@
-#include <SDL_image.h>
 #include "include/include.h"
 
 #ifndef _MATH_H
@@ -15,13 +14,13 @@ GPU_Image *FE_TextureFromFile(const char *path) // Returns a texture from a file
     }
 
     GPU_Image *i = GPU_LoadImage(path);
-    // enable texture filtering
-    GPU_SetImageFilter(i, GPU_FILTER_NEAREST);
 
     if (!i) {
         warn("Texture %s not found", path);
         return FE_TextureFromRGBA(COLOR_PINK);
     }
+    GPU_SetImageFilter(i, GPU_FILTER_NEAREST);  // enable texture filtering
+
     return i;
 }
 
@@ -46,7 +45,6 @@ GPU_Image *FE_TextureFromAtlas(FE_TextureAtlas *atlas, size_t index)
     
     GPU_Target *target = GPU_LoadTarget(t);
     GPU_BlitRect(atlas->atlas, &rect, target, 0);
-    GPU_FreeTarget(target);
 
     return t;
 }

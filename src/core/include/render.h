@@ -50,4 +50,12 @@ GPU_Rect FE_ApplyZoom(GPU_Rect *r, FE_Camera *camera, bool locked);
 void FE_RenderBorder(GPU_Target *target, int thickness, GPU_Rect r, SDL_Color color);
 
 
+/** Modulates the alpha of a texture
+ * \param texture The texture to modulate
+ * \param alpha The alpha to modulate by
+ * \return -1 on error, 0 on success
+*/
+int FE_SetTextureAlphaMod(GPU_Image *texture, Uint8 alpha);
+
+
 #endif

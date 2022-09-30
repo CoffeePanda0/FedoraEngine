@@ -90,6 +90,7 @@ FE_Camera *FE_CreateCamera()
     c->movement_locked = false;
     c->follow = 0;
     c->y_min = 0;
+    c->target = PresentGame->Screen;
 
     y_listpush(cameras, c);
     return c;

@@ -30,7 +30,7 @@ GPU_Rect FE_ApplyZoom(GPU_Rect *r, FE_Camera *camera, bool locked)
 
 int FE_RenderCopy(GPU_Target *target, FE_Camera *camera, bool locked, FE_Texture *texture, GPU_Rect *src, GPU_Rect *dst) // Renders a texture to the screen if in camera bounds
 {
-    GPU_Target *screen = target == 0 ? PresentGame->Screen : target;
+    GPU_Target *screen = target == 0 ? camera->target : target;
 
     if (!texture || !dst || !texture->Texture) {
         error("FE_RenderCopy: NULL texture or dst");
@@ -43,18 +43,24 @@ int FE_RenderCopy(GPU_Target *target, FE_Camera *camera, bool locked, FE_Texture
     else
         RenderRect = (GPU_Rect){RenderRect.x - camera->x, RenderRect.y - camera->y, RenderRect.w, RenderRect.h};
 
-    GPU_Rect s;
-    if (!src)
-        s = SCREEN_RECT(camera);
-    else
-        s = *src;
-
     // Check if rect is in screen bounds
     if (FE_Camera_Inbounds(&RenderRect, &(GPU_Rect){0,0,PresentGame->WindowWidth, PresentGame->WindowHeight})) {
-        GPU_BlitRect(texture->Texture, &s, screen, &RenderRect);
+        GPU_BlitRect(texture->Texture, src, screen, &RenderRect);
         return 1;
     } else
         return 0;
+}
+
+int FE_SetTextureAlphaMod(GPU_Image *texture, Uint8 alpha)
+{
+    if (!texture) {
+        error("FE_SetTextureAlphaMod: NULL texture");
+        return -1;
+    }
+
+    int new_alpha = texture->color.a * (alpha / 255.0f);
+    GPU_SetRGBA(texture, texture->color.r, texture->color.g, texture->color.b, new_alpha);
+    return 0;
 }
 
 int FE_RenderCopyEx(GPU_Target *target, FE_Camera *camera, bool locked, FE_Texture *texture, GPU_Rect *src, GPU_Rect *dst, double angle, GPU_FlipEnum flip)
@@ -64,7 +70,7 @@ int FE_RenderCopyEx(GPU_Target *target, FE_Camera *camera, bool locked, FE_Textu
         return -1;
     }
 
-    GPU_Target *screen = target == 0 ? PresentGame->Screen : target;
+    GPU_Target *screen = target == 0 ? camera->target : target;
 
     GPU_Rect RenderRect = *dst;
     if (camera->zoom != 0)
@@ -72,14 +78,8 @@ int FE_RenderCopyEx(GPU_Target *target, FE_Camera *camera, bool locked, FE_Textu
     else
         RenderRect = (GPU_Rect){RenderRect.x - camera->x, RenderRect.y - camera->y, RenderRect.w, RenderRect.h};
 
-    GPU_Rect s;
-    if (!src)
-        s = SCREEN_RECT(camera);
-    else
-        s = *src;
-
     if (FE_Camera_Inbounds(&RenderRect, &(GPU_Rect){0,0, PresentGame->WindowWidth, PresentGame->WindowHeight})) {
-        GPU_BlitRectX(texture->Texture, &s, screen, &RenderRect, angle, 0, 0, flip); // todo check pivot
+        GPU_BlitRectX(texture->Texture, src, screen, &RenderRect, angle, 0, 0, flip); // todo check pivot
         return 1;
     } else
         return 0;

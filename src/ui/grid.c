@@ -87,6 +87,9 @@ static void CheckHover(FE_UI_Grid *grid)
         grid->hovered.y = (mouse_y - grid->r.y) / grid->tiles[0].r.h;
         if (grid->hovered.x > grid->cols -1) grid->hovered.x = grid->cols -1;
         if (grid->hovered.y > grid->rows -1) grid->hovered.y = grid->rows -1;
+        // snap to whole number
+        grid->hovered.x = (int)grid->hovered.x;
+        grid->hovered.y = (int)grid->hovered.y;
     } else {
         grid->hovered = VEC_NULL;
     }
@@ -190,7 +193,6 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
         }
 
         grid->buffer_dirty = false;
-        GPU_FreeTarget(target);
     }
 
     GPU_BlitRect(grid->buffer_texture, NULL, PresentGame->Screen, &grid->r);
