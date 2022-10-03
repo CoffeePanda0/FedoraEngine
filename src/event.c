@@ -76,5 +76,18 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                 FE_Player_UpdateJump(player);
             }
         }
+
+        // noclip controls
+        if (PresentGame->DebugConfig.NoClip) {
+            if (keyboard_state[SDL_SCANCODE_LEFT])
+                FE_Player_Move(player, vec(-100, 0));
+            if (keyboard_state[SDL_SCANCODE_RIGHT])
+                FE_Player_Move(player, vec(100, 0));
+            if (keyboard_state[SDL_SCANCODE_UP])
+                FE_Player_Move(player, vec(0, -100));
+            if (keyboard_state[SDL_SCANCODE_DOWN])
+                FE_Player_Move(player, vec(0, 100));
+        }
+
     }
 }

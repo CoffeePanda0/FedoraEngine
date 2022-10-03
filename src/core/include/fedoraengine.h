@@ -20,6 +20,7 @@ typedef struct FE_DebugConfig {
     bool ShowTiming;
     bool LightingEnabled;
     bool ShowTriggers;
+    bool NoClip;
 } FE_DebugConfig;
 
 typedef struct FE_UIList {

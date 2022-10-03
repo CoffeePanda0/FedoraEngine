@@ -134,7 +134,8 @@ static void IntegrateForces()
         if (o->mass == 0) continue; // don't integrate forces for static objects
 
         vec2 accel = vec2_scale(o->force, o->im);
-        accel.y += PresentGame->MapConfig.Gravity;
+        if (!PresentGame->DebugConfig.NoClip)
+            accel.y += PresentGame->MapConfig.Gravity;
 
         // Check that we don't exceed terminal velocity, cap at terminal velocity
         float new_y = o->velocity.y + (accel.y * dt * PHYS_SCALE);
@@ -218,7 +219,8 @@ static void FE_PhysLoop()
     InterpolateStates();
     IntegrateForces();
   //  CheckCollisions(); warning do NOT unleash these horrors (yet)
-    CheckFE_Map_Collisions();
+    if (!PresentGame->DebugConfig.NoClip)
+        CheckFE_Map_Collisions();
     IntegrateVelocities();
     IntegrateFriction();
     ClearForces();

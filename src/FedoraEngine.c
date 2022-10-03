@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
 		FE_Menu_LoadMenu("Main");
 	else
 		FE_Multiplayer_InitServer();
+	PresentGame->DebugConfig.NoClip = true;
 		
 	/* main game loop - calls functions based on game state */
 	while (PresentGame->GameActive) {

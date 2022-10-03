@@ -41,7 +41,7 @@ static FE_Game *NewGame(FE_InitConfig *ic)
 		.MapConfig = {false, ic->WindowWidth, ic->WindowHeight, 0, VEC_EMPTY, 0.0f, 20},
 		.AudioConfig = {50, false},
 		.Timing = {0,0,0},
-		.DebugConfig = {false, true, false},
+		.DebugConfig = {false, true, false, false},
 		.UIConfig = {0, 0, COLOR_WHITE, false, false, false}
 	};
 	return Game;
