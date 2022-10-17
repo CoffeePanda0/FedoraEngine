@@ -1,12 +1,12 @@
-#include <SDL.h>
-#include "include/include.h"
-#include "../core/include/include.h"
+#include <FE_Client.h>
 
-#include "../core/include/file.h"
-#include "../ext/inih/ini.h"
+#include "include/include.h"
+
+#include <file.h>
+#include "../common/ext/inih/ini.h"
 
 #ifdef _WIN32
-	#include "../ext/dirent.h" // for finding textures in dir
+	#include "../common/ext/dirent.h" // for finding textures in dir
 #else
 	#include <dirent.h> // for finding textures in dir
 #endif
@@ -304,8 +304,8 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
         bg2 = bg1;
         bg2.x = (r2.x - camera->x) * camera->zoom;
 
-        SDL_RenderCopy(PresentGame->Renderer, map->bg->Texture, &vis_rect, &bg1);
-        SDL_RenderCopy(PresentGame->Renderer, map->bg->Texture, &vis_rect, &bg2);
+        SDL_RenderCopy(PresentGame->Renderer, map->r->bg->Texture, &vis_rect, &bg1);
+        SDL_RenderCopy(PresentGame->Renderer, map->r->bg->Texture, &vis_rect, &bg2);
     }
     
     SDL_SetRenderTarget(PresentGame->Renderer, prev);

@@ -1,10 +1,9 @@
 #ifndef H_PRIMARY_WORLD
 #define H_PRIMARY_WORLD
 
-#include "camera.h"
 #include "map.h"
-#include "../../physics/include/physics.h"
-#include "lighting.h"
 #include "mapbg.h"
+
+extern FE_LoadedMap *PresentMap;
 
 #endif

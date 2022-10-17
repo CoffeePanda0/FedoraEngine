@@ -7,8 +7,10 @@
 
 	FedoraEngine.c - Primary Game file
 */
+#include <FE_Common.h>
+#include "client/ui/include/menu.h"
 #include "include/game.h"
-#include "web/net.h"
+#include "common/net/include/net.h"
 
 FE_Game *PresentGame;
 
@@ -37,7 +39,6 @@ int main(int argc, char* argv[])
 		FE_Menu_LoadMenu("Main");
 	else
 		FE_Multiplayer_InitServer();
-	PresentGame->DebugConfig.NoClip = true;
 		
 	/* main game loop - calls functions based on game state */
 	while (PresentGame->GameActive) {
@@ -59,12 +60,12 @@ int main(int argc, char* argv[])
 				FE_Editor_Render();
 				FE_Editor_EventHandler();
 			break;
-			case GAME_STATE_MULTIPLAYER:
-				FE_Multiplayer_Update();
-				FE_Multiplayer_Render();
-				FE_Multiplayer_EventHandle();
+			case GAME_STATE_CLIENT:
+				FE_RunClient();
 			break;
-
+			case GAME_STATE_SERVER:
+				FE_RunServer();
+			break;
 		}
 	}
 	

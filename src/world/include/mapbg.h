@@ -2,11 +2,10 @@
 #define H_MAPBG
 
 #include "map.h"
-#include "../../core/include/strarr.h"
 
 typedef struct FE_Map_Parallax {
     float scale;
-    FE_Texture *texture;
+    struct FE_Texture *texture;
     
     SDL_Rect r1; // two rects to give infinite scrolling
     SDL_Rect r2;

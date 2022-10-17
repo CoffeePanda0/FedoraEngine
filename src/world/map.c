@@ -1,17 +1,14 @@
-#include "../core/include/include.h"
+#include <FE_Common.h>
+#include <file.h>
 #include "include/include.h"
-#include "../ui/include/ui.h"
-#include "../ui/include/menu.h"
-#include "../core/include/file.h"
-#include "../entity/include/prefab.h"
+
+#include "../client/entity/include/prefab.h"
 
 #define TEXTURE_PATH "game/map/textures/"
 #define BG_PATH "game/map/backgrounds/"
 #define MAP_DIRECTORY "game/map/maps/"
 
-static FE_LoadedMap *map;
-
-static FE_Texture *flagtexture;
+FE_LoadedMap *PresentMap;
 
 FE_LoadedMap *FE_Map_Load(const char *name)
 {
@@ -31,6 +28,9 @@ FE_LoadedMap *FE_Map_Load(const char *name)
     }
     free(map_path);
 
+    // Create map renderer struct - TODO - move this to map renderer
+    m->r = xmalloc(sizeof(FE_MapRenderer));
+
     // Read map name
     if (!(m->name = FE_File_ReadStr(f))) goto err;
     
@@ -43,23 +43,23 @@ FE_LoadedMap *FE_Map_Load(const char *name)
     // load texture atlas
     char *atlas_path = 0;
     if (!(atlas_path = FE_File_ReadStr(f))) goto err;
-    m->atlas = FE_LoadResource(FE_RESOURCE_TYPE_ATLAS, atlas_path);
+    m->r->atlas = FE_LoadResource(FE_RESOURCE_TYPE_ATLAS, atlas_path);
     free(atlas_path);
 
-    if (fread(&m->atlas->texturesize, sizeof(Uint16), 1, f) != 1) goto err;
+    if (fread(&m->r->atlas->texturesize, sizeof(uint16_t), 1, f) != 1) goto err;
 
     // load background image
-    if (fread(&m->static_bg, sizeof(bool), 1, f) != 1) goto err;
+    if (fread(&m->r->static_bg, sizeof(bool), 1, f) != 1) goto err;
     char *bg_path = 0;
     if (!(bg_path = FE_File_ReadStr(f))) goto err;
     
     char *parallax_path = 0;
     if (!(parallax_path = FE_File_ReadStr(f))) goto err;
     
-    if (m->static_bg) {
-        m->bg = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, bg_path);
+    if (m->r->static_bg) {
+        m->r->bg = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, bg_path);
     } else {
-        m->bg = 0;
+        m->r->bg = 0;
         if (!parallax_path || mstrlen(parallax_path) == 0)
             goto err;
         FE_Parallax_Load(parallax_path);
@@ -71,8 +71,8 @@ FE_LoadedMap *FE_Map_Load(const char *name)
     if (fread(&m->ambientlight, sizeof(uint8_t), 1, f) != 1) goto err;
 
     // Read Map tiles and sizes
-    if (fread(&m->tilecount, sizeof(Uint16), 1, f) != 1) goto err;
-    if (fread(&m->tilesize, sizeof(Uint16), 1, f) != 1) goto err;
+    if (fread(&m->tilecount, sizeof(uint16_t), 1, f) != 1) goto err;
+    if (fread(&m->tilesize, sizeof(uint16_t), 1, f) != 1) goto err;
     
     // set empty values
     m->MinimumX = 0;
@@ -83,34 +83,34 @@ FE_LoadedMap *FE_Map_Load(const char *name)
 
     m->tiles = xmalloc(sizeof(FE_Map_Tile) * m->tilecount);
     for (int i = 0; i < m->tilecount; i++) {
-        if (fread(&m->tiles[i].texture_x, sizeof(Uint16), 1, f) != 1) goto err;
-        if (fread(&m->tiles[i].texture_y, sizeof(Uint16), 1, f) != 1) goto err;
-        if (fread(&m->tiles[i].rotation, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fread(&m->tiles[i].texture_x, sizeof(uint16_t), 1, f) != 1) goto err;
+        if (fread(&m->tiles[i].texture_y, sizeof(uint16_t), 1, f) != 1) goto err;
+        if (fread(&m->tiles[i].rotation, sizeof(uint16_t), 1, f) != 1) goto err;
         if (fread(&m->tiles[i].position, sizeof(vec2), 1, f) != 1) goto err;
 
         // calculate map height and width
-        if ((Uint16)m->tiles[i].position.x + m->tilesize > m->MapWidth) m->MapWidth = m->tiles[i].position.x + m->tilesize;
-        if ((Uint16)m->tiles[i].position.y - PresentGame->WindowHeight + m->tilesize > m->MapHeight) m->MapHeight = m->tiles[i].position.y + m->tilesize - m->MapHeight;
+        if ((uint16_t)m->tiles[i].position.x + m->tilesize > m->MapWidth) m->MapWidth = m->tiles[i].position.x + m->tilesize;
+        if ((uint16_t)m->tiles[i].position.y - PresentGame->WindowHeight + m->tilesize > m->MapHeight) m->MapHeight = m->tiles[i].position.y + m->tilesize - m->MapHeight;
     
         // calculate minimum x point and minimum y point for camera bounds
-        if ((Uint16)m->tiles[i].position.x < m->MinimumX || !setminX) {
+        if ((uint16_t)m->tiles[i].position.x < m->MinimumX || !setminX) {
             m->MinimumX = m->tiles[i].position.x;
             setminX = true;
         }
         
         // calculate highest Y value
-        if ((Uint16)m->tiles[i].position.y + m->tilesize > m->MapHeight) m->MapHeight = m->tiles[i].position.y + m->tilesize;
+        if ((uint16_t)m->tiles[i].position.y + m->tilesize > m->MapHeight) m->MapHeight = m->tiles[i].position.y + m->tilesize;
     }
 
     // Read Prefabs
-    Uint16 prefabcount;
-    if (fread(&prefabcount, sizeof(Uint16), 1, f) != 1) goto err;
+    uint16_t prefabcount;
+    if (fread(&prefabcount, sizeof(uint16_t), 1, f) != 1) goto err;
     for (int i = 0; i < prefabcount; i++) {
         uint16_t x = 0;
         uint16_t y = 0;
         char *_name = 0;
-        if (fread(&x, sizeof(Uint16), 1, f) != 1) goto err;
-        if (fread(&y, sizeof(Uint16), 1, f) != 1) goto err;
+        if (fread(&x, sizeof(uint16_t), 1, f) != 1) goto err;
+        if (fread(&y, sizeof(uint16_t), 1, f) != 1) goto err;
         if (!(_name = FE_File_ReadStr(f))) goto err;
         FE_Prefab_Create(_name, x, y);
         free(_name);
@@ -144,9 +144,9 @@ void FE_Game_SetMap(FE_LoadedMap *m)
         return;
     }
     if (PresentGame->MapConfig.Loaded)
-        FE_Map_Close(map);
+        FE_Map_Close(PresentMap);
 
-    map = m;
+    PresentMap = m;
 
     PresentGame->MapConfig = (FE_MapConfig) {
         .Loaded = true,
@@ -162,44 +162,7 @@ void FE_Game_SetMap(FE_LoadedMap *m)
 
 FE_LoadedMap *FE_Game_GetMap()
 {
-    return map;
-}
-
-void FE_Map_RenderLoaded(FE_Camera *camera)
-{
-    if (!PresentGame->MapConfig.Loaded)
-        return;
-    FE_Map_Render(map, camera);
-}
-
-void FE_Map_Render(FE_LoadedMap *m, FE_Camera *camera)
-{
-    if (!m)
-        return;
-
-    if (!flagtexture)
-        flagtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
-
-	// render all tiles
-    for (size_t i = 0; i < m->tilecount; i++) {
-		SDL_Rect r = {m->tiles[i].position.x, m->tiles[i].position.y, m->tilesize, m->tilesize};
-        SDL_Rect src = {m->tiles[i].texture_x, m->tiles[i].texture_y, m->atlas->texturesize, m->atlas->texturesize};
-        r = FE_ApplyZoom(&r, camera, false);
-        // check if we need to render the tile
-        if (FE_Camera_Inbounds(&r, &(SDL_Rect){0,0,PresentGame->WindowWidth, PresentGame->WindowHeight})) {
-            SDL_RenderCopyEx(PresentGame->Renderer, m->atlas->atlas, &src, &r, m->tiles[i].rotation, NULL, SDL_FLIP_NONE);
-        }
-	}
-
-    // render finish flag
-    if (!vec2_null(m->EndFlag)) {
-        SDL_Rect r = (SDL_Rect){m->EndFlag.x, m->EndFlag.y, m->tilesize, m->tilesize};
-        FE_RenderCopy(camera, false, flagtexture, NULL, &r);
-    }
-}
-
-void FE_Map_RenderBackground(FE_Camera *camera) {
-    FE_Map_RenderBG(camera, map);
+    return PresentMap;
 }
 
 void FE_Map_CloseLoaded()
@@ -207,14 +170,10 @@ void FE_Map_CloseLoaded()
     if (!PresentGame->MapConfig.Loaded)
         return;
 
-    FE_Map_Close(map);
-
-    if (flagtexture)
-        FE_DestroyResource(flagtexture->path);
-    flagtexture = 0;
+    FE_Map_Close(PresentMap);
 
     PresentGame->MapConfig.Loaded  = false;
-    map = 0;
+    PresentMap = 0;
 }
 
 void FE_Map_Close(FE_LoadedMap *map)
@@ -230,14 +189,19 @@ void FE_Map_Close(FE_LoadedMap *map)
         free(map->author);
     map->name = 0;
     map->PlayerSpawn = VEC_NULL;
-    if (map->atlas && map->atlas->path) {
-        FE_DestroyResource(map->atlas->path);
+
+    if (map->r) {
+        if (map->r->atlas && map->r->atlas->path) {
+            FE_DestroyResource(map->r->atlas->path);
+        }
+        map->r->atlas = 0;
+        
+        if (map->r->static_bg && map->r->bg)
+            FE_DestroyResource(map->r->bg->path);
+        map->r->bg = 0;
+        free(map->r);
     }
-    map->atlas = 0;
-    
-    if (map->static_bg && map->bg)
-        FE_DestroyResource(map->bg->path);
-    map->bg = 0;
+    map->r = 0;
 
     if (map->tiles) {
         free(map->tiles);
@@ -271,14 +235,14 @@ static size_t LeftTileRange(SDL_FRect *r) // calculates the left-most tile near 
         arr_pt++;
 
     /* find the tile closest to the player's left side using a binary search */
-    Uint16 left = 0;
-    Uint16 right = map->tilecount - 1;
-    Uint16 mid = 0;
-    while (left <= right && right < map->tilecount) {
+    uint16_t left = 0;
+    uint16_t right = PresentMap->tilecount - 1;
+    uint16_t mid = 0;
+    while (left <= right && right < PresentMap->tilecount) {
         mid = (left + right) / 2;
-        if (map->tiles[mid].position.x + map->tilesize == r->x) {
+        if (PresentMap->tiles[mid].position.x + PresentMap->tilesize == r->x) {
             break;
-        } else if (map->tiles[mid].position.x + map->tilesize < r->x)
+        } else if (PresentMap->tiles[mid].position.x + PresentMap->tilesize < r->x)
             left = mid + 1;
         else
             right = mid - 1;
@@ -308,16 +272,16 @@ static size_t RightTileRange(size_t left, SDL_FRect *r) /* calculates the right-
     else
         arr_pt++;
 
-    Uint16 r_right = r->x + r->w;
+    uint16_t r_right = r->x + r->w;
     prev_x[arr_pt] = r_right;
 
     // find the tile closest to the player's right side
-    for (size_t i = left; i < map->tilecount; i++) {
-        if (map->tiles[i].position.x > r_right)
+    for (size_t i = left; i < PresentMap->tilecount; i++) {
+        if (PresentMap->tiles[i].position.x > r_right)
             return i;
     }
-    prev_mid[arr_pt] = map->tilecount -1;
-    return map->tilecount -1;
+    prev_mid[arr_pt] = PresentMap->tilecount -1;
+    return PresentMap->tilecount -1;
 }
 
 void FE_Map_Collisions(Phys_AABB *aabb, FE_CollisionInfo *result)
@@ -331,8 +295,8 @@ void FE_Map_Collisions(Phys_AABB *aabb, FE_CollisionInfo *result)
 
     /* Checks every tile in the range for collision with the player */
     for (size_t i = left; i < right; i++) {
-        FE_Map_Tile *t = &map->tiles[i];
-        SDL_FRect tile = (SDL_FRect){t->position.x, t->position.y, map->tilesize, map->tilesize};
+        FE_Map_Tile *t = &PresentMap->tiles[i];
+        SDL_FRect tile = (SDL_FRect){t->position.x, t->position.y, PresentMap->tilesize, PresentMap->tilesize};
         
         SDL_FRect intersection;
         if (SDL_IntersectFRect(&tmp, &tile, &intersection)) {

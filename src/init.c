@@ -61,6 +61,7 @@ void FE_Init(FE_InitConfig *InitConfig)
 
 	PresentGame = NewGame(InitConfig);
 	FE_Log_Init();
+	FE_InitTime();
 
 	// Initialise SDL without window
 	if (InitConfig->headless) {
