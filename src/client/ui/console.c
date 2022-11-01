@@ -34,7 +34,7 @@ int FE_Console_Init()
     if (TTF_Init() == -1)
     	error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
 
-    Font = FE_LoadFont(CONSOLE_FONT, CONSOLE_FONT_SIZE);
+    Font = FE_Font_Load(CONSOLE_FONT, CONSOLE_FONT_SIZE);
 
     console_output = mstrdup("");
     console_input = mstrdup("");
@@ -56,7 +56,7 @@ static void GenerateConsoleLabel()
     if (Console.output_label_text)
         SDL_DestroyTexture(Console.output_label_text);
 
-    SDL_Surface *text_surface = FE_RenderText(Font, console_output, COLOR_WHITE); 
+    SDL_Surface *text_surface = FE_Text_Render(Font, console_output, COLOR_WHITE); 
     Console.output_label_text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
@@ -70,7 +70,7 @@ static void GenerateInputLabel()
     if (Console.input_label_text)
         SDL_DestroyTexture(Console.input_label_text);
     
-    SDL_Surface *text_surface = FE_RenderText(Font, console_input, COLOR_WHITE); 
+    SDL_Surface *text_surface = FE_Text_Render(Font, console_input, COLOR_WHITE); 
     Console.input_label_text = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
@@ -148,7 +148,7 @@ void FE_Console_Destroy()
     Console.console_texture = 0;
 
     if (Font)
-        FE_DestroyFont(Font);
+        FE_Font_Destroy(Font);
 
     if (console_output)
         free(console_output);

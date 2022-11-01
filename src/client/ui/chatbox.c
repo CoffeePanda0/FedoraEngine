@@ -31,7 +31,7 @@ static void SendMessage(FE_UI_Chatbox *c)
 FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)(), void *peer)
 {
     if (!chatbox_font)
-        chatbox_font = FE_LoadFont("RobotoMono-Regular", 16);
+        chatbox_font = FE_Font_Load("RobotoMono-Regular", 16);
     if (!cb) {
         warn("No callback provided for chatbox");
         return NULL;

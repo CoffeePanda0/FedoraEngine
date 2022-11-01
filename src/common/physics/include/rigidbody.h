@@ -30,4 +30,11 @@ typedef struct {
     vec2 max;
 } Phys_AABB;
 
+
+/** Checks if two FRects intersect, and if they do, create the resultant collision rectangle
+ * \returns true on intersection, false otherwise
+*/
+bool FE_AABB_Intersect(const SDL_FRect *a, const SDL_FRect *b, SDL_FRect *result);
+
+
 #endif

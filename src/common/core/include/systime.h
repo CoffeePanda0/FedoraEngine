@@ -24,7 +24,7 @@ uint64_t FE_GetTicks64();
 
 /** Initialises the time library
  */
-void FE_InitTime();
+void FE_Time_Init();
 
 
 #endif

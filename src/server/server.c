@@ -80,7 +80,7 @@ static void HandleConnect(ENetEvent *event)
 	mmemset(c->held_keys, 0, key_count);
 	c->player = xmalloc(sizeof(FE_PlayerProperties));
 
-	c->player->moveforce = 30;
+	c->player->moveforce = 150;
 	c->player->maxspeed = 50;
 	c->player->jumpforce = 180;
 	c->player->jump_elapsed = 0;

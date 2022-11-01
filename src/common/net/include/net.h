@@ -26,7 +26,7 @@ typedef struct {
 bool FE_Multiplayer_InitClient(char *addr, int port, char *username);
 
 
-/** Initialises a headless server (no rendering, runs in shell) */
+/** Initialises a Headless server (no rendering, runs in shell) */
 void FE_Multiplayer_InitServer();
 
 

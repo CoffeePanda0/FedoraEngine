@@ -5,7 +5,7 @@
 
 static FE_List *fonts = 0;
 
-FE_Font *FE_LoadFont(char *name, uint8_t size)
+FE_Font *FE_Font_Load(char *name, uint8_t size)
 {
     // Check if a font with the same name and size already exists
     for (FE_List *l = fonts; l; l = l->next) {
@@ -40,7 +40,7 @@ FE_Font *FE_LoadFont(char *name, uint8_t size)
     return f;
 }
 
-void FE_DestroyFont(FE_Font *font)
+void FE_Font_Destroy(FE_Font *font)
 {
     if (!font)
         return;
@@ -58,7 +58,7 @@ void FE_DestroyFont(FE_Font *font)
     free(font);
 }
 
-void FE_CleanFonts()
+void FE_Font_Clean()
 {
     for (struct FE_List *l = fonts; l; l = l->next) {
         FE_Font *f = l->data;
@@ -71,17 +71,17 @@ void FE_CleanFonts()
     fonts = 0;
 }
 
-int FE_FontStringSize(FE_Font *font, char *str)
+int FE_Font_GetStringSize(FE_Font *font, char *str)
 {
     int w, h;
     TTF_SizeText(font->font, str, &w, &h);
     return w;
 }
 
-SDL_Surface *FE_RenderText(FE_Font *font, const char *str, SDL_Color color)
+SDL_Surface *FE_Text_Render(FE_Font *font, const char *str, SDL_Color color)
 {
     if (!font) {
-        warn("Passing font as NULL (FE_RenderText)");
+        warn("Passing font as NULL (FE_Text_Render)");
         return NULL;
     }
 

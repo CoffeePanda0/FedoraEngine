@@ -21,7 +21,7 @@ static void FE_FPSCounter()
     if (fps_timer > 1) {
         fps_timer = 0;
         char title[64];    
-        snprintf(title, 64, "%s - FPS: %i", PresentGame->config->window_title, FE_FPS);
+        snprintf(title, 64, "%s - FPS: %i", PresentGame->config->WindowTitle, FE_FPS);
         SDL_SetWindowTitle(PresentGame->Window, title);
     }
 }
@@ -50,7 +50,7 @@ int FE_CalculateDT()
     FE_FPS = (1 / FE_DT);
     FE_DT_MULTIPLIER = (FE_DT / FE_DT_TARGET);
 
-    if (PresentGame->config->show_fps && !PresentGame->config->headless)
+    if (PresentGame->config->ShowFPS && !PresentGame->config->Headless)
 	    FE_FPSCounter();
 
     return 1;

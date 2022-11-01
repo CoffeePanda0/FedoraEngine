@@ -64,3 +64,21 @@ bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b)
         return false;
     return true;
 }
+
+bool FE_AABB_Intersect(const SDL_FRect *a, const SDL_FRect *b, SDL_FRect *result)
+{
+    /* Custom implementation of SDL_IntersectFRect for portability */
+    float x1 = fmax(a->x, b->x);
+    float x2 = fmin(a->x + a->w, b->x + b->w);
+    float y1 = fmax(a->y, b->y);
+    float y2 = fmin(a->y + a->h, b->y + b->h);
+
+    if (x1 < x2 && y1 < y2) {
+        result->x = x1;
+        result->y = y1;
+        result->w = x2 - x1;
+        result->h = y2 - y1;
+        return true;
+    }
+    return false;
+}

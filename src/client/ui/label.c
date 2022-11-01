@@ -10,7 +10,7 @@ void FE_UI_RenderLabel(FE_UI_Label *l)
 
 SDL_Texture *FE_TextureFromText(char *text, SDL_Color color)
 {
-    SDL_Surface *s = FE_RenderText(PresentGame->font, text, color);
+    SDL_Surface *s = FE_Text_Render(PresentGame->font, text, color);
     SDL_Texture *t = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
     SDL_FreeSurface(s);
     if (!t)
@@ -46,7 +46,7 @@ static void GenerateTexture(FE_UI_Label *l)
 
     // here we go
     for (size_t i = 0; i < surface_count; i++) {
-        surfaces[i] = FE_RenderText(l->font, lines[i], l->color);
+        surfaces[i] = FE_Text_Render(l->font, lines[i], l->color);
         int w, h;
         TTF_SizeText(l->font->font, lines[i], &w, &h);
         largest_w = w > largest_w ? w : largest_w;

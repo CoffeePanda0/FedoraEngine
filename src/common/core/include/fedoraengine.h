@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include "linkedlist.h"
 
-#include "../../../common/net/include/net.h"
 #include "../../../client/ui/include/font.h"
+#include "../../../common/net/include/net.h"
 #include "vector.h"
 
 typedef enum FE_GAMESTATE {
@@ -58,7 +58,7 @@ typedef struct FE_MapConfig {
     uint16_t MapWidth, MapHeight, MinimumX;
     vec2 PlayerSpawn;
     float Gravity;
-    Uint8 AmbientLight;
+    uint8_t AmbientLight;
 } FE_MapConfig;
 
 typedef struct FE_AudioConfig {
@@ -67,10 +67,10 @@ typedef struct FE_AudioConfig {
 } FE_AudioConfig;
 
 typedef struct FE_InitConfig {
-    const char *window_title;
+    const char *WindowTitle;
     uint16_t WindowWidth, WindowHeight;
-    bool vsync, show_fps;
-    bool headless;
+    bool Vsync, ShowFPS;
+    bool Headless;
     char *default_font;
 } FE_InitConfig;
 

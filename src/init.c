@@ -1,4 +1,4 @@
-#include "include/game.h"
+#include <FE_Client.h>
 #include <SDL_image.h>
 
 /* Contains functions for initializing and exiting the game */
@@ -9,12 +9,12 @@ FE_InitConfig *FE_NewInitConfig()
 {
 	/* Fills default values */
 	FE_InitConfig *config = xmalloc(sizeof(FE_InitConfig));
-	config->window_title = "FedoraEngine";
+	config->WindowTitle = "FedoraEngine";
 	config->WindowWidth = 1280;
 	config->WindowHeight = 720;
-	config->headless = false;
-	config->vsync = true;
-	config->show_fps = true;
+	config->Headless = false;
+	config->Vsync = true;
+	config->ShowFPS = true;
 	config->default_font = "OpenSans";
 	return config;
 }
@@ -60,77 +60,11 @@ void FE_Init(FE_InitConfig *InitConfig)
 	}
 
 	PresentGame = NewGame(InitConfig);
+	FE_Time_Init();
 	FE_Log_Init();
-	FE_InitTime();
+	FE_ResourceManager_Init();
 
-	// Initialise SDL without window
-	if (InitConfig->headless) {
-		FE_ResourceManager_Init();
-		
-		PresentGame->config->vsync = false; // disable vsync so we can cap at constant 60hz/ups
-		PresentGame->GameActive = true;
-		
-		return;
-	}
-
-	if (SDL_Init(SDL_INIT_EVERYTHING) == 0)
-	{	
-		FE_ResourceManager_Init();
-		
-		// Check that everything has loaded in correctly
-		PresentGame->Window = SDL_CreateWindow(
-			InitConfig->window_title,
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-			InitConfig->WindowWidth, InitConfig->WindowHeight,
-			SDL_WINDOW_ALLOW_HIGHDPI
-		);
-		
-		PresentGame->WindowHeight = InitConfig->WindowHeight;
-		PresentGame->WindowWidth = InitConfig->WindowWidth;
-
-		if (PresentGame->Window) {
-			info("Window Created");
-		} else 
-			error("Window could not be created! SDL_Error: %s", SDL_GetError());
-		
-		if (InitConfig->vsync)
-			PresentGame->Renderer = SDL_CreateRenderer(PresentGame->Window, -1, SDL_RENDERER_PRESENTVSYNC);
-		else
-			PresentGame->Renderer = SDL_CreateRenderer(PresentGame->Window, -1, SDL_RENDERER_ACCELERATED);
-		
-
-		if (PresentGame->Renderer)
-			info("Renderer Created");
-		else
-			error("Renderer could not be created! SDL_Error: %s", SDL_GetError());
-
-		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-			warn("Nearest texture filtering not enabled! SDL_Error: %s", SDL_GetError());
-
-		if (!SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1"))
-			warn("Texture batching could not be enabled! SDL_Error: %s", SDL_GetError());
-
-		if (IMG_Init(IMG_INIT_PNG) == 0)
-    		error("IMG Failed to initialize. SDL_Error: %s", IMG_GetError());
-
-		if (TTF_Init() != 0)
-			error("TTF Failed to initialize. SDL_Error: %s", TTF_GetError());
-
-		PresentGame->font = FE_LoadFont(InitConfig->default_font, 24);
-		
-		FE_Console_Init();
-		FE_UI_InitUI();
-		FE_Key_Init();
-
-		info("FedoraEngine started successfully");
-
-		FE_GameInitialised = true;
-		PresentGame->GameActive = true;
-
-	} else {
-		error("Could not start SDL. SDL_Error: %s", SDL_GetError());
-		FE_Clean();
-	}
+	info("Initialised FedoraEngine subsystems");
 }
 
 void FE_CleanAll() // Cleans all resources possible without exiting
@@ -165,7 +99,7 @@ void FE_Clean() // Exits the game cleanly, freeing all resources
 		FE_Console_Destroy();
 		SDL_DestroyRenderer(PresentGame->Renderer);
 		SDL_DestroyWindow(PresentGame->Window);
-		FE_CleanFonts();
+		FE_Font_Clean();
 		free(PresentGame->config);
 		free(PresentGame);
 	}

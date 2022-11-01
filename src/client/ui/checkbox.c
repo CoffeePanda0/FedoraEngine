@@ -31,7 +31,7 @@ FE_UI_Checkbox *FE_UI_CreateCheckbox(const char *label, int x, int y, bool check
     c->onclick_data = onclick_data;
 
     // create label from text
-    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, label, COLOR_BLACK); 
+    SDL_Surface *text_surface = FE_Text_Render(PresentGame->font, label, COLOR_BLACK); 
     SDL_Texture *button_label = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
 
     // calculate label rect from texture size

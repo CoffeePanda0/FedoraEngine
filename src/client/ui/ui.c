@@ -49,7 +49,7 @@ void FE_UI_AddElement(FE_UI_Type type, void *element)
 
 void FE_UI_ClearElements(FE_UIList *Elements)
 {
-    if (Elements->Count == 0)
+    if (!Elements || Elements->Count == 0)
         return;
 
     if (PresentGame->DebugConfig.ShowTiming) {

@@ -24,7 +24,7 @@ static struct timeval StartTime;
 static struct timespec StartSpec;
 #endif
 
-void FE_InitTime()
+void FE_Time_Init()
 {
     if (InitTime) {
         return;

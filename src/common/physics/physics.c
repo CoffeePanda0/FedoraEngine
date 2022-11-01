@@ -76,7 +76,10 @@ static void CheckFE_Map_Collisions()
         if (o->mass == 0) continue;
 
         /* Only bother checking if the object has moved */
-        if (vec2_cmp(o->last_collision, o->position)) continue;
+        if (vec2_cmp(o->last_collision, o->position)) {
+            o->velocity.y = 0;
+            continue;
+        }
         o->last_collision = o->position;
 
         /* Check that user is within map bounds */
@@ -130,6 +133,7 @@ static void CheckFE_Map_Collisions()
             }
         } 
 
+
         free(collisions.collisions);
     }
 }
@@ -151,6 +155,7 @@ static void IntegrateForces()
             o->velocity.y = o->terminal_velocity;
         else
             o->velocity = vec2_add(o->velocity, vec2_scale(accel, dt * PHYS_SCALE));
+
     }
 }
 
@@ -225,13 +230,12 @@ static void FE_PhysLoop()
 {
     InterpolateStates();
     IntegrateForces();
-  //  CheckCollisions(); warning do NOT unleash these horrors (yet)
+    // CheckCollisions(); // warning do NOT unleash these horrors (yet)
     if (!PresentGame->DebugConfig.NoClip)
         CheckFE_Map_Collisions();
     IntegrateVelocities();
     IntegrateFriction();
     ClearForces();
-
 }
 
 FE_Phys_Rigidbody *FE_Physics_CreateBody(float mass, SDL_Rect body)

@@ -6,6 +6,14 @@
 #include "../common/ext/enet.h"
 #include "include/include.h"
 
+void FE_Server_Init(FE_InitConfig *InitConfig)
+{
+	if (InitConfig->Headless) {
+		PresentGame->config->Vsync = false; // disable Vsync so we can cap at constant 60hz/ups
+		PresentGame->GameActive = true;
+		return;
+	}
+}
 
 void FE_Multiplayer_InitServer()
 {

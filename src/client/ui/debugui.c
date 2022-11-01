@@ -80,7 +80,7 @@ void FE_DebugUI_Update(FE_Player *player)
             sprintf(update_text, "Update: %.2Lfms", PresentGame->Timing.UpdateTime);
             sprintf(event_text, "Event: %.2Lfms", PresentGame->Timing.EventTime);
             sprintf(render_text, "Render: %.2Lfms", PresentGame->Timing.RenderTime);
-            if (PresentGame->config->vsync)
+            if (PresentGame->config->Vsync)
                 sprintf(fps_text, "FPS: %i (VSYNC)", FE_FPS);
             else
                 sprintf(fps_text, "FPS: %i", FE_FPS);

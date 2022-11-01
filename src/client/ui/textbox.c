@@ -126,7 +126,7 @@ void FE_UI_SetTextboxContent(FE_UI_Textbox *tb, char *value) // Sets the content
     // redo label texture
     SDL_DestroyTexture(tb->label->texture);
     
-    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, tb->content, COLOR_WHITE); 
+    SDL_Surface *text_surface = FE_Text_Render(PresentGame->font, tb->content, COLOR_WHITE); 
     tb->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
@@ -180,7 +180,7 @@ void FE_UI_UpdateTextbox(char c) // Adds or subtracts a character from the text 
     // redo label textures
     SDL_DestroyTexture(t->label->texture);
     
-    SDL_Surface *text_surface = FE_RenderText(t->label->font, t->content, COLOR_WHITE); 
+    SDL_Surface *text_surface = FE_Text_Render(t->label->font, t->content, COLOR_WHITE); 
     t->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 

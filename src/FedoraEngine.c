@@ -7,38 +7,45 @@
 
 	FedoraEngine.c - Primary Game file
 */
-#include <FE_Common.h>
+#include <FE_Client.h>
 #include "client/ui/include/menu.h"
-#include "include/game.h"
 #include "common/net/include/net.h"
+#include "server/include/include.h"
 
 FE_Game *PresentGame;
 
-static void LoadArgs(int argc, char *argv[], FE_InitConfig *IC)
+static bool ArgExists(int argc, char *argv[], char *arg, char *s_arg)
 {
 	if (argc > 1) {
-		if (mstrcmp(argv[1], "--server") == 0 || mstrcmp(argv[1], "-s") == 0) {
-			/* Load headless FedoraEngine */
-			IC->headless = true;
-		}
+		/* create strings for the args with delim */
+		return (mstrcmp(argv[1], arg) == 0 || mstrcmp(argv[1], s_arg) == 0);
 	}
+	return false;
 }
 
 int main(int argc, char* argv[])
 {
 	FE_InitConfig *IC = FE_NewInitConfig();
-	IC->vsync = true;
+	IC->Vsync = true;
 
-	/* Check launch args */
-	LoadArgs(argc, argv, IC);
-
-	/* Initialise FedoraEngine systems */
+	/* Initialise FedoraEngine subsystems */
 	FE_Init(IC);
 
-	if (!IC->headless)
-		FE_Menu_LoadMenu("Main");
-	else
+	/* Initialises FedoraEngine to run as either a client or a server */
+	if (ArgExists(argc, argv, "--server", "-s")) {
+		IC->Headless = true;
+		FE_Server_Init(IC);
 		FE_Multiplayer_InitServer();
+	} else {
+		FE_Client_Init(IC);
+
+		// Check if map is already specified
+		if (ArgExists(argc, argv, "--map", "-m") && argc == 3)
+			FE_StartGame(argv[2]);
+		else
+			FE_Menu_LoadMenu("Main");
+	}
+
 		
 	/* main game loop - calls functions based on game state */
 	while (PresentGame->GameActive) {

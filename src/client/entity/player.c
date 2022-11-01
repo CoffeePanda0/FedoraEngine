@@ -78,11 +78,11 @@ void FE_Player_Render(FE_Player *player, FE_Camera *camera)
     if (!player->facing_right)
         flip = SDL_FLIP_HORIZONTAL;
     
-    FE_Animation *current_animation = 0;
+    FE_Animation *current_animation = player->idle_animation;
 
     if (player->moving)
         current_animation = player->walk_animation;
-    if (!player->on_ground)
+    if (!player->player->PhysObj->grounded)
         current_animation = player->jump_animation;
     if (!player->moving && player->on_ground)
         current_animation = player->idle_animation;

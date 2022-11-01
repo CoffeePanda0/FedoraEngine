@@ -18,13 +18,13 @@ typedef struct {
  * \param size Size of the font
  * \returns The font struct
 */
-FE_Font *FE_LoadFont(char *name, uint8_t size);
+FE_Font *FE_Font_Load(char *name, uint8_t size);
 
 
 /** Destroys an FE_Font struct
  * \param font The font struct to destroy
 */
-void FE_DestroyFont(FE_Font *font);
+void FE_Font_Destroy(FE_Font *font);
 
 
 /** Gets the length in pixels of a string with the given font
@@ -32,11 +32,11 @@ void FE_DestroyFont(FE_Font *font);
  * \param str The string to measure
  * \returns The length of the string in pixels
 */
-int FE_FontStringSize(FE_Font *font, char *str);
+int FE_Font_GetStringSize(FE_Font *font, char *str);
 
 
 /* Destroys all loaded fonts */
-void FE_CleanFonts();
+void FE_Font_Clean();
 
 
 /** Wrapper for TTF_RenderText_Bleneded to support FE_Font type
@@ -44,7 +44,7 @@ void FE_CleanFonts();
  * \param str The string to render
  * \param color The color of the text
 */
-SDL_Surface *FE_RenderText(FE_Font *font, const char *str, SDL_Color color);
+SDL_Surface *FE_Text_Render(FE_Font *font, const char *str, SDL_Color color);
 
 
 #endif

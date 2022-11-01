@@ -54,7 +54,7 @@ FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE 
     }
 
     // create label from text
-    SDL_Surface *text_surface = FE_RenderText(PresentGame->font, text, (SDL_Color){106,113,111, 255});
+    SDL_Surface *text_surface = FE_Text_Render(PresentGame->font, text, (SDL_Color){106,113,111, 255});
     b->label = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 

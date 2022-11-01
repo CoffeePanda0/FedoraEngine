@@ -1,4 +1,4 @@
-#include "../include/game.h"
+#include <FE_Client.h>
 
 /* Input priority is:
     1- Console

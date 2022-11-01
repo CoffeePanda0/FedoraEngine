@@ -1,6 +1,9 @@
 #ifndef SDL_rect_h_
 #define SDL_rect_h_
 
+/* Provides implementation of SDL_Rects for when
+we create a server-only version without any SDL*/
+
 typedef struct SDL_Rect {
     int x, y;
     int w, h;

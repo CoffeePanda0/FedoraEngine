@@ -299,19 +299,19 @@ void FE_Map_Collisions(Phys_AABB *aabb, FE_CollisionInfo *result)
         SDL_FRect tile = (SDL_FRect){t->position.x, t->position.y, PresentMap->tilesize, PresentMap->tilesize};
         
         SDL_FRect intersection;
-        if (SDL_IntersectFRect(&tmp, &tile, &intersection)) {
+        if (FE_AABB_Intersect(&tmp, &tile, &intersection)) {
             // calculate collision normal
             vec2 normal = {0, 0};
-            // check if the player is above the tile
-            if (tmp.y + tmp.h < tile.y + tile.h / 2) {
+
+            if (tmp.y + tmp.h < tile.y + tile.h / 2)
                 normal.y = 1;
-            } else if (tmp.y > tile.y + tile.h / 2) {
+            else if (tmp.y > tile.y + tile.h / 2)
                 normal.y = -1;
-            } else if (tmp.x + tmp.w < tile.x + tile.w / 2) {
+
+            if (tmp.x + tmp.w < tile.x + tile.w / 2)
                 normal.x = 1;
-            } else if (tmp.x > tile.x + tile.w / 2) {
+            else if (tmp.x > tile.x + tile.w / 2)
                 normal.x = -1;
-            }
 
             // calculate penetration depth
             float depth = 0;

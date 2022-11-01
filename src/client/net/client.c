@@ -490,7 +490,6 @@ void ClientUpdate()
 
     UpdatePing();
 
-    if (GamePlayer->player->PhysObj->velocity.y == 0) GamePlayer->on_ground = true;
 
 	FE_DebugUI_Update(GamePlayer); 
 	FE_Dialogue_Update();
@@ -498,7 +497,11 @@ void ClientUpdate()
 	PresentGame->Timing.UpdateTime = FE_QueryPerformanceCounter();
 	FE_Timers_Update();
 	FE_Particles_Update();
+
+    GamePlayer->player->PhysObj->grounded = (GamePlayer->player->PhysObj->velocity.y == 0) ? true : false;
+    
 	FE_Player_Update(GamePlayer);
+    
 	FE_Animations_Update();
 	FE_Prefab_Update();
 	FE_UpdateCamera(GameCamera);
