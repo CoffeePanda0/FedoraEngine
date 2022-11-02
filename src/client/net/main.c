@@ -21,9 +21,11 @@ bool FE_Multiplayer_InitClient(char *addr, int port, char *username)
         warn("Failed to initialise client");
         FE_Menu_LoadMenu("Main");
         free(_uname);
+        free(_addr);
         return false;
     }
     free(_uname);
+    free(_addr);
     return true;
 }
 

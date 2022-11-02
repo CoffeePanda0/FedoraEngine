@@ -23,12 +23,32 @@ static void JoinAction()
 
 static void FE_MenuPage_JoinGame()
 {
+    /* Firstly, check if a file containing last server info exists */
+    char *lastserver = 0;
+    char *lastport = 0;
+    char *lastusername = 0;
+    if (FE_File_DirectoryExists("serverinfo.txt")) {
+        FILE *f = fopen("serverinfo.txt", "r");
+        if (f) {
+            char line[128];
+            while (fgets(line, 128, f)) {
+                line[strlen(line) - 1] = 0; // strip newline
+                if (!lastserver) lastserver = mstrndup(line, 20);
+                else if (!lastport) lastport = mstrndup(line, 6);
+                else if (!lastusername) lastusername = mstrndup(line, 18);
+            }
+            fclose(f);
+        }
+    }
+
+    /* Create UI */
     FE_UI_Container *container = FE_UI_CreateContainer(midx(400), midy(500), 400, 500, "Join Game", false);
     FE_UI_AddElement(FE_UI_CONTAINER, container);
 
-    FE_UI_Textbox *addr = FE_UI_CreateTextbox(0, 0, 256, "127.0.0.1");
-    FE_UI_Textbox *port = FE_UI_CreateTextbox(0, 0, 256, "7777");
-    FE_UI_Textbox *username = FE_UI_CreateTextbox(0,0, 256, "coffee");
+    /* Autofill with previous connection info if exists*/
+    FE_UI_Textbox *addr = FE_UI_CreateTextbox(0, 0, 256, lastserver == 0 ? "127.0.0.1" : lastserver);
+    FE_UI_Textbox *port = FE_UI_CreateTextbox(0, 0, 256, lastport == 0 ? "7777" : lastport);
+    FE_UI_Textbox *username = FE_UI_CreateTextbox(0,0, 256, lastusername == 0 ? "player" : lastusername);
     FE_UI_Button *host_btn = FE_UI_CreateButton("Join", 0, 0, BUTTON_LARGE, &JoinAction, 0);
     FE_UI_Button *back_btn = FE_UI_CreateButton("Back", 0, 0, BUTTON_LARGE, &FE_Menu_LoadMenu, "Main");
 
@@ -42,9 +62,15 @@ static void FE_MenuPage_JoinGame()
     FE_UI_AddContainerSpacer(container, 64);
     FE_UI_AddChild(container, FE_UI_BUTTON, back_btn, FE_LOCATION_CENTRE);
 
+    /* Create struct so that we can keep track of the entered data when the UI is reset */
     joininfo.addr = addr;
     joininfo.port = port;
     joininfo.username = username;
+    
+    /* Free loaded server info */
+    if (lastserver) free(lastserver);
+    if (lastport) free(lastport);
+    if (lastusername) free(lastusername);
 }
 
 static void LoadEditor(char *m)

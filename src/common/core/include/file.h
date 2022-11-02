@@ -25,6 +25,15 @@ char *FE_File_ReadStr(FILE *f);
 bool FE_File_WriteStr(FILE *F, const char *str);
 
 
+/**
+ * @brief Deletes a file
+ * 
+ * @param path 
+ * @return true on success, false on failure
+*/
+bool FE_File_Delete(const char *path);
+
+
 /** Returns an array of all files found in a directory
  * \param dir The directory to search
  * \return the string array

@@ -4,6 +4,7 @@
 # FE files
 log.txt
 bans.txt
+serverinfo.txt
 FedoraEngine
 .vscode/
 vgcore.*

@@ -63,3 +63,8 @@ FE_StrArr *FE_File_GetFiles(const char *dir)
 
 	return arr;
 }
+
+bool FE_File_Delete(const char *path)
+{
+	return remove(path) == 0;
+}

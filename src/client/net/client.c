@@ -526,17 +526,32 @@ int InitClient(char *addr, int port, char *_username)
     connected = Connect(port, addr);
     if (!connected) {
         warn("Could not connect to server");
+        if (client) enet_host_destroy(client);
         return -1;
     }
-    free(addr);
 
-    // Sync state with server
+    /* Sync state with server */
     if (Client_Connect(_username, peer, client, &username, &players) == false) {
         warn("Unable to authenticate with server");
         Disconnect();
         return -1;
     }
 
+    /* Write server info to last-connected file */
+    if (FE_File_DirectoryExists("serverinfo.txt"))
+        FE_File_Delete("serverinfo.txt");
+
+    FILE *f = fopen("serverinfo.txt", "w");
+    if (!f) {
+        warn("Failed to write server info to file");
+    } else {
+        fprintf(f, "%s\n", addr);
+        fprintf(f, "%d\n", port);
+        fprintf(f, "%s\n", _username);
+        fclose(f);
+    }
+
+    /* Create the game world */
     if (!CreateGame()) {
         warn("Could not create game");
         Disconnect();

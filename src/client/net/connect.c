@@ -81,9 +81,5 @@ bool Client_Connect(char *uname, ENetPeer *server, ENetHost *client, char **user
 
     info("Successfully joined game as %s", *username);
 
-    if (setstate && setusername && setmap)
-        return true;
-    else
-        return false;
-
+    return (setstate && setusername && setmap);
 }
