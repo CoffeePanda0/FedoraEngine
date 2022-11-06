@@ -8,7 +8,8 @@ typedef struct {
     float im; // Store the inverse mass for faster calculations
 
     bool grounded; // Is the object on the ground?
-
+    bool colliding_ground; // Is the object grounded via collision?
+    
     vec2 force; // Force acting on the object
     vec2 velocity; // Velocity of the object
 

@@ -80,6 +80,13 @@ static void CheckFE_Map_Collisions()
             o->velocity.y = 0;
             continue;
         }
+
+        /* Only bother if we aren't on top of another grounded object */
+        if (o->colliding_ground) {
+            o->grounded = true;
+            continue;
+        }
+        
         o->last_collision = o->position;
 
         /* Check that user is within map bounds */
@@ -116,7 +123,7 @@ static void CheckFE_Map_Collisions()
             if (vec2_cmp(c->normal, vec(0, 1))) { // player is above tile
                 o->velocity.y = ReboundCollision(o, c->normal);
                 o->position.y = c->position.y - o->body.h;
-                o->grounded = true;              
+                o->grounded = true;
             }
             else if (vec2_cmp(c->normal, vec(0, -1))) { // player is below tile
                 o->velocity.y = ReboundCollision(o, c->normal);
@@ -173,6 +180,7 @@ static void ClearForces()
 {
     for (FE_List *l = RigidBodies; l; l = l->next) {
         FE_Phys_Rigidbody *o = l->data;
+        o->colliding_ground = false;
         o->force = VEC_EMPTY;
     }
 }
@@ -230,7 +238,7 @@ static void FE_PhysLoop()
 {
     InterpolateStates();
     IntegrateForces();
-    // CheckCollisions(); // warning do NOT unleash these horrors (yet)
+    CheckCollisions();
     if (!PresentGame->DebugConfig.NoClip)
         CheckFE_Map_Collisions();
     IntegrateVelocities();
@@ -251,6 +259,7 @@ FE_Phys_Rigidbody *FE_Physics_CreateBody(float mass, SDL_Rect body)
     p->force = VEC_EMPTY;
     p->restitution = 0.4f;
     p->grounded = false;
+    p->colliding_ground = false;
 
     CalculateTerminalVelocity(p);
     CalculateFriction(p);

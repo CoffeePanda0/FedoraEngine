@@ -51,7 +51,8 @@ void FE_StartGame(const char *mapname)
 	world = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
 	FE_ResetDT();
 
-	// FE_GameObject_Create((SDL_Rect){1000, -300, 160, 160}, "cube.png", 10);
+	FE_GameObject_Create((SDL_Rect){1000, -600, 160, 160}, "cube.png", 50);
+	FE_GameObject_Create((SDL_Rect){1000, -300, 160, 160}, "cube.png", 50);
 
 	PresentGame->GameState = GAME_STATE_PLAY;
 }

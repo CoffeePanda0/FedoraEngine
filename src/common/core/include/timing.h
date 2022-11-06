@@ -1,6 +1,8 @@
 #ifndef H_TIMING
 #define H_TIMING
 
+#include <stdint.h>
+
 extern float FE_DT; // Time taken for one update to complete
 extern const float FE_DT_TARGET; // Our target DT
 extern float FE_DT_MULTIPLIER; // Multiplier to be applied to calculations to execute at same rate as target DT

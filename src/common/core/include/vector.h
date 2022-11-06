@@ -29,5 +29,6 @@ typedef struct vec2 {
 #define vec2_null(a) (a.x == -1 && a.y == -1)
 #define vec2_cmp(a, b) ((a.x == b.x) && (a.y == b.y))
 #define vec2_lerp(a, b, t) (vec2){a.x + t * (b.x - a.x), a.y + t * (b.y - a.y)}
+#define vec2_abs(a) (vec2){fabsf(a.x), fabsf(a.y)}
 
 #endif

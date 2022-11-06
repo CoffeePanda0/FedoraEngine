@@ -22,14 +22,12 @@ bool Phys_AABBvsAABB(FE_Phys_Rigidbody *a, FE_Phys_Rigidbody *b, Phys_Manifold *
     // Calculate collision overlap on x axis
     float x_overlap = fmin(aabb1.max.x, aabb2.max.x) - fmax(aabb1.min.x, aabb2.min.x);
     
-
     if (x_overlap > 0) {
         // Calculate collision extent on Y axis
-        float y_extent = ((aabb1.max.y - aabb1.min.y) + (aabb2.max.y - aabb2.min.y)) / 2;
-        float y_overlap = y_extent - fabs(aabb1.max.y - aabb2.min.y);
+        float y_overlap = fmin(aabb1.max.y, aabb2.max.y) - fmax(aabb1.min.y, aabb2.min.y);
 
         // Return the smallest overlap
-        if (y_extent > 0) {
+        if (y_overlap > 0) {
             if (x_overlap > y_overlap) {
                 if (aabb1.max.y > aabb2.max.y)
                     m->normal = (vec2){0, -1};
