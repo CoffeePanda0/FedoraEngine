@@ -3,6 +3,7 @@
 
 #include <vector.h>
 #include "../../common/physics/include/physics.h"
+#include "collision.h"
 
 typedef struct FE_Map_Tile {
     uint16_t texture_x;
@@ -11,19 +12,6 @@ typedef struct FE_Map_Tile {
     uint16_t rotation;
     vec2 position;
 } FE_Map_Tile;
-
-
-typedef struct {
-    vec2 position;
-    vec2 normal;
-    float penetration;
-} TileCollision;
-
-
-typedef struct {
-    size_t count;
-    TileCollision *collisions;
-} FE_CollisionInfo;
 
 
 typedef struct FE_Map_Prefab {
@@ -67,13 +55,6 @@ FE_LoadedMap *FE_Map_Load(const char *name);
 
 /* Closes and frees resources from a map */
 void FE_Map_Close(FE_LoadedMap *map);
-
-
-/** Checks the map for collisions with an AABB
- * @param aabb The AABB to check for collisions with
- * @param result The collision info to store the results in
- */
-void FE_Map_Collisions(Phys_AABB *aabb, FE_CollisionInfo *result);
 
 
 /* Gets the current active map*/
