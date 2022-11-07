@@ -1,6 +1,6 @@
-#include "include/prefab.h"
-#include <../lib/string.h>
 #include "../core/include/include.h"
+
+#include "include/prefab.h"
 #include "../world/include/lighting.h"
 #include "../world/include/camera.h"
 

@@ -27,4 +27,10 @@ uint64_t FE_GetTicks64();
 void FE_Time_Init();
 
 
+/** Waits for a specified amount of time
+ * \param ms - The amount of time to wait in milliseconds
+ */
+void FE_Delay(uint32_t ms);
+
+
 #endif

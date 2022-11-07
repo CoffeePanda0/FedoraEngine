@@ -1,4 +1,4 @@
-src := $(wildcard *.c */*.c */*/*.c */*/*/*.c */*/*/*/*.c)
+src := $(wildcard *.c */*.c */*/*.c */*/*/*.c */*/*/*/*.c */*/*/*/*/*.c)
 obj = $(src:.c=.o)
 out = FedoraEngine
 

@@ -1,11 +1,18 @@
 // basic gameobject functions
-#include "include/gameobject.h"
 #include "../core/include/include.h"
 #include "../../common/physics/include/physics.h"
+#include "include/gameobject.h"
 
 #define AssetPath "game/sprites/"
 
-static FE_List *FE_GameObjects = 0; // list of all gameobjects
+void FE_GameObject_Render(FE_Camera *c)
+{
+	for (FE_List *o = FE_GameObjects; o; o = o->next) {
+		FE_GameObject *obj = o->data;
+        if (obj->texture)
+		    FE_RenderCopy(c, false, obj->texture, NULL, &obj->phys->body);
+	}
+}
 
 FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int mass)
 {
@@ -16,7 +23,11 @@ FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int
 	
 	/* fill data from passed parameters */
 	struct FE_GameObject *obj;
-	obj = xmalloc(sizeof(*obj));
+	obj = xmalloc(sizeof(FE_GameObject));
+
+	/* Set the destroy callback to free the texture */
+	obj->destroy_func = &FE_DestroyResource;
+	obj->destroy_data = (char*)texture_path;
 
 	// combine asset path and texture path
 	char *path = xmalloc(mstrlen(AssetPath) + mstrlen(texture_path) + 1);
@@ -33,39 +44,4 @@ FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int
 	obj->phys = p;
 	FE_List_Add(&FE_GameObjects, obj);
 	return obj;
-}
-
-
-void FE_GameObject_Render(FE_Camera *c)
-{
-	for (FE_List *o = FE_GameObjects; o; o = o->next) {
-		FE_GameObject *obj = o->data;
-		FE_RenderCopy(c, false, obj->texture, NULL, &obj->phys->body);
-	}
-}
-
-void FE_GameObject_Clean() // Destroys all game objects
-{
-	// destroy all game objects inside every node
-	for (FE_List *o = FE_GameObjects; o; o = o->next) {
-		FE_GameObject *obj = o->data;
-		FE_Physics_Remove(obj->phys);
-		FE_DestroyResource(obj->texture->path);
-		free(obj);
-	}
-
-	FE_List_Destroy(&FE_GameObjects);
-}
-
-int FE_GameObject_Destroy(FE_GameObject *obj)
-{
-	// free gameobject data
-	FE_Physics_Remove(obj->phys);
-	FE_DestroyResource(obj->texture->path);
-	
-	if (FE_List_Remove(&FE_GameObjects, obj) == -1) // remove from list
-		return -1;
-	
-	free(obj); // free gameobject
-	return 1;
 }

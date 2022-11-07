@@ -1,9 +1,7 @@
-#include <FE_Common.h>
+#include "../client/core/include/include.h"
 #include <file.h>
 #include "include/include.h"
 
-#include "../client/core/include/render.h"
-#include "../client/core/include/texture.h"
 #include "../client/ui/include/ui.h"
 #include "../client/ui/include/menu.h"
 #include "../client/entity/include/prefab.h"

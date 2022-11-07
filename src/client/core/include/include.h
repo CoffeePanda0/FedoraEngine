@@ -8,6 +8,4 @@
 #include "resourcemanager.h"
 #include "texture.h"
 
-void FE_UPDATE_RECT(vec2 position, SDL_Rect *rect);
-
 #endif

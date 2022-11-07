@@ -1,6 +1,6 @@
 #include <FE_Common.h>
 #include "include/player.h"
-#include "../common/physics/include/physics.h"
+#include "../../common/physics/include/physics.h"
 
 void FE_Player_Move(FE_PlayerProperties *player, vec2 movement)
 {

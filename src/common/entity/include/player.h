@@ -2,7 +2,7 @@
 #define H_PLAYER
 
 #include <stdbool.h>
-#include "../../common/physics/include/rigidbody.h"
+#include "../../../common/physics/include/rigidbody.h"
 
 typedef struct FE_PlayerProperties {
     int id;

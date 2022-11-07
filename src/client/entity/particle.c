@@ -1,5 +1,6 @@
 #include "../core/include/include.h"
 #include "include/particle.h"
+#include "../../common/physics/include/physics.h"
 
 #define AssetPath "game/sprites/particles/"
 

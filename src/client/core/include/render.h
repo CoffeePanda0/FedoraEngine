@@ -5,6 +5,11 @@
 #include "../../world/include/camera.h"
 #include "texture.h"
 
+/* Component to attatch to objects for use with SDL */
+typedef struct FE_RenderComponent {
+    SDL_Rect src;
+    FE_Texture *texture;
+} FE_RenderComponent;
 
 /** A wrapper for SDL_RenderCopy - Renders a texture to the screen if in screen bounds only, applying camera offset
  * \param camera The camera to render the texture to 

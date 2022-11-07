@@ -8,7 +8,7 @@
 #include "../../../common/physics/include/physics.h"
 #include "../../world/include/lighting.h"
 
-#include "../../../common/include/player.h"
+#include "../../../common/entity/include/player.h"
 
 typedef struct FE_Player {
     FE_PlayerProperties *player;

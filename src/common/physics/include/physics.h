@@ -49,4 +49,8 @@ void FE_Physics_Remove(FE_Phys_Rigidbody *o);
 void FE_Physics_Update();
 
 
+/* Updates the given SDL rect location with a vector position */
+void FE_UPDATE_RECT(vec2 position, SDL_Rect *rect);
+
+
 #endif

@@ -6,7 +6,7 @@
 #include "particle.h"
 #include "player.h"
 #include "prefab.h"
-#include "timer.h"
 #include "trigger.h"
+#include "../../../common/entity/include/timer.h"
 
 #endif

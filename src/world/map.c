@@ -1,4 +1,5 @@
 #include <FE_Common.h>
+#include <FE_Client.h>
 #include <file.h>
 #include "include/include.h"
 

@@ -82,3 +82,16 @@ uint64_t FE_GetTicks64()
         return (uint64_t)(((uint64_t)(now.tv_sec - StartSpec.tv_sec) * 1000) + ((now.tv_nsec - StartSpec.tv_nsec) / 1000000));
     #endif
 }
+
+void FE_Delay(uint32_t ms)
+{
+    #ifdef _WIN32
+        Sleep(ms);
+    #else
+        /* use nanosleep */
+        struct timespec req, rem;
+        req.tv_sec = ms / 1000;
+        req.tv_nsec = (ms % 1000) * 1000000;
+        nanosleep(&req, &rem);
+    #endif
+}

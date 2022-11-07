@@ -369,15 +369,17 @@ void UpdateServer()
 {
 	PresentGame->Timing.UpdateTime = FE_QueryPerformanceCounter();
 	
+	// Reset spam counters
 	ResetPacketCount();
 	ResetMessageCount(&clients);
 
-	HostServer();
+	HostServer(); // host the server
 
-	UpdateHeldKeys();
+	UpdateHeldKeys(); // check which keys are being held down, and apply the action associated with those keys
 
-	// run main game loop
-	FE_Physics_Update();
+	FE_Physics_Update(); // run main game loop
+
+	FE_Timers_Update(); // update timers (if any are running)
 	
 	// check if any clients have moved, if so then send them the new position
 	for (FE_List *l = clients; l; l = l->next) {
