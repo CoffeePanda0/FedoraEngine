@@ -45,6 +45,10 @@ typedef struct {
 } client_t;
 
 
+/* Cleans and shutdowns server, disconnecting all clients */
+void FE_DestroyServer();
+
+
 /** Handles authentication for new client joining a server, along with sending server config
  * \param server The server to authenticate
  * \param c The client to authenticate

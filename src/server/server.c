@@ -5,6 +5,7 @@
 #include "include/message.h"
 #include "include/include.h"
 
+#include "../common/entity/include/timer.h"
 #include "../world/include/map.h"
 
 static const size_t key_count = 3;
@@ -204,7 +205,7 @@ static char *GetExternalIP()
 	return ip;
 }
 
-void DestroyServer()
+void FE_DestroyServer()
 {
 	if (server) {
 		// free clients

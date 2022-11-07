@@ -15,10 +15,6 @@ void RunServer();
 void UpdateServer();
 
 
-/* Cleans and shutdowns server, disconnecting all clients */
-void DestroyServer();
-
-
 /* Initialises FedoraEngine to run headless as a server */
 void FE_Server_Init(FE_InitConfig *InitConfig);
 

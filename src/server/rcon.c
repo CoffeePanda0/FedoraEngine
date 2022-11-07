@@ -2,6 +2,7 @@
 
 #include "../common/net/include/packet.h"
 #include "include/rcon.h"
+#include "include/message.h"
 
 typedef struct {
     char *addr;
@@ -86,7 +87,7 @@ void RCON_ParseRequest(ENetEvent *event, client_t *c, FE_List *clients)
         }
         else if (mstrcmp(command, "shutdown") == 0) {
             info("[SERVER]: Shutting down server (RCON)");
-            DestroyServer();
+            FE_DestroyServer();
         }
         else if (mstrcmp(command, "mute") == 0) {
             // get the client to mute

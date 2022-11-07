@@ -80,3 +80,6 @@ bool FE_AABB_Intersect(const SDL_FRect *a, const SDL_FRect *b, SDL_FRect *result
     }
     return false;
 }
+
+// make prefabs run on server too
+// fix warnings

@@ -1,191 +1,34 @@
 #include "../core/include/include.h"
-
 #include "include/prefab.h"
+
 #include "../world/include/lighting.h"
 #include "../world/include/camera.h"
 
-#include "../../common/ext/inih/ini.h"
-
-#define PREFAB_DIRECTORY "game/prefabs/"
-
-static FE_Prefab *buffer_prefab = 0; // used for loading a new prefab to return a pointer
-static SDL_Rect buffer_rect;
-
-static FE_List *prefab_list = 0; // list of all prefabs
-
-// buffer data to create objects filled in when variables have been read
-static int mass = 0;
-static char *texture_path = 0;
-static char *light_effect = 0;
-static char *particle_texture = 0;
-static int emission_rate = 100;
-static int max_particles = 0;
-static int emission_radius = 0;
-static int light_radius = 100;
-
-FE_List *FE_Prefab_Get()
+static void DestroyData(void *data)
 {
-    return prefab_list;
-}
-
-int FE_Prefab_Destroy(FE_Prefab *prefab)
-{
-    if (!prefab) {
-        warn("Passing NULL prefab to FE_Prefab_Destroy");
-        return 0;
-    }
-
-    free(prefab->name);
-    FE_GameObject_Destroy(prefab->obj);
+    FE_Prefab *prefab = (FE_Prefab *)data;
     if (prefab->has_light)
         FE_Light_Destroy(prefab->light);
     if (prefab->has_particle)
         FE_ParticleSystem_Destroy(prefab->ps);
-    
-    FE_List_Remove(&prefab_list, prefab);
-    free(prefab);
-
-    return 1;
 }
 
-static int ConfigParser(void *user, const char *section, const char *name, const char *value)
+static void DestroyConfig(FE_PrefabConfig *config)
 {
-    (void)user;
-
-    // Prefab Info
-    if (MATCH("PREFAB", "name"))
-        buffer_prefab->name = mstrdup(value);
-    else if (MATCH("PREFAB", "mass"))
-        mass = atoi(value);
-    else if (MATCH("PREFAB", "height"))
-        buffer_rect.h = atoi(value);
-    else if (MATCH("PREFAB", "width"))
-        buffer_rect.w = atoi(value);
-    else if (MATCH("PREFAB", "texture"))
-        texture_path = mstrdup(value);
-
-    // Light info
-    if (MATCH("LIGHT", "enabled"))
-        buffer_prefab->has_light = (mstrcmp(value, "true") == 0) ? true : false;
-    if (MATCH("LIGHT", "radius"))
-        light_radius = atoi(value);
-    if (MATCH("LIGHT", "texture"))
-        light_effect = mstrdup(value);
-
-    // Particle info
-    if (MATCH("PARTICLE", "enabled"))
-        buffer_prefab->has_particle = (mstrcmp(value, "true") == 0) ? true : false;
-    else if (MATCH("PARTICLE", "texture"))
-        particle_texture = mstrdup(value);
-    else if (MATCH("PARTICLE", "emission_rate"))
-        emission_rate = atoi(value);
-    else if (MATCH("PARTICLE", "max_particles"))
-        max_particles = atoi(value);
-    else if (MATCH("PARTICLE", "emission_radius"))
-        emission_radius = atoi(value);
-    
-    return 1;
-}
-
-SDL_Texture *FE_Prefab_Thumbnail(const char *name)
-{
-    // Load prefab file
-    buffer_prefab = xmalloc(sizeof(FE_Prefab));
-    char *full_path = mstradd(PREFAB_DIRECTORY, name);
-    if (ini_parse(full_path, ConfigParser, NULL) < 0) {
-        warn("Can't load prefab %s", name);
-        free(full_path);
-        free(buffer_prefab);
-        return 0;
-    }
-
-    if (buffer_prefab->name)
-        free(buffer_prefab->name);
-    if (light_effect)
-        free(light_effect);
-    if (particle_texture)
-        free(particle_texture);
-    free(full_path);
-    free(buffer_prefab);
-
-    char *path = mstradd("game/sprites/", texture_path);
-    SDL_Texture *t = FE_TextureFromFile(path);
-
-    if (texture_path)
-        free(texture_path);
-    free(path);
-
-    return t;
-}
-
-FE_Prefab *FE_Prefab_Create(const char *name, int x, int y)
-{
-    buffer_rect = (SDL_Rect){x,y,0,0};
-    buffer_prefab = xmalloc(sizeof(FE_Prefab));
-    buffer_prefab->has_light = false;
-    buffer_prefab->has_particle = false;
-
-    // Load prefab file
-    char *full_path = mstradd(PREFAB_DIRECTORY, name);
-    if (ini_parse(full_path, ConfigParser, NULL) < 0) {
-        warn("Can't load prefab %s", name);
-        free(full_path);
-        free(buffer_prefab);
-        return 0;
-    }
-
-     // Create the attatched objects
-    if (!texture_path) {
-        warn("No texture path for prefab %s", name);
-        free(full_path);
-        free(buffer_prefab);
-        return 0;
-    }
-    buffer_prefab->obj = FE_GameObject_Create(buffer_rect, texture_path, mass);
-    buffer_prefab->last_location = vec(0, 0);
-
-    if (buffer_prefab->has_light) {
-        if (!light_effect) light_effect = mstrdup("");
-        buffer_prefab->light = FE_Light_Create(buffer_prefab->obj->phys->body, light_radius, light_effect);
-    }
-    if (buffer_prefab->has_particle) {
-        if (!light_effect) particle_texture = mstrdup("");
-        buffer_prefab->ps = FE_ParticleSystem_Create((SDL_Rect){buffer_prefab->obj->phys->body.x - emission_radius, buffer_prefab->obj->phys->body.y - emission_radius, emission_radius * 2, emission_radius * 2}, emission_rate, max_particles, 2000, true, particle_texture, vec(15,15), vec(0,0), false);
-    }
-    if (light_effect)
-        free(light_effect);
-    if (texture_path)
-        free(texture_path);
-    if (particle_texture)
-        free(particle_texture);
-
-    free(full_path);
-    
-    FE_List_Add(&prefab_list, buffer_prefab);
-    return buffer_prefab;
-}
-
-void FE_Prefab_Clean()
-{
-    // destroy all prefab children inside every node
-	for (FE_List *o = prefab_list; o; o = o->next) {
-		FE_Prefab *obj = o->data;
-        if (obj->name)
-		    free(obj->name);
-        if (obj->has_light)
-            FE_Light_Destroy(obj->light);
-        if (obj->has_particle)
-            FE_ParticleSystem_Destroy(obj->ps);
-		free(obj);
-	}
-
-	FE_List_Destroy(&prefab_list);
-    prefab_list = 0;
+    if (config->name)
+        free(config->name);
+    if (config->texture_path)
+        free(config->texture_path);
+    if (config->light_effect)
+        free(config->light_effect);
+    if (config->particle_texture)
+        free(config->particle_texture);
+    free(config);
 }
 
 void FE_Prefab_Update()
 {
-    for (FE_List *o = prefab_list; o; o = o->next) {
+    for (FE_List *o = FE_GamePrefabs; o; o = o->next) {
         FE_Prefab *obj = o->data;
         // update position for light effect and particles if it moves (this is pretty scuffed and not efficient)
         if (obj->last_location.x != obj->obj->phys->body.x || obj->last_location.y != obj->obj->phys->body.y) {
@@ -193,6 +36,7 @@ void FE_Prefab_Update()
                 FE_Light_Move(obj->light, obj->obj->phys->body.x, obj->obj->phys->body.y);
             }
             if (obj->has_particle) {
+                float emission_radius = obj->ps->emission_area.w / 2;
                 obj->ps->emission_area.x = obj->obj->phys->body.x - emission_radius + (obj->obj->phys->body.w / 2);
                 obj->ps->emission_area.y = obj->obj->phys->body.y - emission_radius + (obj->obj->phys->body.h / 2);
             }
@@ -200,4 +44,61 @@ void FE_Prefab_Update()
             obj->last_location.y = obj->obj->phys->body.y;
         }
     }
+}
+
+SDL_Texture *FE_Prefab_Thumbnail(const char *name)
+{
+    FE_PrefabConfig *data = FE_Prefab_Load(name);
+    if (!data)
+        return 0;
+
+    if (!data->texture_path) {
+        warn("Prefab is missing texture path %s", name);
+        free(data);
+        return 0;
+    }
+
+    char *path = mstradd("game/sprites/", data->texture_path);
+    SDL_Texture *t = FE_TextureFromFile(path);
+
+    free(path);
+    DestroyConfig(data);
+
+    return t;
+}
+
+FE_Prefab *FE_Prefab_Create(const char *name, int x, int y)
+{
+    FE_PrefabConfig *data = FE_Prefab_Load(name);
+    if (!data)
+        return 0;
+        
+    data->rect.x = x;
+    data->rect.y = y;
+
+    /* Create an FE_Prefab from the FE_PrefabConfig */
+    FE_Prefab *new = xmalloc(sizeof(FE_Prefab));
+    new->has_light = data->has_light;
+    new->has_particle = data->has_particle;
+    new->last_location = vec(0, 0);
+    new->name = mstrdup(data->name);
+    new->destroy_cb = &DestroyData;
+
+    /* Attatches the gameobject, light and particles */
+    new->obj = FE_GameObject_Create(data->rect, data->texture_path, data->mass);
+
+    if (new->has_light) {
+        if (!data->light_effect)
+            data->light_effect = mstrdup("");
+        new->light = FE_Light_Create(new->obj->phys->body, data->light_radius, data->light_effect);
+    }
+    if (new->has_particle) {
+        if (!data->particle_texture)
+            data->particle_texture = mstrdup("");
+        new->ps = FE_ParticleSystem_Create((SDL_Rect) {new->obj->phys->body.x - data->emission_radius, new->obj->phys->body.y - data->emission_radius, data->emission_radius * 2, data->emission_radius * 2}, data->emission_rate, data->max_particles, 2000, true, data->particle_texture, vec(15,15), vec(0,0), false);
+    }
+    DestroyConfig(data);
+
+    FE_List_Add(&FE_GamePrefabs, new);
+    return new;
 }

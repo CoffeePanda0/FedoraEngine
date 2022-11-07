@@ -9,7 +9,7 @@ typedef struct FE_GameObject {
 	FE_Phys_Rigidbody *phys;
 	struct FE_Texture* texture;
 
-	int (*destroy_func)(char*);
+	int (*destroy_cb)(char*);
 	void *destroy_data;
 } FE_GameObject;
 
