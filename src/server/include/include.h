@@ -16,7 +16,7 @@ void UpdateServer();
 
 
 /* Initialises FedoraEngine to run headless as a server */
-void FE_Server_Init(FE_InitConfig *InitConfig);
+void FE_Server_Init();
 
 
 #endif

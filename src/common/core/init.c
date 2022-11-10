@@ -4,6 +4,15 @@
 
 bool FE_GameInitialised;
 
+bool FE_ArgExists(int argc, char *argv[], char *arg, char *s_arg)
+{
+	if (argc > 1) {
+		/* create strings for the args with delim */
+		return (mstrcmp(argv[1], arg) == 0 || mstrcmp(argv[1], s_arg) == 0);
+	}
+	return false;
+}
+
 FE_InitConfig *FE_NewInitConfig()
 {
 	/* Fills default values */

@@ -96,5 +96,7 @@ void FE_Init(FE_InitConfig *InitConfig);
 /* Cleans all resources and exits cleanly */
 void FE_Clean();
 
+/* Checks if an argument exists, by either argument name or the abbreviation*/
+bool FE_ArgExists(int argc, char *argv[], char *arg, char *s_arg);
 
 #endif

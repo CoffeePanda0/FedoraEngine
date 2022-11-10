@@ -7,46 +7,75 @@
 
 	FedoraEngine.c - Primary Game file
 */
-#include <FE_Client.h>
-#include "client/ui/include/menu.h"
+
+#include <FE_Common.h>
 #include "common/net/include/net.h"
 #include "server/include/include.h"
 
+/* Uses ifdefs to decide which int main() should be used (if we are compiling server only or not) */
+
+/******************************************************/
+
+/* Uncomment this to compile server only */
+// #define SERVER_ONLY 1
+
+/*****************************************************/
+
+#ifndef SERVER_ONLY
+	#include <FE_Client.h>
+	#include "client/ui/include/menu.h"
+#endif
+
 FE_Game *PresentGame;
 
-static bool ArgExists(int argc, char *argv[], char *arg, char *s_arg)
+
+#ifdef SERVER_ONLY
+int main(int argc, char* arv[])
 {
-	if (argc > 1) {
-		/* create strings for the args with delim */
-		return (mstrcmp(argv[1], arg) == 0 || mstrcmp(argv[1], s_arg) == 0);
+	(void)argc, (void)arv;
+
+	FE_InitConfig *IC = FE_NewInitConfig();
+
+	/* Initialise FedoraEngine subsystems */
+	FE_Init(IC);
+
+	/* Initialise the server */
+	FE_Server_Init();
+	FE_Multiplayer_InitServer();
+
+	while (PresentGame->GameActive) {
+		FE_CalculateDT();
+		FE_RunServer();
 	}
-	return false;
+
+	return 0;
 }
+
+#else
 
 int main(int argc, char* argv[])
 {
 	FE_InitConfig *IC = FE_NewInitConfig();
-	IC->Vsync = true;
 
 	/* Initialise FedoraEngine subsystems */
 	FE_Init(IC);
 
 	/* Initialises FedoraEngine to run as either a client or a server */
-	if (ArgExists(argc, argv, "--server", "-s")) {
+	if (FE_ArgExists(argc, argv, "--server", "-s")) {
 		IC->Headless = true;
-		FE_Server_Init(IC);
+		FE_Server_Init();
 		FE_Multiplayer_InitServer();
 	} else {
 		FE_Client_Init(IC);
 
 		// Check if map is already specified
-		if (ArgExists(argc, argv, "--map", "-m") && argc == 3)
+		if (FE_ArgExists(argc, argv, "--map", "-m") && argc == 3)
 			FE_StartGame(argv[2]);
 		else
 			FE_Menu_LoadMenu("Main");
 	}
 
-		
+	
 	/* main game loop - calls functions based on game state */
 	while (PresentGame->GameActive) {
 		FE_CalculateDT();
@@ -82,3 +111,5 @@ int main(int argc, char* argv[])
 	return 0;
 
 }
+
+#endif
