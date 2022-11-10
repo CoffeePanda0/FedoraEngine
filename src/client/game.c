@@ -61,8 +61,8 @@ void FE_StartGame(const char *mapname)
 void FE_RenderGame()
 {
 	if (PresentGame->DebugConfig.LightingEnabled)
-		SDL_SetRenderTarget(PresentGame->Renderer, world);
-	SDL_RenderClear(PresentGame->Renderer);
+		SDL_SetRenderTarget(PresentGame->Client->Renderer, world);
+	SDL_RenderClear(PresentGame->Client->Renderer);
 	FE_Map_RenderBackground(GameCamera);
 	FE_Particles_Render(GameCamera);
 	FE_Map_RenderLoaded(GameCamera);
@@ -74,7 +74,7 @@ void FE_RenderGame()
 	if (PresentGame->DebugConfig.LightingEnabled)
 		FE_Light_Render(GameCamera, world);
 	FE_UI_Render();
-	SDL_RenderPresent(PresentGame->Renderer);
+	SDL_RenderPresent(PresentGame->Client->Renderer);
 }
 
 void FE_GameLoop()

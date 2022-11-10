@@ -93,7 +93,7 @@ void FE_UI_ChatboxMessage(FE_UI_Chatbox *chatbox, char *message)
 void FE_UI_RenderChatbox(FE_UI_Chatbox *chatbox)
 {
     if (chatbox->visible) {
-        SDL_RenderCopy(PresentGame->Renderer, chatbox->texture, NULL, &chatbox->body);
+        SDL_RenderCopy(PresentGame->Client->Renderer, chatbox->texture, NULL, &chatbox->body);
         for (size_t i = 0; i < chatbox->message_count; i++)
             if (chatbox->messages[i]->r.y > chatbox->body.y)
                 FE_UI_RenderLabel(chatbox->messages[i]);

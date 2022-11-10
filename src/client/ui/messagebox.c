@@ -18,14 +18,14 @@ static FE_UI_Textbox *previous_active;
 void FE_Messagebox_HandleCallBack()
 {
     FE_Messagebox_Destroy();
-    PresentGame->UIConfig.MBShown = false;
+    PresentGame->UIConfig->MBShown = false;
     if (callback)
         callback(callback_data);
 }
 
 void FE_Messagebox_AddCallback(void (*func)(), void *data)
 {
-    if (PresentGame->UIConfig.MBShown) {
+    if (PresentGame->UIConfig->MBShown) {
         callback = func;
         callback_data = data;
     }
@@ -54,7 +54,7 @@ bool FE_Messagebox_Click(int x, int y)
 
 void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
 {
-    if (PresentGame->UIConfig.MBShown) {
+    if (PresentGame->UIConfig->MBShown) {
         warn("Trying to create a message box when one is already active");
         return;
     }
@@ -78,12 +78,12 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
     };
 
     // title
-    MB->title = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, title, 1000, 0,0 , PresentGame->UIConfig.UIFontColor);
+    MB->title = FE_UI_CreateLabel(PresentGame->UIConfig->UIFont, title, 1000, 0,0 , PresentGame->UIConfig->UIFontColor);
     MB->title->r.x = FE_GetCentre(MB->title->r, MB->displayrect).x;
     MB->title->r.y = MB->displayrect.y + 10;
 
     // content
-    MB->content = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, body, MB_WIDTH, 0,0 , PresentGame->UIConfig.UIFontColor);
+    MB->content = FE_UI_CreateLabel(PresentGame->UIConfig->UIFont, body, MB_WIDTH, 0,0 , PresentGame->UIConfig->UIFontColor);
     MB->content->r.x = FE_GetCentre(MB->content->r, MB->displayrect).x;
     MB->content->r.y = MB->title->r.y + 48;
 
@@ -101,7 +101,7 @@ void FE_Messagebox_Show(char *title, char *body, FE_UI_MBType type)
         FE_UI_AddTextboxCallback(MB->textbox, &FE_Messagebox_HandleCallBack, NULL);
     }
 
-    PresentGame->UIConfig.MBShown = true;
+    PresentGame->UIConfig->MBShown = true;
 }
 
 char *FE_Messagebox_GetText()
@@ -114,10 +114,10 @@ char *FE_Messagebox_GetText()
 
 void FE_Messagebox_Render()
 {
-    if (!PresentGame->UIConfig.MBShown)
+    if (!PresentGame->UIConfig->MBShown)
         return;
 
-    SDL_RenderCopy(PresentGame->Renderer, MB->texture->Texture, NULL, &MB->displayrect);
+    SDL_RenderCopy(PresentGame->Client->Renderer, MB->texture->Texture, NULL, &MB->displayrect);
     FE_UI_RenderLabel(MB->title);
     FE_UI_RenderLabel(MB->content);
     
@@ -129,7 +129,7 @@ void FE_Messagebox_Render()
 
 void FE_Messagebox_Destroy()
 {
-    if (!PresentGame->UIConfig.MBShown)
+    if (!PresentGame->UIConfig->MBShown)
         return;
 
     if (MB->type == MESSAGEBOX_TEXTBOX) {
@@ -146,6 +146,6 @@ void FE_Messagebox_Destroy()
     free(MB);
 
     MB = 0;
-    PresentGame->UIConfig.MBShown = false;
+    PresentGame->UIConfig->MBShown = false;
     previous_active = NULL;
 }

@@ -2,7 +2,7 @@
 #define _H_NET_SERVER
 
 #include "../../../common/physics/include/physics.h"
-#include "../../../client/entity/include/player.h"
+#include "../../../common/entity/include/player.h"
 
 // ALL FOR INTERNAL NET USE ONLY
 

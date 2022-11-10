@@ -1,6 +1,9 @@
 #ifndef _H_WORLD_COLLISION
 #define _H_WORLD_COLLISION
 
+#include <vector.h>
+#include "../../physics/include/rigidbody.h"
+
 typedef struct {
     vec2 position;
     vec2 normal;

@@ -131,7 +131,7 @@ static FE_UI_Label *GenKeyLabel(const char *input)
     char *key = (char*)SDL_GetKeyName(SDL_GetKeyFromScancode(FE_Key_Get(input)));
     sprintf(label, "%s: %s", (char*)input, key);
     
-    FE_UI_Label *l = FE_UI_CreateLabel(PresentGame->font, label, 300, 0, 0, COLOR_WHITE);
+    FE_UI_Label *l = FE_UI_CreateLabel(PresentGame->Client->Font, label, 300, 0, 0, COLOR_WHITE);
     free(label);
     return l;
 }
@@ -201,10 +201,10 @@ void FE_MenuPage_Main()
 
 void FE_Menu_Render()
 {
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 255);
-	SDL_RenderClear(PresentGame->Renderer);
+    SDL_SetRenderDrawColor(PresentGame->Client->Renderer, 0, 0, 0, 255);
+	SDL_RenderClear(PresentGame->Client->Renderer);
 
-    SDL_RenderCopy(PresentGame->Renderer, MenuTexture->Texture, NULL, NULL);
+    SDL_RenderCopy(PresentGame->Client->Renderer, MenuTexture->Texture, NULL, NULL);
 
     FE_Particles_Update();
     FE_Particles_Render(Camera);
@@ -212,7 +212,7 @@ void FE_Menu_Render()
     FE_UI_Render();
     FE_Console_Render();
 
-    SDL_RenderPresent(PresentGame->Renderer);
+    SDL_RenderPresent(PresentGame->Client->Renderer);
 }
 
 void FE_Menu_LoadMenu(const char *page)

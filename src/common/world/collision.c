@@ -2,7 +2,9 @@
 #include <stddef.h>
 #include <strarr.h>
 #include <utils.h>
-#include "include/include.h"
+
+#include "include/collision.h"
+#include "include/map.h"
 
 static size_t LeftTileRange(SDL_FRect *r) // calculates the left-most tile near the player to check for collision
 {

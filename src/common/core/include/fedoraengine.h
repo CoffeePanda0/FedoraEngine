@@ -2,10 +2,10 @@
 #define H_FEDORAENGINE
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include "linkedlist.h"
 
-#include "../../../client/ui/include/font.h"
 #include "../../../common/net/include/net.h"
 #include "vector.h"
 
@@ -36,17 +36,6 @@ typedef struct FE_UIList {
     size_t Count;
 } FE_UIList;
 
-typedef struct FE_UIConfig {
-    FE_UIList *ActiveElements;
-    FE_Font *UIFont;
-    SDL_Color UIFontColor;
-
-    bool DialogueActive;
-    bool InText;
-    bool MBShown;
-
-} FE_UIConfig;
-
 typedef struct FE_Timing {
     long double EventTime;
     long double UpdateTime;
@@ -76,19 +65,10 @@ typedef struct FE_InitConfig {
 
 typedef struct FE_Game {
     FE_InitConfig *config;
-    FE_Font *font;
+    struct FE_Client *Client;
 
     int WindowHeight, WindowWidth;
-    bool FullScreen;
-    
-    bool ConsoleVisible;
-    bool StartedInput;
 
-    int DialogueSpeed;
-    
-    SDL_Window *Window;
-    SDL_Renderer *Renderer;
-    
     bool GameActive;
     FE_GAMESTATE GameState;
 
@@ -98,12 +78,11 @@ typedef struct FE_Game {
     FE_AudioConfig AudioConfig;
     FE_Timing Timing;
     FE_DebugConfig DebugConfig;
-    FE_UIConfig UIConfig;
+    struct FE_UIConfig *UIConfig;
 } FE_Game;
 
 extern bool FE_GameInitialised;
 extern FE_Game *PresentGame;
-
 
 /* Cleans all resources possible without exiting */
 void FE_CleanAll();

@@ -17,7 +17,7 @@ SDL_Texture *FE_TextureFromFile(const char *path) // Returns a texture from a fi
 
     SDL_Surface* s = IMG_Load(path); // we have this to check the image is valid
     if (s) {
-        SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
+        SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Client->Renderer, s);
         SDL_FreeSurface(s);
         return text;
     } else {
@@ -45,9 +45,9 @@ SDL_Texture *FE_TextureFromAtlas(FE_TextureAtlas *atlas, size_t index)
 
     // create new texture to draw to
     SDL_Texture *t = FE_CreateRenderTexture(atlas->texturesize, atlas->texturesize);
-    SDL_SetRenderTarget(PresentGame->Renderer, t);
-    SDL_RenderCopy(PresentGame->Renderer, atlas->atlas, &rect, NULL);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, t);
+    SDL_RenderCopy(PresentGame->Client->Renderer, atlas->atlas, &rect, NULL);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, NULL);
 
     return t;
 }
@@ -56,7 +56,7 @@ SDL_Texture* FE_TextureFromRGBA(SDL_Color color) // Returns a plain texture from
 {
     SDL_Surface* s = SDL_CreateRGBSurface(0,1,1,32,0,0,0,0);
     SDL_FillRect(s, NULL, SDL_MapRGBA(s->format, color.r, color.g, color.b, color.a));
-    SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Renderer, s);
+    SDL_Texture* text = SDL_CreateTextureFromSurface(PresentGame->Client->Renderer, s);
     SDL_FreeSurface(s);
 
     if (!text) {
@@ -93,17 +93,17 @@ int FE_QueryTexture(FE_Texture *t, int *w, int *h)
 
 void FE_FillTexture(SDL_Texture *texture, int r, int g, int b, int a)
 {
-    SDL_SetRenderTarget(PresentGame->Renderer, texture);
-    SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_NONE);
-    SDL_SetRenderDrawColor(PresentGame->Renderer, r, g, b, a);
-    SDL_RenderFillRect(PresentGame->Renderer, NULL);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, texture);
+    SDL_SetRenderDrawBlendMode(PresentGame->Client->Renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(PresentGame->Client->Renderer, r, g, b, a);
+    SDL_RenderFillRect(PresentGame->Client->Renderer, NULL);
 }
 
 SDL_Texture *FE_CreateRenderTexture(int w, int h)
 {
-    SDL_Texture *t = SDL_CreateTexture(PresentGame->Renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
+    SDL_Texture *t = SDL_CreateTexture(PresentGame->Client->Renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
     FE_FillTexture(t, 0, 0, 0, 0);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, NULL);
     return t;
 }
 
@@ -168,7 +168,7 @@ void FE_RenderAtlasTexture(FE_TextureAtlas *atlas, size_t index, SDL_Rect *dst)
         return;
     
     vec2 pos = FE_GetTexturePosition(atlas, index);
-    SDL_RenderCopy(PresentGame->Renderer, atlas->atlas, &(SDL_Rect){pos.x, pos.y, atlas->texturesize, atlas->texturesize}, dst);
+    SDL_RenderCopy(PresentGame->Client->Renderer, atlas->atlas, &(SDL_Rect){pos.x, pos.y, atlas->texturesize, atlas->texturesize}, dst);
 }
 
 void FE_DestroyTextureAtlas(FE_TextureAtlas *atlas)

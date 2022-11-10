@@ -1,13 +1,13 @@
+#include "../core/include/include.h"
+#include <file.h>
 #include <math.h>
-#include <FE_Common.h>
 
 #include "../ui/include/include.h"
 #include "../ui/include/menu.h"
-#include "../core/include/include.h"
 #include "../include/keymap.h"
-#include <file.h>
-#include "../../world/include/mapbg.h"
+#include "../world/include/background.h"
 #include "../entity/include/prefab.h"
+
 #include "editor.h"
 #include "save.h"
 
@@ -267,11 +267,11 @@ static void SelectTile(int index)
 
     SDL_Texture *t = FE_TextureFromAtlas(map->r->atlas, (size_t)index);
     thumbnail = FE_CreateRenderTexture(72, 72);
-    SDL_SetRenderTarget(PresentGame->Renderer, thumbnail);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, thumbnail);
     FE_RenderBorder(4, (SDL_Rect){0, 0, 72, 72}, COLOR_WHITE);
     SDL_Rect r = {4,4,64,64};
-    SDL_RenderCopy(PresentGame->Renderer, t, NULL, &r);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
+    SDL_RenderCopy(PresentGame->Client->Renderer, t, NULL, &r);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, NULL);
     SDL_DestroyTexture(t);
 
     FE_UI_DestroyContainer(tile_container, true, true);
@@ -296,11 +296,11 @@ static void SelectPrefab(char *name)
 
     SDL_Texture *t = FE_Prefab_Thumbnail(name);
     thumbnail = FE_CreateRenderTexture(72, 72);
-    SDL_SetRenderTarget(PresentGame->Renderer, thumbnail);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, thumbnail);
     FE_RenderBorder(4, (SDL_Rect){0, 0, 72, 72}, COLOR_WHITE);
     SDL_Rect r = {4,4,64,64};
-    SDL_RenderCopy(PresentGame->Renderer, t, NULL, &r);
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
+    SDL_RenderCopy(PresentGame->Client->Renderer, t, NULL, &r);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, NULL);
     SDL_DestroyTexture(t);
 
     mode = PREFAB;
@@ -540,7 +540,7 @@ static void UI_ToolBar_Create()
     FE_UI_AddElement(FE_UI_BUTTON, FE_UI_CreateButton("Reset", 92, 8, BUTTON_TINY, &FE_Editor_Init, 0));
     FE_UI_AddElement(FE_UI_BUTTON, FE_UI_CreateButton("Save", 192, 8, BUTTON_TINY, &UI_Save, 0));
     
-    coord_label = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, "X: 0000  Y: 0000", 10700, 300, 8, COLOR_WHITE);
+    coord_label = FE_UI_CreateLabel(PresentGame->UIConfig->UIFont, "X: 0000  Y: 0000", 10700, 300, 8, COLOR_WHITE);
     
     FE_UI_AddElement(FE_UI_LABEL, coord_label);
     FE_UI_AddElement(FE_UI_BUTTON, FE_UI_CreateButton("Select Prefab", PresentGame->WindowWidth - 585, 8, BUTTON_TINY, &UI_Prefab_Selector, 0));
@@ -684,27 +684,27 @@ static void RenderGrid()
 {
     if (!render_grid) return;
 
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 255, 255, 255, 255);
+    SDL_SetRenderDrawColor(PresentGame->Client->Renderer, 255, 255, 255, 255);
 
 	// render grid on map with camera - note this is inefficient and renders the whole screen regardless of zoom
 	for (int i = 0; i < 20960 + PresentGame->WindowWidth; i += map->tilesize) {
         int x = (i - camera->x) * camera->zoom;
         int y = ((PresentGame->WindowWidth + 10240) - camera->y) * camera->zoom;
-		SDL_RenderDrawLine(PresentGame->Renderer, x, 0, x, y);
+		SDL_RenderDrawLine(PresentGame->Client->Renderer, x, 0, x, y);
     }
 	for (int i = 0; i < 20960 + PresentGame->WindowHeight; i += map->tilesize) {
         int y = (i - camera->y) * camera->zoom;
         int x = ((10240 + PresentGame->WindowWidth) - camera->x) * camera->zoom;
-		SDL_RenderDrawLine(PresentGame->Renderer, 0, y, x, y);
+		SDL_RenderDrawLine(PresentGame->Client->Renderer, 0, y, x, y);
     }
         
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(PresentGame->Client->Renderer, 0, 0, 0, 255);
 }
 
 static void RenderThumbnail()
 {
     SDL_Rect r = {0, PresentGame->WindowHeight - 72, 72,72};
-    SDL_RenderCopyEx(PresentGame->Renderer, thumbnail, NULL, &r, rotation, NULL, SDL_FLIP_NONE);
+    SDL_RenderCopyEx(PresentGame->Client->Renderer, thumbnail, NULL, &r, rotation, NULL, SDL_FLIP_NONE);
 }
 
 void FE_Editor_Render()
@@ -715,10 +715,10 @@ void FE_Editor_Render()
     FE_UpdateCamera(camera);
     FE_Prefab_Update();
 
-    SDL_SetRenderTarget(PresentGame->Renderer, world);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, world);
 
-    SDL_RenderClear(PresentGame->Renderer);
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 0);
+    SDL_RenderClear(PresentGame->Client->Renderer);
+    SDL_SetRenderDrawColor(PresentGame->Client->Renderer, 0, 0, 0, 0);
 
     if (parallax_set)
         FE_Map_RenderBG(camera, 0);
@@ -739,7 +739,7 @@ void FE_Editor_Render()
     RenderThumbnail();
     FE_UI_Render();
     
-    SDL_RenderPresent(PresentGame->Renderer);
+    SDL_RenderPresent(PresentGame->Client->Renderer);
 }
 
 /****/

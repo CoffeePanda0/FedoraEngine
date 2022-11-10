@@ -7,24 +7,24 @@ static FE_Texture *BGTexture = 0;
 
 void FE_Pause_Render()
 {
-    SDL_SetRenderDrawColor(PresentGame->Renderer, 0, 0, 0, 255);
-	SDL_RenderClear(PresentGame->Renderer);
+    SDL_SetRenderDrawColor(PresentGame->Client->Renderer, 0, 0, 0, 255);
+	SDL_RenderClear(PresentGame->Client->Renderer);
 
-    SDL_RenderCopy(PresentGame->Renderer, BGTexture->Texture, NULL, NULL);
+    SDL_RenderCopy(PresentGame->Client->Renderer, BGTexture->Texture, NULL, NULL);
 
     FE_UI_Render();
     FE_Console_Render();
 
-    SDL_RenderPresent(PresentGame->Renderer);
+    SDL_RenderPresent(PresentGame->Client->Renderer);
 }
 
 void FE_ResumeGame()
 {
     // Free the paused elements and restore the game elements
-    FE_UI_ClearElements(PresentGame->UIConfig.ActiveElements);
-    free(PresentGame->UIConfig.ActiveElements);
+    FE_UI_ClearElements(PresentGame->UIConfig->ActiveElements);
+    free(PresentGame->UIConfig->ActiveElements);
 
-    PresentGame->UIConfig.ActiveElements = GameList;
+    PresentGame->UIConfig->ActiveElements = GameList;
 
     PresentGame->GameState = GAME_STATE_PLAY;
 
@@ -55,10 +55,10 @@ void FE_PauseGame()
 {
     PresentGame->GameState = GAME_STATE_PAUSE;   
     // Temporarily move all active UI to separate list
-    GameList = PresentGame->UIConfig.ActiveElements;
+    GameList = PresentGame->UIConfig->ActiveElements;
 
     // Clear all active UI
-    PresentGame->UIConfig.ActiveElements = 0;
+    PresentGame->UIConfig->ActiveElements = 0;
     FE_UI_ControlContainerLocked = false;
 
     FE_UI_InitUI();

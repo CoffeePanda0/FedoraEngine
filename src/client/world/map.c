@@ -1,15 +1,71 @@
-#include <FE_Common.h>
-#include <FE_Client.h>
-#include <file.h>
-#include "include/include.h"
+#include "../core/include/include.h"
+#include "../entity/include/prefab.h"
 
-#include "../client/entity/include/prefab.h"
+#include "include/map.h"
+#include "include/background.h"
 
-#define TEXTURE_PATH "game/map/textures/"
-#define BG_PATH "game/map/backgrounds/"
 #define MAP_DIRECTORY "game/map/maps/"
 
-FE_LoadedMap *PresentMap;
+static FE_Texture *flagtexture;
+
+static void DestroyRenderer(void *data)
+{
+    FE_LoadedMap *map = (FE_LoadedMap*)data;
+
+    if (!map) {
+        warn("Passing NULL map to FE_Map_DestroyRenderer");
+        return;
+    }
+
+    if (map->r) {
+        if (map->r->atlas && map->r->atlas->path) {
+            FE_DestroyResource(map->r->atlas->path);
+        }
+        map->r->atlas = 0;
+        
+        if (map->r->static_bg && map->r->bg)
+            FE_DestroyResource(map->r->bg->path);
+        map->r->bg = 0;
+        free(map->r);
+    }
+}
+
+void FE_Map_RenderLoaded(FE_Camera *camera)
+{
+    if (!PresentGame->MapConfig.Loaded)
+        return;
+    FE_Map_Render(PresentMap, camera);
+}
+
+void FE_Map_Render(FE_LoadedMap *m, FE_Camera *camera)
+{
+    if (!m)
+        return;
+
+    if (!flagtexture)
+        flagtexture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/map/end.png");
+
+	// render all tiles
+    for (size_t i = 0; i < m->tilecount; i++) {
+		SDL_Rect r = {m->tiles[i].position.x, m->tiles[i].position.y, m->tilesize, m->tilesize};
+        SDL_Rect src = {m->tiles[i].texture_x, m->tiles[i].texture_y, m->r->atlas->texturesize, m->r->atlas->texturesize};
+        r = FE_ApplyZoom(&r, camera, false);
+        // check if we need to render the tile
+        if (FE_Camera_Inbounds(&r, &(SDL_Rect){0,0,PresentGame->WindowWidth, PresentGame->WindowHeight})) {
+            SDL_RenderCopyEx(PresentGame->Client->Renderer, m->r->atlas->atlas, &src, &r, m->tiles[i].rotation, NULL, SDL_FLIP_NONE);
+        }
+	}
+
+    // render finish flag
+    if (!vec2_null(m->EndFlag)) {
+        SDL_Rect r = (SDL_Rect){m->EndFlag.x, m->EndFlag.y, m->tilesize, m->tilesize};
+        FE_RenderCopy(camera, false, flagtexture, NULL, &r);
+    }
+}
+
+void FE_Map_RenderBackground(FE_Camera *camera) {
+    FE_Map_RenderBG(camera, PresentMap);
+}
 
 FE_LoadedMap *FE_Map_Load(const char *name)
 {
@@ -29,8 +85,9 @@ FE_LoadedMap *FE_Map_Load(const char *name)
     }
     free(map_path);
 
-    // Create map renderer struct - TODO - move this to map renderer
+    // Create map renderer struct
     m->r = xmalloc(sizeof(FE_MapRenderer));
+    m->destroy_cb = &DestroyRenderer;
 
     // Read map name
     if (!(m->name = FE_File_ReadStr(f))) goto err;
@@ -136,83 +193,5 @@ err:
     FE_Map_Close(m);
     
     return 0;
-}
-
-void FE_Game_SetMap(FE_LoadedMap *m)
-{
-    if (!m) {
-        warn("Passed NULL map to SetMap");
-        return;
-    }
-    if (PresentGame->MapConfig.Loaded)
-        FE_Map_Close(PresentMap);
-
-    PresentMap = m;
-
-    PresentGame->MapConfig = (FE_MapConfig) {
-        .Loaded = true,
-        .MapWidth = m->MapWidth,
-        .MapHeight = m->MapHeight,
-        .MinimumX = m->MinimumX,
-        .Gravity = m->gravity,
-        .AmbientLight = m->ambientlight,
-        .PlayerSpawn = m->PlayerSpawn
-    };
-
-}
-
-FE_LoadedMap *FE_Game_GetMap()
-{
-    return PresentMap;
-}
-
-void FE_Map_CloseLoaded()
-{
-    if (!PresentGame->MapConfig.Loaded)
-        return;
-
-    FE_Map_Close(PresentMap);
-
-    PresentGame->MapConfig.Loaded  = false;
-    PresentMap = 0;
-}
-
-void FE_Map_Close(FE_LoadedMap *map)
-{
-    if (!map) {
-        warn("Passing NULL map to CloseMap");
-        return;
-    }
-
-    if (map->name)
-        free(map->name);
-    if (map->author)
-        free(map->author);
-    map->name = 0;
-    map->PlayerSpawn = VEC_NULL;
-
-    if (map->r) {
-        if (map->r->atlas && map->r->atlas->path) {
-            FE_DestroyResource(map->r->atlas->path);
-        }
-        map->r->atlas = 0;
-        
-        if (map->r->static_bg && map->r->bg)
-            FE_DestroyResource(map->r->bg->path);
-        map->r->bg = 0;
-        free(map->r);
-    }
-    map->r = 0;
-
-    if (map->tiles) {
-        free(map->tiles);
-        map->tiles = 0;
-    }
-    map->tilecount = 0;
-    free(map);
-
-    PresentGame->MapConfig.Loaded = false;
-
-    return;
 }
 

@@ -31,7 +31,7 @@ void FE_GameEventHandler(FE_Camera *camera, FE_Player *player)
                     }
                     else if (keyboard_state[SDL_SCANCODE_GRAVE]) {
                         SDL_StartTextInput();
-                        PresentGame->StartedInput = true;
+                        PresentGame->Client->StartedInput = true;
                         FE_Console_Show();
                         break;
                     }

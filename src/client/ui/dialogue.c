@@ -21,7 +21,7 @@ static bool drawing_text = false; // whether or not we are slowly drawing text
 void FE_Dialogue_Update()
 {
     static float last_time = 0;
-    if (!drawing_text || !PresentGame->UIConfig.DialogueActive) {
+    if (!drawing_text || !PresentGame->UIConfig->DialogueActive) {
         last_time = 0;
         return;
     }
@@ -32,7 +32,7 @@ void FE_Dialogue_Update()
         return;
     }
 
-    float dialoguespeed = ((100 - PresentGame->DialogueSpeed) * 2) / 1000.0f;
+    float dialoguespeed = ((100 - PresentGame->Client->DialogueSpeed) * 2) / 1000.0f;
     if (last_time > dialoguespeed) {
         last_time = 0;
         char *newtext = mstrndup(contents[cur_index-1], ++current_char);
@@ -44,7 +44,7 @@ void FE_Dialogue_Update()
 
 int FE_Dialogue_Free() // frees both speakers and content array
 {
-    PresentGame->UIConfig.DialogueActive = false;
+    PresentGame->UIConfig->DialogueActive = false;
 
     if (max_index > 0) {
         if (box)
@@ -77,7 +77,7 @@ int FE_Dialogue_Play() // plays current dialogue
     
     char *first = mstrndup(contents[cur_index-1], 1);
 
-    if (!PresentGame->UIConfig.DialogueActive) { // if elements have not been made yet
+    if (!PresentGame->UIConfig->DialogueActive) { // if elements have not been made yet
         box = FE_UI_CreateObject(0, 0, PresentGame->WindowWidth, PresentGame->WindowHeight / 6, DIALOGUETEXT);
         title = FE_UI_CreateLabel(NULL, speakers[cur_index-1], rel_w(90), 30, 10, COLOR_WHITE);
         content = FE_UI_CreateLabel(NULL, first, rel_w(90), 30, 50, COLOR_WHITE);
@@ -92,7 +92,7 @@ int FE_Dialogue_Play() // plays current dialogue
     free(first);
     current_char = 1;
     drawing_text = true;
-    PresentGame->UIConfig.DialogueActive = true;
+    PresentGame->UIConfig->DialogueActive = true;
 
     return 1;
 }

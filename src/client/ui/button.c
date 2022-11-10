@@ -54,8 +54,8 @@ FE_UI_Button *FE_UI_CreateButton(const char *text, int x, int y, FE_BUTTON_TYPE 
     }
 
     // create label from text
-    SDL_Surface *text_surface = FE_Text_Render(PresentGame->font, text, (SDL_Color){106,113,111, 255});
-    b->label = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    SDL_Surface *text_surface = FE_Text_Render(PresentGame->Client->Font, text, (SDL_Color){106,113,111, 255});
+    b->label = SDL_CreateTextureFromSurface(PresentGame->Client->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
 
@@ -94,8 +94,8 @@ void FE_UI_DestroyButton(FE_UI_Button *b, bool global)
 
     // Check if this label exists in the global list, if so remove it
     if (global) {
-        int r = FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Buttons, b);
-        if (r == 1) PresentGame->UIConfig.ActiveElements->Count--;
+        int r = FE_List_Remove(&PresentGame->UIConfig->ActiveElements->Buttons, b);
+        if (r == 1) PresentGame->UIConfig->ActiveElements->Count--;
     }
 
     free(b);
@@ -119,12 +119,12 @@ void FE_UI_CheckButtonHover() // checks all buttons to see which (if any) are be
 {
     // Check all present game buttons first
     if (!FE_UI_ControlContainerLocked) {
-        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Buttons; l; l = l->next)
+        for (FE_List *l = PresentGame->UIConfig->ActiveElements->Buttons; l; l = l->next)
             CheckHover(l->data);
     }
 
     // Check through container to see if any buttons are hovered
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+    for (FE_List *l = PresentGame->UIConfig->ActiveElements->Containers; l; l = l->next) {
         FE_UI_Container *c = l->data;
         for (size_t i = 0; i < c->children_count; i++) {
             if (c->children[i].type == FE_UI_BUTTON)
@@ -137,7 +137,7 @@ bool FE_UI_ButtonClick(int x, int y)
 {
     // Check all present game buttons first
     if (!FE_UI_ControlContainerLocked) {
-        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Buttons; l; l = l->next) {
+        for (FE_List *l = PresentGame->UIConfig->ActiveElements->Buttons; l; l = l->next) {
             FE_UI_Button *b = l->data;
             if (b->r.x < x && b->r.x + b->r.w > x &&
                 b->r.y < y && b->r.y + b->r.h > y) {
@@ -148,7 +148,7 @@ bool FE_UI_ButtonClick(int x, int y)
     }
 
     // Check through container to see if any buttons arehovered
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+    for (FE_List *l = PresentGame->UIConfig->ActiveElements->Containers; l; l = l->next) {
         FE_UI_Container *c = l->data;
         for (size_t i = 0; i < c->children_count; i++) {
             if (c->children[i].type == FE_UI_BUTTON) {
@@ -183,8 +183,8 @@ void FE_UI_MoveButton(FE_UI_Button *b, int x, int y)
 void FE_UI_RenderButton(FE_UI_Button *b) // Renders all buttons and their labels
 {
     if (b->hover)
-        SDL_RenderCopy(PresentGame->Renderer, b->hover_text, NULL, &b->r);
+        SDL_RenderCopy(PresentGame->Client->Renderer, b->hover_text, NULL, &b->r);
     else
-        SDL_RenderCopy(PresentGame->Renderer, b->text, NULL, &b->r);
-    SDL_RenderCopy(PresentGame->Renderer, b->label, NULL, &b->label_rect);
+        SDL_RenderCopy(PresentGame->Client->Renderer, b->text, NULL, &b->r);
+    SDL_RenderCopy(PresentGame->Client->Renderer, b->label, NULL, &b->label_rect);
 }

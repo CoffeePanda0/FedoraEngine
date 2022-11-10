@@ -7,7 +7,6 @@
 /* TODO:
     bouncing off walls
     stop players being sticky on walls
-    fix object-on-object collisions
     fix jumping
     benchmark
 */

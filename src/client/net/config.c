@@ -7,7 +7,7 @@
 #include "../../common/ext/lz4/lz4.h"
 
 #include "../ui/include/messagebox.h"
-#include "../../world/include/map.h"
+#include "../world/include/map.h"
 
 
 void LoadServerState(ENetEvent *event, FE_List **list)

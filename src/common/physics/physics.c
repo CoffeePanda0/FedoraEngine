@@ -4,7 +4,7 @@
 #include "include/manifold.h"
 #include "include/collision.h"
 
-#include "../../world/include/collision.h"
+#include "../world/include/collision.h"
 
 static FE_List *RigidBodies = 0;
 

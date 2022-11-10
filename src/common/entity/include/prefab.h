@@ -42,14 +42,14 @@ typedef struct FE_Prefab {
 } FE_Prefab;
 
 /**
- * @brief Creates a new prefab.
+ * @brief Creates a new simple prefab (no rendering).
  * 
  * @param The name of the prefab to create in the prefabs folder
  * @param x The x position of the prefab
  * @param y The y position of the prefab
  * @return The created prefab 
  */
-FE_Prefab *FE_Prefab_Create(const char *name, int x, int y);
+FE_Prefab *FE_Prefab_Create_Basic(const char *name, int x, int y);
 
 
 /** Destroys a prefab

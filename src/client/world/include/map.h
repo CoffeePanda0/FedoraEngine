@@ -1,13 +1,14 @@
 #ifndef _H_CLIENT_MAP
 #define _H_CLIENT_MAP
 
-#include "../../client/world/include/camera.h"
+#include "../../../common/world/include/map.h"
+#include "camera.h"
 
 /* The Map format when written to file */
 typedef struct FE_Map {
     char *name;
     char *author;
-    
+
     float gravity;
 
     char *atlaspath;
@@ -62,6 +63,14 @@ void FE_Map_RenderBackground(FE_Camera *camera);
  *\param camera The camera to render from
 */
 void FE_Map_RenderLoaded(FE_Camera *camera);
+
+
+/** Loads map from file
+ * 
+ *\param name Name of map to load.
+ *\returns the loaded map
+ */
+FE_LoadedMap *FE_Map_Load(const char *name);
 
 
 #endif

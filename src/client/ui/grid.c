@@ -95,13 +95,13 @@ static void CheckHover(FE_UI_Grid *grid)
 void FE_UI_CheckGridHover()
 {
     // Check all present game buttons first
-    if (!FE_UI_ControlContainerLocked && !PresentGame->UIConfig.MBShown) {
-        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Grids; l; l = l->next)
+    if (!FE_UI_ControlContainerLocked && !PresentGame->UIConfig->MBShown) {
+        for (FE_List *l = PresentGame->UIConfig->ActiveElements->Grids; l; l = l->next)
             CheckHover(l->data);
     }
 
     // Check through container to see if any buttons are hovered
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+    for (FE_List *l = PresentGame->UIConfig->ActiveElements->Containers; l; l = l->next) {
         FE_UI_Container *c = l->data;
         for (size_t i = 0; i < c->children_count; i++) {
             if (c->children[i].type == FE_UI_GRID)
@@ -122,7 +122,7 @@ bool FE_UI_GridClick()
 {
     // Check global
     if (!FE_UI_ControlContainerLocked) {
-        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Grids; l; l = l->next) {
+        for (FE_List *l = PresentGame->UIConfig->ActiveElements->Grids; l; l = l->next) {
             FE_UI_Grid *grid = l->data;
             if (!vec2_null(grid->hovered)) {
                 HandleCallback(grid);
@@ -132,7 +132,7 @@ bool FE_UI_GridClick()
     }
 
     // Check containers
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+    for (FE_List *l = PresentGame->UIConfig->ActiveElements->Containers; l; l = l->next) {
         FE_UI_Container *container = l->data;
         for (size_t i = 0; i < container->children_count; i++) {
             if (container->children[i].type == FE_UI_GRID) {
@@ -157,19 +157,19 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
 
     if (grid->buffer_dirty) { // only redraw if buffer is dirty (grid has changed)
         
-        SDL_Texture *prev_target = SDL_GetRenderTarget(PresentGame->Renderer);
+        SDL_Texture *prev_target = SDL_GetRenderTarget(PresentGame->Client->Renderer);
         if (grid->buffer_texture) {
             SDL_DestroyTexture(grid->buffer_texture);
         }
         grid->buffer_texture = FE_CreateRenderTexture(grid->r.w, grid->r.h);
-        SDL_SetRenderTarget(PresentGame->Renderer, grid->buffer_texture);
+        SDL_SetRenderTarget(PresentGame->Client->Renderer, grid->buffer_texture);
         SDL_SetTextureBlendMode(grid->buffer_texture, SDL_BLENDMODE_BLEND);
 
         // Render tiles
         for (size_t i = 0; i < grid->tile_count; i++) {
             FE_UI_Tile *t = &grid->tiles[i];
             if (t->empty) continue;
-            SDL_RenderCopy(PresentGame->Renderer, t->texture, NULL, &t->r);
+            SDL_RenderCopy(PresentGame->Client->Renderer, t->texture, NULL, &t->r);
         }
 
         // Render outside border
@@ -177,40 +177,40 @@ void FE_UI_RenderGrid(FE_UI_Grid *grid)
         FE_RenderBorder(grid->border_width, border_r, grid->color);
 
         Uint8 r, g, b, a;
-        SDL_GetRenderDrawColor(PresentGame->Renderer, &r, &g, &b, &a);
-        SDL_SetRenderDrawColor(PresentGame->Renderer, grid->color.r, grid->color.g, grid->color.b, grid->color.a);
+        SDL_GetRenderDrawColor(PresentGame->Client->Renderer, &r, &g, &b, &a);
+        SDL_SetRenderDrawColor(PresentGame->Client->Renderer, grid->color.r, grid->color.g, grid->color.b, grid->color.a);
 
         // Render Border for cols
         for (size_t i = 0; i < grid->cols; i++) {
             if (i == 0 || i == grid->cols) continue;
             SDL_Rect r = {((grid->tile_w + grid->border_width)* i), 0, grid->border_width, grid->r.h};
-            SDL_RenderFillRect(PresentGame->Renderer, &r);
+            SDL_RenderFillRect(PresentGame->Client->Renderer, &r);
         }
         // Render Border for rows
         for (size_t i = 0; i < grid->rows; i++) {
             if (i == 0 || i == grid->rows) continue;
             SDL_Rect r = {0, ((grid->tile_h + grid->border_width)* i), grid->r.w, grid->border_width};
-            SDL_RenderFillRect(PresentGame->Renderer, &r);
+            SDL_RenderFillRect(PresentGame->Client->Renderer, &r);
         }
 
-        SDL_SetRenderTarget(PresentGame->Renderer, prev_target);
-        SDL_SetRenderDrawColor(PresentGame->Renderer, r, g, b, a);
+        SDL_SetRenderTarget(PresentGame->Client->Renderer, prev_target);
+        SDL_SetRenderDrawColor(PresentGame->Client->Renderer, r, g, b, a);
         grid->buffer_dirty = false;
     }
 
-    SDL_RenderCopy(PresentGame->Renderer, grid->buffer_texture, NULL, &grid->r);
+    SDL_RenderCopy(PresentGame->Client->Renderer, grid->buffer_texture, NULL, &grid->r);
 
     // Render transulcent square behind hovered tile
     if (!vec2_null(grid->hovered)) {
-        SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawBlendMode(PresentGame->Client->Renderer, SDL_BLENDMODE_BLEND);
         Uint8 prev_r, prev_g, prev_b, prev_a;
-        SDL_GetRenderDrawColor(PresentGame->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);
-        SDL_SetRenderDrawColor(PresentGame->Renderer, grid->hover_color.r, grid->hover_color.g, grid->hover_color.b, grid->hover_color.a);
+        SDL_GetRenderDrawColor(PresentGame->Client->Renderer, &prev_r, &prev_g, &prev_b, &prev_a);
+        SDL_SetRenderDrawColor(PresentGame->Client->Renderer, grid->hover_color.r, grid->hover_color.g, grid->hover_color.b, grid->hover_color.a);
 
         SDL_Rect r = {grid->r.x + (grid->hovered.x * grid->tile_w) + ((grid->hovered.x +1 )* grid->border_width), grid->r.y + (grid->hovered.y * grid->tile_h) + ((grid->hovered.y +1 )* grid->border_width), grid->tile_w , grid->tile_h};
-        SDL_RenderFillRect(PresentGame->Renderer, &r);
+        SDL_RenderFillRect(PresentGame->Client->Renderer, &r);
 
-        SDL_SetRenderDrawColor(PresentGame->Renderer, prev_r, prev_g, prev_b, prev_a);
+        SDL_SetRenderDrawColor(PresentGame->Client->Renderer, prev_r, prev_g, prev_b, prev_a);
     }
     
     FE_UI_CheckGridHover();
@@ -298,8 +298,8 @@ void FE_UI_DestroyGrid(FE_UI_Grid *grid, bool global)
     }
 
     if (global) {
-        FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Grids, grid);
-        PresentGame->UIConfig.ActiveElements->Count--;
+        FE_List_Remove(&PresentGame->UIConfig->ActiveElements->Grids, grid);
+        PresentGame->UIConfig->ActiveElements->Count--;
     }
     free(grid);
 }

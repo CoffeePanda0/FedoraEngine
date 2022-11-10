@@ -47,14 +47,14 @@ FE_UI_Container *FE_UI_CreateContainer(int x, int y, int w, int h, char *title, 
 {
     FE_UI_Container *c = xmalloc(sizeof(FE_UI_Container));
 
-    TitleFont = PresentGame->font;
+    TitleFont = PresentGame->Client->Font;
 
     c->children = 0;
     c->children_count = 0;
 
     c->body = (SDL_Rect){x,y,w,h};
     c->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/ui/container_outer.png");
-    c->title = FE_UI_CreateLabel(TitleFont, title, w, 0, 0, PresentGame->UIConfig.UIFontColor);
+    c->title = FE_UI_CreateLabel(TitleFont, title, w, 0, 0, PresentGame->UIConfig->UIFontColor);
     c->title->r.x = FE_GetCentre(c->title->r, c->body).x;
     c->title->r.y = FE_GetCentre(c->title->r, (SDL_Rect){x, y, w - BorderWidth, BorderHeight}).y;
 
@@ -191,8 +191,8 @@ void FE_UI_DestroyContainer(FE_UI_Container *c, bool free_children, bool global)
 
     // Check if this label exists in the global list, if so remove it
     if (global) {
-        int r = FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Containers, c);
-        if (r == 1) PresentGame->UIConfig.ActiveElements->Count--;
+        int r = FE_List_Remove(&PresentGame->UIConfig->ActiveElements->Containers, c);
+        if (r == 1) PresentGame->UIConfig->ActiveElements->Count--;
     }
 
     // Free the container
@@ -218,7 +218,7 @@ void FE_UI_RenderContainer(FE_UI_Container *c)
     }
 
     // Render the container
-    SDL_RenderCopy(PresentGame->Renderer, c->texture->Texture, NULL, &c->body);
+    SDL_RenderCopy(PresentGame->Client->Renderer, c->texture->Texture, NULL, &c->body);
     FE_UI_RenderLabel(c->title);
 
     // Render the children

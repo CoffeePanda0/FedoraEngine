@@ -2,7 +2,7 @@
 #include "include/animation.h"
 #include "include/player.h"
 #include "include/trigger.h"
-#include "../../world/include/map.h"
+#include "../world/include/map.h"
 
 #define IDLE_ANIMATION "player_idle.png"
 #define WALK_ANIMATION "player_walk.png"
@@ -91,7 +91,7 @@ void FE_Player_Render(FE_Player *player, FE_Camera *camera)
 
     SDL_Rect player_srcrct = FE_Animation_GetFrame(current_animation);
     const SDL_Point center = (SDL_Point){player->render_rect.w/2, player->render_rect.h/2};
-    SDL_RenderCopyEx(PresentGame->Renderer,
+    SDL_RenderCopyEx(PresentGame->Client->Renderer,
         current_animation->spritesheet->Texture,
         &player_srcrct,
         &(SDL_Rect){player->render_rect.x * camera->zoom, player->render_rect.y * camera->zoom, player->render_rect.w * camera->zoom, player->render_rect.h * camera->zoom},

@@ -4,7 +4,7 @@
 #include <SDL_ttf.h>
 
 /* Struct for storing a font and its properties*/
-typedef struct {
+typedef struct FE_Font {
     TTF_Font *font;
     uint8_t size;
     char *name;

@@ -1,5 +1,6 @@
 #include <fedoraengine.h>
 #include <utils.h>
+#include <systime.h>
 #include <../lib/string.h>
 
 #define ENET_IMPLEMENTATION
@@ -35,5 +36,5 @@ void FE_RunServer()
     static const float target = (1.0f / 60.0f) * 1000;
     int del = target - PresentGame->Timing.UpdateTime;
     if (del > 0)
-        SDL_Delay(del);
+        FE_Delay(del);
 }

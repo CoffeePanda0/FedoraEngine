@@ -1,9 +1,8 @@
-#ifndef H_MAP
-#define H_MAP
+#ifndef _H_COMMON_MAP
+#define _H_COMMON_MAP
 
 #include <vector.h>
-#include "../../common/physics/include/physics.h"
-#include "collision.h"
+#include "../../physics/include/physics.h"
 
 typedef struct FE_Map_Tile {
     uint16_t texture_x;
@@ -29,6 +28,7 @@ typedef struct FE_LoadedMap {
     float gravity;
 
     struct FE_MapRenderer *r;
+    void (*destroy_cb)(void*);
 
     uint8_t ambientlight;
 
@@ -44,17 +44,7 @@ typedef struct FE_LoadedMap {
     int MinimumX;
 } FE_LoadedMap;
 
-
-/** Loads map from file
- * 
- *\param name Name of map to load.
- *\returns the loaded map
- */
-FE_LoadedMap *FE_Map_Load(const char *name);
-
-
-/* Closes and frees resources from a map */
-void FE_Map_Close(FE_LoadedMap *map);
+extern FE_LoadedMap *PresentMap;
 
 
 /* Gets the current active map*/
@@ -71,7 +61,15 @@ void FE_Map_CloseLoaded();
 void FE_Game_SetMap(FE_LoadedMap *m);
 
 
-#include "mapclient.h"
+/* Closes and frees resources from a map */
+void FE_Map_Close(FE_LoadedMap *map);
+
+
+/** Loads and returns a map in basic mode (no rendering or resources for server use)
+    *\param path The path to the map file
+    *\return The loaded map
+*/
+FE_LoadedMap *FE_Map_Load_Basic(const char *name);
 
 
 #endif

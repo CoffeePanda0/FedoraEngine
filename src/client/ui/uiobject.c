@@ -13,8 +13,8 @@ void FE_UI_DestroyObject(FE_UI_Object *o, bool global) // Frees resources and re
     FE_DestroyResource(o->texture->path);
 
     if (global) {
-        int r = FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Objects, o);
-        if (r == 1) PresentGame->UIConfig.ActiveElements->Count--;
+        int r = FE_List_Remove(&PresentGame->UIConfig->ActiveElements->Objects, o);
+        if (r == 1) PresentGame->UIConfig->ActiveElements->Count--;
     }
 
     free(o);
@@ -39,5 +39,5 @@ FE_UI_Object *FE_UI_CreateObject(int x, int y, int w, int h, char *texture_path)
 
 void FE_UI_RenderObject(FE_UI_Object *o)
 {
-    SDL_RenderCopy(PresentGame->Renderer, o->texture->Texture, NULL, &o->r);
+    SDL_RenderCopy(PresentGame->Client->Renderer, o->texture->Texture, NULL, &o->r);
 }

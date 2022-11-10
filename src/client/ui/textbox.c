@@ -8,14 +8,14 @@
 FE_UI_Textbox *FE_UI_GetActiveTextbox()
 {  
     // Check if there is an active textbox in Textboxes
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Textboxes; l; l = l->next) {
+    for (FE_List *l = PresentGame->UIConfig->ActiveElements->Textboxes; l; l = l->next) {
         FE_UI_Textbox *t = (FE_UI_Textbox *)l->data;
         if (t->active)
             return t;
     }
 
     // Check if there is an active textbox in Containers
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+    for (FE_List *l = PresentGame->UIConfig->ActiveElements->Containers; l; l = l->next) {
         FE_UI_Container *c = l->data;
         for (size_t i = 0; i < c->children_count; i++) {
             if (c->children[i].type == FE_UI_TEXTBOX) {
@@ -36,10 +36,10 @@ void FE_UI_ForceActiveTextbox(FE_UI_Textbox *tb)
         current->active = false;
     
     if (tb) {
-        PresentGame->UIConfig.InText = true;
+        PresentGame->UIConfig->InText = true;
         tb->active = true;
     } else {
-        PresentGame->UIConfig.InText = false;
+        PresentGame->UIConfig->InText = false;
     }
 }
 
@@ -47,7 +47,7 @@ bool FE_UI_TextboxClick(int x, int y)
 {
     // Check all present game textboxes first
     if (!FE_UI_ControlContainerLocked) {
-        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Textboxes; l; l = l->next) {
+        for (FE_List *l = PresentGame->UIConfig->ActiveElements->Textboxes; l; l = l->next) {
             FE_UI_Textbox *b = l->data;
             if (b->r.x < x && b->r.x + b->r.w > x &&
                 b->r.y < y && b->r.y + b->r.h > y) {
@@ -58,7 +58,7 @@ bool FE_UI_TextboxClick(int x, int y)
     }
 
     // Check through container to see if any textboxes are clicked
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+    for (FE_List *l = PresentGame->UIConfig->ActiveElements->Containers; l; l = l->next) {
         FE_UI_Container *c = l->data;
         for (size_t i = 0; i < c->children_count; i++) {
             if (c->children[i].type == FE_UI_TEXTBOX) {
@@ -83,12 +83,12 @@ FE_UI_Textbox *FE_UI_CreateTextbox(int x, int y, int w, char *value) // Makes a 
     temp->text = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, TEXTURE);
     temp->active_text = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, TEXTURE_ACTIVE);
 
-    temp->r = (SDL_Rect){x,y,w,PresentGame->UIConfig.UIFont->size * 1.5};
+    temp->r = (SDL_Rect){x,y,w,PresentGame->UIConfig->UIFont->size * 1.5};
     
     // make box label
-    int y_ = FE_GetCentre((SDL_Rect){0,0,0, PresentGame->UIConfig.UIFont->size}, temp->r).y;
+    int y_ = FE_GetCentre((SDL_Rect){0,0,0, PresentGame->UIConfig->UIFont->size}, temp->r).y;
     
-    temp->label = FE_UI_CreateLabel(PresentGame->UIConfig.UIFont, value, w, x, y_ -5, COLOR_WHITE);
+    temp->label = FE_UI_CreateLabel(PresentGame->UIConfig->UIFont, value, w, x, y_ -5, COLOR_WHITE);
 
     temp->content = value ? mstrdup(value) : mstrdup("");
 
@@ -126,8 +126,8 @@ void FE_UI_SetTextboxContent(FE_UI_Textbox *tb, char *value) // Sets the content
     // redo label texture
     SDL_DestroyTexture(tb->label->texture);
     
-    SDL_Surface *text_surface = FE_Text_Render(PresentGame->font, tb->content, COLOR_WHITE); 
-    tb->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    SDL_Surface *text_surface = FE_Text_Render(PresentGame->Client->Font, tb->content, COLOR_WHITE); 
+    tb->label->texture = SDL_CreateTextureFromSurface(PresentGame->Client->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     SDL_QueryTexture(tb->label->texture, NULL, NULL, &tb->label->r.w, &tb->label->r.h); // Get w and h for rect
@@ -181,7 +181,7 @@ void FE_UI_UpdateTextbox(char c) // Adds or subtracts a character from the text 
     SDL_DestroyTexture(t->label->texture);
     
     SDL_Surface *text_surface = FE_Text_Render(t->label->font, t->content, COLOR_WHITE); 
-    t->label->texture = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    t->label->texture = SDL_CreateTextureFromSurface(PresentGame->Client->Renderer, text_surface);
     SDL_FreeSurface(text_surface);
 
     SDL_QueryTexture(t->label->texture, NULL, NULL, &t->label->r.w, &t->label->r.h); // Get w and h for rect
@@ -202,12 +202,12 @@ void FE_UI_DestroyTextbox(FE_UI_Textbox *tb, bool global)
     FE_DestroyResource(tb->active_text->path);
 
     if (global) {
-        FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Textboxes, tb);
-        PresentGame->UIConfig.ActiveElements->Count--;
+        FE_List_Remove(&PresentGame->UIConfig->ActiveElements->Textboxes, tb);
+        PresentGame->UIConfig->ActiveElements->Count--;
     }
 
     if (tb->active)
-        PresentGame->UIConfig.InText = false;
+        PresentGame->UIConfig->InText = false;
         
     free(tb);
 }
@@ -222,7 +222,7 @@ void FE_UI_MoveTextbox(FE_UI_Textbox *tb, int x, int y)
     tb->r.x = x;
     tb->r.y = y;
     tb->label->r.x = x + 5;
-    tb->label->r.y = FE_GetCentre((SDL_Rect){0,0,0, PresentGame->UIConfig.UIFont->size}, tb->r).y - 5;
+    tb->label->r.y = FE_GetCentre((SDL_Rect){0,0,0, PresentGame->UIConfig->UIFont->size}, tb->r).y - 5;
 }
 
 void FE_UI_RenderTextbox(FE_UI_Textbox *tb)
@@ -233,7 +233,7 @@ void FE_UI_RenderTextbox(FE_UI_Textbox *tb)
     }
 
     if (tb->active) {
-        SDL_RenderCopy(PresentGame->Renderer, tb->active_text->Texture, NULL, &tb->r);
+        SDL_RenderCopy(PresentGame->Client->Renderer, tb->active_text->Texture, NULL, &tb->r);
 
         // draw a cursor at end of text
         if (tb->content && mstrlen(tb->content) > 0) {
@@ -242,15 +242,15 @@ void FE_UI_RenderTextbox(FE_UI_Textbox *tb)
                 time = -0.5f;
             } else if (time > 0.0f) {
                 uint8_t r, g, b, a;
-                SDL_GetRenderDrawColor(PresentGame->Renderer, &r, &g, &b, &a);
-                SDL_SetRenderDrawColor(PresentGame->Renderer, 255, 255, 255, 255);
-                SDL_RenderDrawLine(PresentGame->Renderer, tb->label->r.x + tb->label->r.w + 2, tb->label->r.y, tb->label->r.x + tb->label->r.w + 2, tb->label->r.y + tb->label->r.h);
-                SDL_SetRenderDrawColor(PresentGame->Renderer, r, g, b, a);
+                SDL_GetRenderDrawColor(PresentGame->Client->Renderer, &r, &g, &b, &a);
+                SDL_SetRenderDrawColor(PresentGame->Client->Renderer, 255, 255, 255, 255);
+                SDL_RenderDrawLine(PresentGame->Client->Renderer, tb->label->r.x + tb->label->r.w + 2, tb->label->r.y, tb->label->r.x + tb->label->r.w + 2, tb->label->r.y + tb->label->r.h);
+                SDL_SetRenderDrawColor(PresentGame->Client->Renderer, r, g, b, a);
             }
             time += FE_DT;
         }
 
     } else
-        SDL_RenderCopy(PresentGame->Renderer, tb->text->Texture, NULL, &tb->r);
+        SDL_RenderCopy(PresentGame->Client->Renderer, tb->text->Texture, NULL, &tb->r);
     FE_UI_RenderLabel(tb->label);
 }

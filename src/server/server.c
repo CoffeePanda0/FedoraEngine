@@ -6,7 +6,7 @@
 #include "include/include.h"
 
 #include "../common/entity/include/timer.h"
-#include "../world/include/map.h"
+#include "../common/world/include/map.h"
 
 static const size_t key_count = 3;
 
@@ -250,7 +250,7 @@ int InitServer()
 
 	// load the map
 	FE_LoadedMap *m;
-	if (!(m = FE_Map_Load(server_config.map))) {
+	if (!(m = FE_Map_Load_Basic(server_config.map))) {
 		warn("[SERVER]: Failed to load map");
 		return -1;
 	}

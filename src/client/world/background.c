@@ -1,9 +1,9 @@
-#include "../client/core/include/include.h"
+#include "../core/include/include.h"
 
-#include "include/include.h"
+#include "include/background.h"
 
 #include <file.h>
-#include "../common/ext/inih/ini.h"
+#include "../../common/ext/inih/ini.h"
 
 #ifdef _WIN32
 	#include "../common/ext/dirent.h" // for finding textures in dir
@@ -217,17 +217,17 @@ static void FE_Parallax_Render(FE_Camera *camera)
             if (dst2.x > PresentGame->WindowWidth)
                 parallax[i].r2.x = parallax[i].r1.x - parallax[i].r1.w;
 
-            SDL_Texture *prev = SDL_GetRenderTarget(PresentGame->Renderer);
-            SDL_SetRenderTarget(PresentGame->Renderer, buff);
+            SDL_Texture *prev = SDL_GetRenderTarget(PresentGame->Client->Renderer);
+            SDL_SetRenderTarget(PresentGame->Client->Renderer, buff);
 
-            SDL_RenderCopy(PresentGame->Renderer, parallax[i].texture->Texture, &vis_rect, &dst1);
-            SDL_RenderCopy(PresentGame->Renderer, parallax[i].texture->Texture, &vis_rect, &dst2);
+            SDL_RenderCopy(PresentGame->Client->Renderer, parallax[i].texture->Texture, &vis_rect, &dst1);
+            SDL_RenderCopy(PresentGame->Client->Renderer, parallax[i].texture->Texture, &vis_rect, &dst2);
 
-            SDL_SetRenderTarget(PresentGame->Renderer, prev);
+            SDL_SetRenderTarget(PresentGame->Client->Renderer, prev);
             parallax_dirty = false;
         }
     }
-    SDL_RenderCopy(PresentGame->Renderer, buff, &vis_rect, NULL);
+    SDL_RenderCopy(PresentGame->Client->Renderer, buff, &vis_rect, NULL);
 }
 
 char *FE_Parallax_GetName()
@@ -278,8 +278,8 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
     if (!buffer)
         buffer = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
     
-    SDL_Texture *prev = SDL_GetRenderTarget(PresentGame->Renderer);
-    SDL_SetRenderTarget(PresentGame->Renderer, buffer);
+    SDL_Texture *prev = SDL_GetRenderTarget(PresentGame->Client->Renderer);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, buffer);
 
     if (last_x != camera->x || last_y != camera->y) {
         // note: this code is a monster and should not be reckoned with
@@ -304,11 +304,11 @@ void FE_Map_RenderBG(FE_Camera *camera, FE_LoadedMap *map)
         bg2 = bg1;
         bg2.x = (r2.x - camera->x) * camera->zoom;
 
-        SDL_RenderCopy(PresentGame->Renderer, map->r->bg->Texture, &vis_rect, &bg1);
-        SDL_RenderCopy(PresentGame->Renderer, map->r->bg->Texture, &vis_rect, &bg2);
+        SDL_RenderCopy(PresentGame->Client->Renderer, map->r->bg->Texture, &vis_rect, &bg1);
+        SDL_RenderCopy(PresentGame->Client->Renderer, map->r->bg->Texture, &vis_rect, &bg2);
     }
     
-    SDL_SetRenderTarget(PresentGame->Renderer, prev);
-    SDL_RenderCopy(PresentGame->Renderer, buffer, &vis_rect, NULL);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, prev);
+    SDL_RenderCopy(PresentGame->Client->Renderer, buffer, &vis_rect, NULL);
     
 }

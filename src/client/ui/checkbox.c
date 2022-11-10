@@ -31,8 +31,8 @@ FE_UI_Checkbox *FE_UI_CreateCheckbox(const char *label, int x, int y, bool check
     c->onclick_data = onclick_data;
 
     // create label from text
-    SDL_Surface *text_surface = FE_Text_Render(PresentGame->font, label, COLOR_BLACK); 
-    SDL_Texture *button_label = SDL_CreateTextureFromSurface(PresentGame->Renderer, text_surface);
+    SDL_Surface *text_surface = FE_Text_Render(PresentGame->Client->Font, label, COLOR_BLACK); 
+    SDL_Texture *button_label = SDL_CreateTextureFromSurface(PresentGame->Client->Renderer, text_surface);
 
     // calculate label rect from texture size
     SDL_Rect label_rect;
@@ -57,7 +57,7 @@ bool FE_UI_CheckboxClick(int x, int y)
 {
     // Check all present game buttons first
     if (!FE_UI_ControlContainerLocked) {
-        for (FE_List *l = PresentGame->UIConfig.ActiveElements->Checkboxes; l; l = l->next) {
+        for (FE_List *l = PresentGame->UIConfig->ActiveElements->Checkboxes; l; l = l->next) {
             FE_UI_Checkbox *c = l->data;
             if (c->r.x < x && c->r.x + c->r.w > x &&
             c->r.y < y && c->r.y + c->r.h > y) {
@@ -69,7 +69,7 @@ bool FE_UI_CheckboxClick(int x, int y)
     }
 
     // Check through container to see if any buttons are hovered
-    for (FE_List *l = PresentGame->UIConfig.ActiveElements->Containers; l; l = l->next) {
+    for (FE_List *l = PresentGame->UIConfig->ActiveElements->Containers; l; l = l->next) {
         FE_UI_Container *c = l->data;
         for (size_t i = 0; i < c->children_count; i++) {
             if (c->children[i].type == FE_UI_BUTTON) {
@@ -89,12 +89,12 @@ bool FE_UI_CheckboxClick(int x, int y)
 void FE_UI_RenderCheckbox(FE_UI_Checkbox *c)
 {
     if (c->checked) {
-        SDL_RenderCopy(PresentGame->Renderer, checkbox_active_texture, NULL, &c->r);
+        SDL_RenderCopy(PresentGame->Client->Renderer, checkbox_active_texture, NULL, &c->r);
     } else {
-        SDL_RenderCopy(PresentGame->Renderer, checkbox_texture, NULL, &c->r);
+        SDL_RenderCopy(PresentGame->Client->Renderer, checkbox_texture, NULL, &c->r);
     }
 
-    SDL_RenderCopy(PresentGame->Renderer, c->label, NULL, &c->label_rect); // render label
+    SDL_RenderCopy(PresentGame->Client->Renderer, c->label, NULL, &c->label_rect); // render label
 }
 
 void FE_UI_DestroyCheckbox(FE_UI_Checkbox *c, bool global)
@@ -107,8 +107,8 @@ void FE_UI_DestroyCheckbox(FE_UI_Checkbox *c, bool global)
     SDL_DestroyTexture(c->label);
     
     if (global) {
-        FE_List_Remove(&PresentGame->UIConfig.ActiveElements->Checkboxes , c);
-        PresentGame->UIConfig.ActiveElements->Count--;
+        FE_List_Remove(&PresentGame->UIConfig->ActiveElements->Checkboxes , c);
+        PresentGame->UIConfig->ActiveElements->Count--;
     }
 
     free(c);

@@ -96,9 +96,9 @@ void FE_Light_Render(FE_Camera *camera, SDL_Texture *world)
 
     /* Disable lighting if brightness is 0 */
     if (brightness == 255) {
-        SDL_SetRenderTarget(PresentGame->Renderer, NULL);
+        SDL_SetRenderTarget(PresentGame->Client->Renderer, NULL);
         // Only render the part of the world that is visible
-        SDL_RenderCopy(PresentGame->Renderer, world, &vis_rect, NULL);
+        SDL_RenderCopy(PresentGame->Client->Renderer, world, &vis_rect, NULL);
         return;
     }
 
@@ -106,10 +106,10 @@ void FE_Light_Render(FE_Camera *camera, SDL_Texture *world)
 
     /* Create an layer to render the lighting to. Only re-render if lighting has changed. */
     if (light_layer_dirty || PresentGame->GameState == GAME_STATE_EDITOR) {
-        SDL_SetRenderTarget(PresentGame->Renderer, light_layer);
+        SDL_SetRenderTarget(PresentGame->Client->Renderer, light_layer);
         SDL_SetTextureBlendMode(light_layer, SDL_BLENDMODE_MOD);
-        SDL_SetRenderDrawColor(PresentGame->Renderer, brightness, brightness, brightness, 0);
-        SDL_RenderClear(PresentGame->Renderer);
+        SDL_SetRenderDrawColor(PresentGame->Client->Renderer, brightness, brightness, brightness, 0);
+        SDL_RenderClear(PresentGame->Client->Renderer);
 	
         // render the lights
         for (FE_List *l = lights; l; l = l->next) {
@@ -124,10 +124,10 @@ void FE_Light_Render(FE_Camera *camera, SDL_Texture *world)
     }
 
     // Render the world with the applied light effects
-    SDL_SetRenderTarget(PresentGame->Renderer, NULL);
-    SDL_RenderCopy(PresentGame->Renderer, world,  &vis_rect, NULL);
-    SDL_RenderCopy(PresentGame->Renderer, light_layer,  &vis_rect, NULL);
-    SDL_SetRenderDrawBlendMode(PresentGame->Renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderTarget(PresentGame->Client->Renderer, NULL);
+    SDL_RenderCopy(PresentGame->Client->Renderer, world,  &vis_rect, NULL);
+    SDL_RenderCopy(PresentGame->Client->Renderer, light_layer,  &vis_rect, NULL);
+    SDL_SetRenderDrawBlendMode(PresentGame->Client->Renderer, SDL_BLENDMODE_NONE);
 }
 
 void FE_Light_Destroy(FE_Light *light)

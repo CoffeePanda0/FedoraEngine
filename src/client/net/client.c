@@ -5,8 +5,6 @@
 #include "include/message.h"
 #include "include/include.h"
 
-#include "../../world/include/map.h"
-
 #include "../ui/include/chatbox.h"
 #include "../ui/include/menu.h"
 
@@ -33,11 +31,11 @@ static FE_List *players;
 static bool Connect(int port, char *addr)
 {
     // show connecting status
-    SDL_RenderClear(PresentGame->Renderer);
+    SDL_RenderClear(PresentGame->Client->Renderer);
     connecting_label = FE_UI_CreateLabel(0, "Connecting...", 300, midx(256), 50, COLOR_WHITE);
     FE_UI_AddElement(FE_UI_LABEL, connecting_label);
     FE_UI_Render();
-    SDL_RenderPresent(PresentGame->Renderer);
+    SDL_RenderPresent(PresentGame->Client->Renderer);
 
     ENetAddress address = {0};
     ENetEvent event;
@@ -346,16 +344,16 @@ static void RenderPlayers()
 void ClientRender()
 {
     if (!connected) {
-        SDL_RenderClear(PresentGame->Renderer);
+        SDL_RenderClear(PresentGame->Client->Renderer);
         FE_UI_Render();
-        SDL_RenderPresent(PresentGame->Renderer);
+        SDL_RenderPresent(PresentGame->Client->Renderer);
     } else {
         PresentGame->Timing.RenderTime = FE_QueryPerformanceCounter();
 
         if (PresentGame->DebugConfig.LightingEnabled)
-            SDL_SetRenderTarget(PresentGame->Renderer, world);
+            SDL_SetRenderTarget(PresentGame->Client->Renderer, world);
 
-        SDL_RenderClear(PresentGame->Renderer);
+        SDL_RenderClear(PresentGame->Client->Renderer);
         FE_Map_RenderBackground(GameCamera);
         FE_Particles_Render(GameCamera);
         FE_Map_RenderLoaded(GameCamera);
@@ -372,7 +370,7 @@ void ClientRender()
         FE_UI_RenderChatbox(chatbox);
         FE_UI_Render();
 
-        SDL_RenderPresent(PresentGame->Renderer);
+        SDL_RenderPresent(PresentGame->Client->Renderer);
 
 	    PresentGame->Timing.RenderTime = ((FE_QueryPerformanceCounter() - PresentGame->Timing.RenderTime) / FE_QueryPerformanceFrequency()) * 1000;
     }
@@ -410,7 +408,7 @@ void ClientEventHandle()
                     }
                     else if (keyboard_state[SDL_SCANCODE_GRAVE]) {
                         SDL_StartTextInput();
-                        PresentGame->StartedInput = true;
+                        PresentGame->Client->StartedInput = true;
                         FE_Console_Show();
                         break;
                     }

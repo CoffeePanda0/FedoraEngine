@@ -5,21 +5,13 @@
 #include "lib/string.h"
 #include <errno.h>
 #include "include/utils.h"
-#include "include/fedoraengine.h"
 
 #define USE_SDL (defined(SDL_stdinc))
+#ifdef USE_SDL
+		#include <SDL.h>
+#endif
 
 static FILE* f;
-
-uint16_t rel_w(uint16_t w)
-{
-	return (w * PresentGame->WindowWidth) / 100;
-}
-
-uint16_t rel_h(uint16_t h)
-{
-	return (h / 100) * PresentGame->WindowHeight;
-}
 
 char *IntToSTR (int i)
 {
@@ -78,7 +70,6 @@ void die (enum dietypes type, const char *s, ...) {
 	#endif
 
 	fflush(f);
-	FE_Clean();
 	free(out);
 
 	exit(1);

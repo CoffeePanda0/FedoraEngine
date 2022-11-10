@@ -4,22 +4,21 @@
 /* This header imports all core and client related headers, and exists here so that imports can
 be done in a more organized manner with <FE_Client.h>. */
 
-#include <SDL.h>
-#include <FE_Common.h>
+#include "../../../client/core/include/include.h"
 
 #include "../../../client/include/audio.h"
 #include "../../../client/include/keymap.h"
 #include "../../../client/include/pause.h"
 #include "../../../client/include/game.h"
 
-#include "../../../client/core/include/include.h"
 #include "../../../client/entity/include/include.h"
 #include "../../../client/ui/include/include.h"
 
 #include "../../../client/world/include/camera.h"
 #include "../../../client/world/include/lighting.h"
-#include "../../../client/editor/editor.h"
+#include "../../../client/world/include/map.h"
+#include "../../../client/world/include/background.h"
 
-#include "../../../world/include/include.h"
+#include "../../../client/editor/editor.h"
 
 #endif
