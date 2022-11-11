@@ -5,10 +5,13 @@
 #include "lib/string.h"
 #include <errno.h>
 #include "include/utils.h"
+#include "include/fedoraengine.h"
 
-#define USE_SDL (defined(SDL_stdinc))
-#ifdef USE_SDL
-		#include <SDL.h>
+#ifdef __has_include
+    #if __has_include(<SDL.h>)
+        #include <SDL.h>
+		#define USE_SDL 1
+    #endif
 #endif
 
 static FILE* f;
@@ -52,8 +55,10 @@ void die (enum dietypes type, const char *s, ...) {
 			break;
 		case DT_SDL:
 			#ifdef USE_SDL
-				err = SDL_GetError();
-				len += 2 + mstrlen(err);
+				if (PresentGame->Client) {
+					err = SDL_GetError();
+					len += 2 + mstrlen(err);
+				}
 			#endif
 			break;
 	}
@@ -66,7 +71,8 @@ void die (enum dietypes type, const char *s, ...) {
 	vlog(LT_ERROR, "%s", out);
 	
 	#ifdef USE_SDL
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", out, NULL);
+		if (PresentGame->Client)
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", out, NULL);
 	#endif
 
 	fflush(f);

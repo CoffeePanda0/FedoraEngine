@@ -21,6 +21,16 @@
 
 /*****************************************************/
 
+#ifdef __has_include
+    #if __has_include(<SDL.h>)
+	#else
+		// If SDL is not installed, automatically assume server install
+		#ifndef SERVER_ONLY
+			#define SERVER_ONLY 1
+		#endif
+    #endif
+#endif
+
 #ifndef SERVER_ONLY
 	#include <FE_Client.h>
 	#include "client/ui/include/menu.h"
