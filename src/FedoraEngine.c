@@ -7,42 +7,90 @@
 
 	FedoraEngine.c - Primary Game file
 */
-#include "include/game.h"
-#include "web/net.h"
+
+#include <FE_Common.h>
+#include "common/net/include/net.h"
+#include "server/include/include.h"
+
+/* Uses ifdefs to decide which int main() should be used (if we are compiling server only or not) */
+
+/******************************************************/
+
+/* Uncomment this to compile server only */
+// #define SERVER_ONLY 1
+
+/*****************************************************/
+
+#ifdef __has_include
+    #if __has_include(<SDL.h>)
+	#else
+		// If SDL is not installed, automatically assume server install
+		#ifndef SERVER_ONLY
+			#define SERVER_ONLY 1
+		#endif
+    #endif
+#endif
+
+#ifndef SERVER_ONLY
+	#include <FE_Client.h>
+	#include "client/ui/include/menu.h"
+#endif
 
 FE_Game *PresentGame;
 
-static void LoadArgs(int argc, char *argv[], FE_InitConfig *IC)
+
+#ifdef SERVER_ONLY
+int main(int argc, char* arv[])
 {
-	if (argc > 1) {
-		if (mstrcmp(argv[1], "--server") == 0 || mstrcmp(argv[1], "-s") == 0) {
-			/* Load headless FedoraEngine */
-			IC->headless = true;
-		}
+	(void)argc, (void)arv;
+
+	FE_InitConfig *IC = FE_NewInitConfig();
+
+	/* Initialise FedoraEngine subsystems */
+	FE_Init(IC);
+
+	/* Initialise the server */
+	FE_Server_Init();
+	FE_Multiplayer_InitServer();
+
+	while (PresentGame->GameActive) {
+		FE_CalculateDT();
+		FE_RunServer();
 	}
+
+	return 0;
 }
+
+#else
 
 int main(int argc, char* argv[])
 {
 	FE_InitConfig *IC = FE_NewInitConfig();
-	IC->vsync = true;
 
-	/* Check launch args */
-	LoadArgs(argc, argv, IC);
-
-	/* Initialise FedoraEngine systems */
+	/* Initialise FedoraEngine subsystems */
 	FE_Init(IC);
 
-	if (!IC->headless)
-		FE_Menu_LoadMenu("Main");
-	else
+	/* Initialises FedoraEngine to run as either a client or a server */
+	if (FE_ArgExists(argc, argv, "--server", "-s")) {
+		IC->Headless = true;
+		FE_Server_Init();
 		FE_Multiplayer_InitServer();
-	PresentGame->DebugConfig.NoClip = true;
-		
+	} else {
+		FE_Client_Init(IC);
+
+		// Check if map is already specified
+		if (FE_ArgExists(argc, argv, "--map", "-m") && argc == 3)
+			FE_StartGame(argv[2]);
+		else
+			FE_Menu_LoadMenu("Main");
+	}
+
+	
 	/* main game loop - calls functions based on game state */
 	while (PresentGame->GameActive) {
 		FE_CalculateDT();
-
+		FE_CalculateFPS();
+		
 		switch (PresentGame->GameState) {
 			case GAME_STATE_MENU:
 				FE_Menu_Render();
@@ -59,12 +107,12 @@ int main(int argc, char* argv[])
 				FE_Editor_Render();
 				FE_Editor_EventHandler();
 			break;
-			case GAME_STATE_MULTIPLAYER:
-				FE_Multiplayer_Update();
-				FE_Multiplayer_Render();
-				FE_Multiplayer_EventHandle();
+			case GAME_STATE_CLIENT:
+				FE_RunClient();
 			break;
-
+			case GAME_STATE_SERVER:
+				FE_RunServer();
+			break;
 		}
 	}
 	
@@ -73,3 +121,5 @@ int main(int argc, char* argv[])
 	return 0;
 
 }
+
+#endif
