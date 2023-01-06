@@ -85,115 +85,131 @@ static void Disconnect()
 
 static void HandleRecieve(ENetEvent *event)
 {
-    switch (PacketType(event)) {
-        case PACKET_TYPE_UPDATE:;
-            // update player position
-            char *user = JSONPacket_GetValue(event, "u");
+    FE_Net_RcvPacket *packet = FE_Net_GetPacket(event);
+    if (!packet) {
+        warn("Invalid packet from server");
+        return;
+    }
 
-            float x = atof(JSONPacket_GetValue(event, "x"));
-            float y = atof(JSONPacket_GetValue(event, "y"));
+    switch (packet->type) {
+
+        case PACKET_SERVER_UPDATE:;
+
+            /* Check if the updated player is us */
+            char *user = FE_Net_GetString(packet);
 
             if (mstrcmp(user, username) == 0) {
-                float velx = atof(JSONPacket_GetValue(event, "vx"));
-                float vely = atof(JSONPacket_GetValue(event, "vy"));
+                /* Update our player */
+                GamePlayer->player->PhysObj->position.x = FE_Net_GetInt(packet);
+                GamePlayer->player->PhysObj->position.y = FE_Net_GetInt(packet);
 
-                GamePlayer->player->PhysObj->position.x = x;
-                GamePlayer->player->PhysObj->position.y = y;
-                GamePlayer->player->PhysObj->velocity.x = velx;
-                GamePlayer->player->PhysObj->velocity.y = vely;
+                GamePlayer->player->PhysObj->body.x = GamePlayer->player->PhysObj->position.x;
+                GamePlayer->player->PhysObj->body.y = GamePlayer->player->PhysObj->position.y;
 
-                GamePlayer->player->PhysObj->body.x = x;
-                GamePlayer->player->PhysObj->body.y = y;
+                GamePlayer->player->PhysObj->velocity.x = FE_Net_GetFloat(packet);
+                GamePlayer->player->PhysObj->velocity.y = FE_Net_GetFloat(packet);
             } else {
-                // find player in list, update position
+                /* Find player in list, update position */
                 for (FE_List *l = players; l; l = l->next) {
                     player *p = l->data;
                     if (mstrcmp(p->username, user) == 0) {
-                        p->rect.x = x;
-                        p->rect.y = y;
+                        p->rect.x = FE_Net_GetInt(packet);
+                        p->rect.y = FE_Net_GetInt(packet);
                         return;
                     }
                 }
             }
+        break;
 
-            break;
-        case PACKET_TYPE_SERVERMSG: ;
-            char *servermsg = mstradd("SERVER MESSAGE: ", JSONPacket_GetValue(event, "msg"));
+        case PACKET_SERVER_SERVERMSG: ;
+            char *data = FE_Net_GetString(packet);
+            char *servermsg = mstradd("SERVER MESSAGE: ", data);
             info(servermsg);
             
             FE_UI_ChatboxMessage(chatbox, servermsg);
 
             free(servermsg);
-            break;
-        case PACKET_TYPE_SERVERCMD: ;
-            char *cmd = JSONPacket_GetValue(event, "cmd");
+            free(data);
+        
+        break;
 
-            if (mstrcmp(cmd, "addplayer") == 0) {
-                // add player to list
-                player *p = xmalloc(sizeof(player));
-                p->rect = (SDL_Rect) {
-                    .x = atoi(JSONPacket_GetValue(event, "x")),
-                    .y = atoi(JSONPacket_GetValue(event, "y")),
-                    .w = 120,
-                    .h = 100
-                };
-                p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png");
-                mstrcpy(p->username, JSONPacket_GetValue(event, "username"));
-                FE_List_Add(&players, p);
+        case PACKET_SERVER_SPAWN: ;
+            char *username = FE_Net_GetString(packet);
+            int x = FE_Net_GetInt(packet);
+            int y = FE_Net_GetInt(packet);
 
-                // show player join message
-                info("Player %s has joined", JSONPacket_GetValue(event, "username"));
-                char *msg = mstradd(JSONPacket_GetValue(event, "username"), " has joined the game");
-                FE_UI_ChatboxMessage(chatbox,  msg);
-                free(msg);
+            // add player to list
+            player *p = xmalloc(sizeof(player));
+            p->rect = (SDL_Rect) {
+                .x = x,
+                .y = y,
+                .w = 120,
+                .h = 100
+            };
+            p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png");
+            mstrcpy(p->username, username);
+            FE_List_Add(&players, p);
 
-            } else if (mstrcmp(cmd, "removeplayer") == 0) {
-                // remove player from list and free memory
-                char *user = JSONPacket_GetValue(event, "username");
-                for (FE_List *p = players; p; p = p->next) {
-                    player *pl = p->data;
-                    if (mstrcmp(pl->username, user) == 0) {
-                        FE_DestroyResource(pl->texture->path);
-                        FE_List_Remove(&players, pl);
-                        free(pl);
+            // show player join message
+            char *msg = mstradd(username, " has joined the game");
+            FE_UI_ChatboxMessage(chatbox,  msg);
 
-                        info("Player %s has left", user);
-                        char *msg = mstradd(JSONPacket_GetValue(event, "username"), " has left the game");
-                        FE_UI_ChatboxMessage(chatbox,  msg);
-                        free(msg);
+            free(msg);
+            free(username);
+        break;
 
-                        return;
-                    }
+        case PACKET_SERVER_DESPAWN: ;
+            /* Remove player from list and free memory */
+            char *kicked_user = FE_Net_GetString(packet);
+            for (FE_List *p = players; p; p = p->next) {
+                player *pl = p->data;
+                if (mstrcmp(pl->username, kicked_user) == 0) {
+                    FE_DestroyResource(pl->texture->path);
+                    FE_List_Remove(&players, pl);
+                    free(pl);
+
+                    info("Player %s has left", kicked_user);
+                    char *msg = mstradd(kicked_user, " has left the game");
+                    FE_UI_ChatboxMessage(chatbox,  msg);
+                    free(msg);
+                    free(kicked_user);
+
+                    return;
                 }
             }
-            break;
+        break;
 
-        case PACKET_TYPE_KICK:
+        case PACKET_SERVER_KICK: ;
             // set the game disconnect info to the kick message
             PresentGame->DisconnectInfo = (FE_DisconnectInfo) {
                 .set = true,
-                .reason = JSONPacket_GetValue(event, "reason"),
+                .reason = FE_Net_GetString(packet),
             };
         break;
 
-        case PACKET_TYPE_MESSAGE: ;
+        case PACKET_SERVER_CHAT: ;
             // show chat message
             
-            char *_username = JSONPacket_GetValue(event, "username");
-            char *_msg = JSONPacket_GetValue(event, "msg");
+            char *_username = FE_Net_GetString(packet);
+            char *_msg = FE_Net_GetString(packet);
 
             size_t len = mstrlen(_username) + mstrlen(_msg) + 7;
-            char *msg = xmalloc(len);
-            snprintf(msg, len, "[%s]: %s", _username, _msg);
+            char *chat = xmalloc(len);
+            snprintf(chat, len, "[%s]: %s", _username, _msg);
 
-            FE_UI_ChatboxMessage(chatbox, msg);
-            free(msg);
+            FE_UI_ChatboxMessage(chatbox, chat);
+            free(chat);
+            free(_username);
+            free(_msg);
+    
             break;
         break;
 
         default:
             break;
     }
+    if (packet) FE_Net_DestroyRcv(packet);
+
 }
 
 static void Exit()
@@ -378,13 +394,16 @@ void ClientRender()
 
 static void SendKeyDown(int key)
 {
-    JSONPacket_SendInt(peer, PACKET_TYPE_KEYDOWN, "key", key);
+    FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_CLIENT_KEYDOWN);
+    FE_Net_Packet_AddInt(p, key);
+    FE_Net_Packet_Send(peer, p, true);
 }
 
 static void SendKeyUp(int key)
 {
-    JSONPacket_SendInt(peer, PACKET_TYPE_KEYUP, "key", key);
-}
+    FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_CLIENT_KEYUP);
+    FE_Net_Packet_AddInt(p, key);
+    FE_Net_Packet_Send(peer, p, true);}
 
 void ClientEventHandle()
 {
@@ -403,7 +422,6 @@ void ClientEventHandle()
                 if (event.key.repeat == 0) {
                     if (keyboard_state[SDL_SCANCODE_ESCAPE]) {
                         Disconnect();
-                        // todo change pause menu
                         break;
                     }
                     else if (keyboard_state[SDL_SCANCODE_GRAVE]) {
@@ -487,7 +505,6 @@ void ClientUpdate()
     HostClient();
 
     UpdatePing();
-
 
 	FE_DebugUI_Update(GamePlayer); 
 	FE_Dialogue_Update();

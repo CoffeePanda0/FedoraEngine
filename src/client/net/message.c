@@ -11,23 +11,23 @@ void Client_SendMesage(char *msg, ENetPeer *peer)
         char *arg = strtok(NULL, " ");
         if (strcmp(command, "/rcon") == 0) {
             if (arg) {
-                // split arg by command:data
+                // split arg by command;data
                 char *rcon_command = strtok(arg, ";");
                 char *rcon_data = strtok(NULL, ";");
+
                 if (rcon_command && rcon_data) {
-                    json_packet *p = JSONPacket_Create();
-                    JSONPacket_Add(p, "cmd", rcon_command);
-                    JSONPacket_Add(p, "data", rcon_data);
-                    SendPacket(peer, PACKET_TYPE_RCONREQUEST, p);
-                    JSONPacket_Destroy(p);
+                    /* Send the rcon command */
+                    FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_CLIENT_RCON);
+                    FE_Net_Packet_AddString(p, rcon_command);
+                    FE_Net_Packet_AddString(p, rcon_data);
+                    FE_Net_Packet_Send(peer, p, true);
                 }
-            }
+            } // todo make this nice
         }
     } else {
         // send chat message
-        json_packet *p = JSONPacket_Create();
-        JSONPacket_Add(p, "msg", msg);
-        SendPacket(peer, PACKET_TYPE_MESSAGE, p);
-        JSONPacket_Destroy(p);
+        FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_CLIENT_CHAT);
+        FE_Net_Packet_AddString(p, msg);
+        FE_Net_Packet_Send(peer, p, true);
     }
 }

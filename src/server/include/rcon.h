@@ -30,7 +30,7 @@ void RCON_Mute(client_t *client);
 void RCON_Unmute(client_t *client);
 
 /* Handles an RCON request from a client */
-void RCON_ParseRequest(ENetEvent *event, client_t *c, FE_List *clients);
+void RCON_ParseRequest(FE_Net_RcvPacket *packet, client_t *c, FE_List *clients);
 
 
 #endif
