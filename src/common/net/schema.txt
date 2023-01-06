@@ -1,0 +1,46 @@
+NETWORKING SCHEMA:
+
+All packets start with Packet Type (short int, one byte)
+
+CLIENT -> SERVER:
+0x00 - Login Request:
+    Username (string)
+0x01 - Key Down:
+    Key code (short int, one byte)
+0x02 - Key Up:
+    Key code (short int, one byte)
+0x03 - Chat Message:
+    Message (string)
+0x04 - RCON Command:
+    Command (string)
+    Data (string)
+
+SERVER -> CLIENT:
+0x00 - Login approved:
+    Set username (string)
+0x01 - Server State:
+    State (JSON String)
+0x02 - Kick:
+    Reason (string)
+0x03 - Server Message:
+    Message from server (string)
+0x04 - Chat Message
+    Username (string)
+    Chat message (string)
+0x05 - Client update
+    Username (string)
+    Player X (double)
+    Player Y (double)
+    Player Z (double)
+    Velocity X (double)
+    Velocity Y (double)
+0x06 - Client Spawn
+    Username (string)
+    Player X (double)
+    Player Y (double)
+0x07 - Client Despawn
+    Username (string)
+0x08 - Map Information
+    Compressed map size (int)
+    Uncopressed map size (int)
+    (Prepares client for raw map data)

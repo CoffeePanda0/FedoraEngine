@@ -325,6 +325,6 @@ void FE_Physics_Update()
 
         vec2 position = vec2_lerp(o->last_position, o->position, alpha);
         FE_UPDATE_RECT(position, &o->body); // set interpolated rect for rendering
-    }
+    } /* todo velocity sometimes clips to -1.6 ?? */
 }
 

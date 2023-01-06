@@ -20,13 +20,20 @@ bool AuthenticateClient(ENetHost *server, client_t *c, FE_List **clients, size_t
 	/* Await username first */
 	ENetEvent event;
 	float timeout = 0;
+	bool success = false;
+
 	while (enet_host_service(server, &event, 0) > 0) {
 		if (event.type == ENET_EVENT_TYPE_RECEIVE) {
-			// check if packet is login
-			packet_type type = PacketType(&event);
-			if (type == PACKET_TYPE_LOGIN) {
+			// Load the packet
+			FE_Net_RcvPacket *packet = FE_Net_GetPacket(&event);
+			if (!packet) {
+				info("[SERVER]: Client sent invalid authentication");
+				return false;
+			}
 
-                char *username = JSONPacket_GetValue(&event, "username");
+			if (packet->type == PACKET_CLIENT_LOGIN) {
+
+                char *username = FE_Net_GetString(packet);
                 if (!username) {
                     info("[SERVER]: Client joined with invalid username");
                     return false;
@@ -60,48 +67,50 @@ bool AuthenticateClient(ENetHost *server, client_t *c, FE_List **clients, size_t
 				if (!set) mstrncpy(c->username, username, 17);
 
 				// send the client their username
-				json_packet *p = JSONPacket_Create();
-				JSONPacket_Add(p, "username", c->username);
-				SendPacket(c->peer, PACKET_TYPE_LOGIN, p);
-				JSONPacket_Destroy(p);
+				FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_LOGIN);
+				FE_Net_Packet_AddString(p, c->username);
+				FE_Net_Packet_Send(c->peer, p, true);
+				success = true;
 			}
+
+			if (packet) FE_Net_DestroyRcv(packet);
 		}
 
 		timeout += FE_DT;
 		if (timeout >= 3000)
 			return false;
 	}
+	if (!success) return false;
 
 	/* Send server state */
 	size_t size = 60 + (58 * (++*client_count));
 	if (server_config.has_message) size += (mstrlen(server_config.message) + 4);
 
+	/* Generate the JSON server state */
 	char *buffer = xcalloc(size, 1);
 	GenerateServerState(buffer, size, *clients);
 
-	size_t len = mstrlen(buffer);
-	ENetPacket *packet = enet_packet_create(buffer, len, ENET_PACKET_FLAG_RELIABLE);
-	enet_peer_send(c->peer, 0, packet);
+	/* Send server state as a packet */
+	FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_STATE);
+	FE_Net_Packet_AddString(packet, buffer);
+	FE_Net_Packet_Send(c->peer, packet, true);
+
 	enet_host_flush(server);
 	free(buffer);
 
-	/* Send map */
+	/* Send map as raw binary */
 	SendMap(c->peer);
 
 	c->authenticated = true;
 	
-	// send packet to all clients to add the new player
-	char x[16], y[16];
-	sprintf(x, "%f", c->player->PhysObj->position.x);
-	sprintf(y, "%f", c->player->PhysObj->position.y);
+	/* Broadcast packet telling all clients to spawn new user with their coordinates and username*/
+	FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_SPAWN);
+	FE_Net_Packet_AddString(p, c->username);
+	FE_Net_Packet_AddInt(p, (int)c->player->PhysObj->position.x);
+	FE_Net_Packet_AddInt(p, (int)c->player->PhysObj->position.y);
 
-	json_packet *p = JSONPacket_Create();
-	JSONPacket_Add(p, "cmd", "addplayer");
-	JSONPacket_Add(p, "username", c->username);
-	JSONPacket_Add(p, "x", x);
-	JSONPacket_Add(p, "y", y);
-	BroadcastPacket(c->peer, PACKET_TYPE_SERVERCMD, p);
-	JSONPacket_Destroy(p);
+	BroadcastPacket(c->peer, p);
+	FE_Net_Packet_Destroy(p);
 
 	info("[SERVER] Client %s has joined the game", c->username);
 

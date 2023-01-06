@@ -15,10 +15,9 @@ bool Client_Connect(char *uname, ENetPeer *server, ENetHost *client, char **user
     bool setusername  = false;
 
     // send login packet with username
-    json_packet *p = JSONPacket_Create();
-    JSONPacket_Add(p, "username", uname);
-    SendPacket(server, PACKET_TYPE_LOGIN, p);
-    JSONPacket_Destroy(p);
+    FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_CLIENT_LOGIN);
+    FE_Net_Packet_AddString(p, uname);
+    FE_Net_Packet_Send(server, p, true);
 
     // wait to recieve username, state and map
     ENetEvent event;
@@ -26,30 +25,35 @@ bool Client_Connect(char *uname, ENetPeer *server, ENetHost *client, char **user
     while (!setmap || !setstate || !setusername) {
         while (enet_host_service(client, &event, 0) > 0) {
             if (event.type == ENET_EVENT_TYPE_RECEIVE) {
-                switch (PacketType(&event)) {
 
-                    case PACKET_TYPE_LOGIN:
+                // Load the packet
+                FE_Net_RcvPacket *packet = FE_Net_GetPacket(&event);
+                if (!packet) {
+                    info("[CLIENT]: Server sent invalid packet");
+                    return false;
+                }
+
+                switch (packet->type) {
+
+                    case PACKET_SERVER_LOGIN:
                         setusername = true;
-                        *username = mstrdup(JSONPacket_GetValue(&event, "username"));
+                        *username = FE_Net_GetString(packet);
                     break;
                     
-                    case PACKET_TYPE_SERVERSTATE:
-                        LoadServerState(&event, players);
+                    case PACKET_SERVER_STATE:
+                        LoadServerState(packet, players);
                         setstate = true;
                     break;
                     
-                    case PACKET_TYPE_MAP: ;
+                    case PACKET_SERVER_MAP: ;
                         // prepare to load map and read lengths
-                        char *len_ = JSONPacket_GetValue(&event, "len");
-                        char *u_len_ = JSONPacket_GetValue(&event, "u_len");
+                        size_t length = (size_t)FE_Net_GetInt(packet);
+                        size_t u_length = (size_t)FE_Net_GetInt(packet);
 
-                        if (!len_ || !u_len_) {
+                        if (length == 0 || u_length == 0) {
                             warn("Invalid map packet");
                             return false;
                         }
-
-                        size_t length = atoi(len_);
-                        size_t u_length = atoi(u_len_);
 
                         bool status = AwaitMap(client, length, u_length); // recieve map (client may hang while waiting for map)
                         setmap = true;
@@ -59,6 +63,9 @@ bool Client_Connect(char *uname, ENetPeer *server, ENetHost *client, char **user
                     break;
 
                 }
+
+                FE_Net_DestroyRcv(packet);
+
             } else if (event.type == ENET_EVENT_TYPE_DISCONNECT) {
                 if (event.data && event.data == DISC_NOCON) {
                     PresentGame->DisconnectInfo.set = true;
@@ -79,7 +86,10 @@ bool Client_Connect(char *uname, ENetPeer *server, ENetHost *client, char **user
 
     }
 
-    info("Successfully joined game as %s", *username);
-
-    return (setstate && setusername && setmap);
+    if (setstate && setusername && setmap) {
+        info("Successfully joined game as %s", *username);
+        return true;
+    }
+    
+    return false;
 }
