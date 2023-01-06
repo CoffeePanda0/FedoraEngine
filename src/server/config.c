@@ -78,7 +78,6 @@ void GenerateServerState(char *buffer, size_t size, FE_List *clients)
 {
 	// create json packet
 	buffer = json_objOpen(buffer, NULL, &size);
-	buffer = json_int(buffer, "type", PACKET_TYPE_SERVERSTATE, &size);
 
 	// load welcome message (if exists)
 	buffer = json_int(buffer, "hasmsg", server_config.has_message, &size);
@@ -112,6 +111,8 @@ void SendMap(ENetPeer *peer)
 		printf("Could not open map\n");
 		return;
 	}
+
+    /* Read map size and the file*/
     free(path);
 	fseek(file, 0, SEEK_END);
 	size_t size = ftell(file);
@@ -125,23 +126,17 @@ void SendMap(ENetPeer *peer)
     char *compressed = xmalloc(max_size);
     int compressed_size = LZ4_compress_default(data, compressed, size, size);
     if (compressed_size == 0) {
-        printf("Could not compress map data\n");
+        warn("Could not compress map data\n");
         return;
     }
 
+
     // Send a packet to the client to listen for map data
-    json_packet *p = JSONPacket_Create();
+    FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_MAP);
+    FE_Net_Packet_AddInt(p, compressed_size);
+    FE_Net_Packet_AddInt(p, size);
 
-    char buff[16]; // send compressed size as string
-    sprintf(buff, "%i", compressed_size);
-    JSONPacket_Add(p, "len", buff);
-
-    char buff2[16]; // send uncompressed size as string
-    sprintf(buff2, "%zu", size);
-    JSONPacket_Add(p, "u_len", buff2);
-
-    SendPacket(peer, PACKET_TYPE_MAP, p);
-    JSONPacket_Destroy(p);
+    FE_Net_Packet_Send(peer, p, true);
 
     // Send the map data
     ENetPacket *packet = enet_packet_create(compressed, compressed_size, ENET_PACKET_FLAG_RELIABLE);

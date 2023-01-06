@@ -43,18 +43,17 @@ kick:
     info("[SERVER]: Kicking player [%s:%i] %s (%s)", client->ip, client->peer->address.port, client->username, reason);
     
     // send client a packet so they know they have been kicked
-    json_packet *p = JSONPacket_Create();
-    JSONPacket_Add(p, "reason", reason);
-    SendPacket(client->peer, PACKET_TYPE_KICK, p);
-    JSONPacket_Destroy(p);
+    FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_KICK);
+    FE_Net_Packet_AddString(p, reason);
+    FE_Net_Packet_Send(client->peer, p, true);
 
     enet_peer_disconnect_later(client->peer, DISC_KICK);
 }
 
-void RCON_ParseRequest(ENetEvent *event, client_t *c, FE_List *clients)
+void RCON_ParseRequest(FE_Net_RcvPacket *packet, client_t *c, FE_List *clients)
 {
-    char *command = JSONPacket_GetValue(event, "cmd");
-    char *data = JSONPacket_GetValue(event, "data");
+    char *command = FE_Net_GetString(packet);
+    char *data = FE_Net_GetString(packet);
     if (!command || !data) {
         ServerMSG(c, "Invalid RCON request");
         return;
@@ -127,6 +126,9 @@ void RCON_ParseRequest(ENetEvent *event, client_t *c, FE_List *clients)
     } else {
         ServerMSG(c, "Invalid RCON command");
     }
+
+    if (command) free(command);
+    if (data) free(data);
 }
 
 void RCON_Ban(client_t *client, char *reason)
@@ -140,10 +142,9 @@ void RCON_Ban(client_t *client, char *reason)
     info("[SERVER]: Banning player [%s:%i] %s (%s)", client->ip, client->peer->address.port, client->username, reason);
     
     // send client a packet so they know they have been kicked
-    json_packet *p = JSONPacket_Create();
-    JSONPacket_Add(p, "reason", reason);
-    SendPacket(client->peer, PACKET_TYPE_KICK, p);
-    JSONPacket_Destroy(p);
+    FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_KICK);
+    FE_Net_Packet_AddString(p, reason);
+    FE_Net_Packet_Send(client->peer, p, true);
     
     enet_peer_disconnect_later(client->peer, DISC_BAN);
 }

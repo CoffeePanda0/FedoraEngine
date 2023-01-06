@@ -13,14 +13,14 @@ void ServerMSG(client_t *client, char *msg);
  * \param type The type of packet to send
  * \param p The packet to send
 */
-void BroadcastPacket(ENetPeer *peer, packet_type type, json_packet *p);
+void BroadcastPacket(ENetPeer *peer, FE_Net_Packet *p);
 
 
 /** Parses a chat message event
  * \client The client that sent the message
- * \event The event to parse
+ * \packet The packet containing the message
 */
-void Server_ParseMessage(client_t *client, ENetEvent *event);
+void Server_ParseMessage(client_t *client, FE_Net_RcvPacket *packet);
 
 
 /** Resets the throttle timer for clients sending chat messages
