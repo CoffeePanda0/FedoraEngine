@@ -7,7 +7,7 @@
 #include "include/rcon.h"
 #include "include/message.h"
 
-void Server_ParseMessage(client_t *c, FE_Net_RcvPacket *packet)
+void Server_ParseMessage(client_t *c, ENetEvent *event)
 {
     /* Sending a message code */
     if (c->muted) {
@@ -24,7 +24,7 @@ void Server_ParseMessage(client_t *c, FE_Net_RcvPacket *packet)
         return;
     }
 
-    char *msg = FE_Net_GetString(packet);
+    char *msg = JSONPacket_GetValue(event, "msg");
     if (!msg) {
         warn("[SERVER]: Illegal message sent by %s", c->username);
         return;
@@ -32,16 +32,12 @@ void Server_ParseMessage(client_t *c, FE_Net_RcvPacket *packet)
 
     // if message is recieved from a client, send it to all clients
     if (mstrlen(msg) < 80 && mstrlen(msg) > 1 && !mstrempty(msg)) {
-
-        FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_CHAT);
-        FE_Net_Packet_AddString(packet, c->username);
-        FE_Net_Packet_AddString(packet, mstrtrim(msg));
-
-        BroadcastPacket(0, packet);
-        FE_Net_Packet_Destroy(packet);
+        json_packet *packet = JSONPacket_Create();
+        JSONPacket_Add(packet, "username", c->username);
+        JSONPacket_Add(packet, "msg", mstrtrim(msg));
+        BroadcastPacket(0, PACKET_TYPE_MESSAGE, packet);
+        JSONPacket_Destroy(packet);
     }
-
-    free(msg);
 }
 
 void ResetMessageCount(FE_List **clients)
@@ -58,10 +54,12 @@ void ResetMessageCount(FE_List **clients)
 	}
 }
 
-/* Sends a "server message" to one client */
+// sends a "server message" to one client
 void ServerMSG(client_t *client, char *msg)
 {
-	FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_SERVERMSG);
-	FE_Net_Packet_AddString(p, msg);
-    FE_Net_Packet_Send(client->peer, p, true);
+	json_packet *p = JSONPacket_Create();
+	JSONPacket_Add(p, "msg", msg);
+	SendPacket(client->peer, PACKET_TYPE_SERVERMSG, p);
+
+	JSONPacket_Destroy(p);
 }

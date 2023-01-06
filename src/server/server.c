@@ -1,8 +1,6 @@
 #include <FE_Common.h>
 
 #include "../common/net/include/packet.h"
-#include "../common/net/include/packet.h"
-
 #include "include/rcon.h"
 #include "include/message.h"
 #include "include/include.h"
@@ -21,12 +19,12 @@ static FE_StrArr *ip_spam;
 
 /* sends a packet to all clients other than the one who sent it
 	(set to 0 to send to all clients) */
-void BroadcastPacket(ENetPeer *peer, FE_Net_Packet *p)
+void BroadcastPacket(ENetPeer *peer, packet_type type, json_packet *p)
 {
 	for (FE_List *l = clients; l; l = l->next) {
 		client_t *c = l->data;
 		if (!peer || c->peer != peer) {
-			FE_Net_Packet_Send(c->peer, p, false);
+			SendPacket(c->peer, type, p);
 		}
 	}
 }
@@ -117,17 +115,7 @@ static void HandleConnect(ENetEvent *event)
 	}
 
 	// wait for client to send / receive state
-	bool flag = AuthenticateClient(server, c, &clients, &client_count);
-	if (!flag) {
-		// client failed to authenticate
-		FE_Physics_Remove(c->player->PhysObj);
-		free(c->player);
-
-		FE_List_Remove(&clients, c);
-		free(c);
-		info("[SERVER]: Client failed to authenticate");
-		return;
-	}
+	AuthenticateClient(server, c, &clients, &client_count);
 
 	enet_packet_destroy(event->packet);
 }
@@ -146,7 +134,7 @@ static void HandleKeyUp(held_keys key, client_t *c)
 		c->held_keys[key] = 0;
 }
 
-/* Handles receiving a packet from a client */
+// handles receiving a packet from a client
 static void HandleRecieve(ENetEvent *event)
 {
 	client_t *c = GetClient(event->peer);
@@ -157,35 +145,27 @@ static void HandleRecieve(ENetEvent *event)
 	if (!c->authenticated)
 		RCON_Kick(c, "Client not authenticated");
 
-	/* Parse the packet */
-	FE_Net_RcvPacket *packet = FE_Net_GetPacket(event);
-	if (!packet) {
-		warn("[SERVER]: Invalid packet from %s", c->username);
-		return;
-	}
-
-	switch (packet->type) {
-		case PACKET_CLIENT_CHAT:
-			Server_ParseMessage(c, packet);
+	switch (PacketType(event)) {
+		case PACKET_TYPE_MESSAGE:
+			Server_ParseMessage(c, event);
 		break;
 
-		case PACKET_CLIENT_KEYDOWN:
-			HandleKeyDown(FE_Net_GetInt(packet), c);
+		case PACKET_TYPE_KEYDOWN:
+			HandleKeyDown(JSONPacket_GetInt(event, "key"), c);
 		break;
 
-		case PACKET_CLIENT_KEYUP:
-			HandleKeyUp(FE_Net_GetInt(packet), c);
+		case PACKET_TYPE_KEYUP:
+			HandleKeyUp(JSONPacket_GetInt(event, "key"), c);
 		break;
 
-		case PACKET_CLIENT_RCON: ;
-			RCON_ParseRequest(packet, c, clients);
+		case PACKET_TYPE_RCONREQUEST: ;
+			RCON_ParseRequest(event, c, clients);
 		break;
 
 		default:
 			break;
 	}
 
-	FE_Net_DestroyRcv(packet);
 }
 
 static void HandleDisconnect(ENetEvent *event)
@@ -195,10 +175,11 @@ static void HandleDisconnect(ENetEvent *event)
 	info("[SERVER]: Client %s disconnected", c->username);
 
 	// send packet to all clients to remove the player
-	FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_DESPAWN);
-	FE_Net_Packet_AddString(p, c->username);
-	BroadcastPacket(c->peer, p);
-	FE_Net_Packet_Destroy(p);
+	json_packet *p = JSONPacket_Create();
+	JSONPacket_Add(p, "cmd", "removeplayer");
+	JSONPacket_Add(p, "username", c->username);
+	BroadcastPacket(c->peer, PACKET_TYPE_SERVERCMD, p);
+	JSONPacket_Destroy(p);
 
 	event->peer->data = NULL;
 	FE_Physics_Remove(c->player->PhysObj);
@@ -404,29 +385,28 @@ void UpdateServer()
 	// check if any clients have moved, if so then send them the new position
 	for (FE_List *l = clients; l; l = l->next) {
 		client_t *c = l->data;
-		if (
-		/* x-y any changes */	!vec2_cmp(c->last_location, vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y)) || 
-		/* velocity changes to 0 */ (c->last_velocity.x != 0 && c->player->PhysObj->velocity.x == 0) || (c->last_velocity.y != 0 && c->player->PhysObj->velocity.y == 0)
-		) {
+		if (!vec2_cmp(c->last_location, vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y))
+		|| !vec2_cmp(c->last_velocity, vec(c->player->PhysObj->velocity.x, c->player->PhysObj->velocity.y))) {
 			
-			/* Record the last sent location so we don't keep resending */
 			c->last_location = vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y);
 			c->last_velocity = vec(c->player->PhysObj->velocity.x, c->player->PhysObj->velocity.y);
 
-			/* Create new packet */
-			FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
-			FE_Net_Packet_AddString(packet, c->username);
+			json_packet *packet = JSONPacket_Create();
+			JSONPacket_Add(packet, "u", c->username);
 			
-			/* Attatch the player's position and velocity to the packet */
-			FE_Net_Packet_AddInt(packet, (int)c->last_location.x);
-			FE_Net_Packet_AddInt(packet, (int)c->last_location.y);
+			// attatch the player's position to the packet
+			char x[8], y[8], velx[8], vely[8];
+			sprintf(x, "%i", c->player->PhysObj->body.x);
+			sprintf(y, "%i", c->player->PhysObj->body.y);
+			sprintf(velx, "%.2f", c->player->PhysObj->velocity.x);
+			sprintf(vely, "%.2f", c->player->PhysObj->velocity.y);
+			JSONPacket_Add(packet, "x", x);
+			JSONPacket_Add(packet, "y", y);
+			JSONPacket_Add(packet, "vx", velx);
+			JSONPacket_Add(packet, "vy", vely);
 
-			FE_Net_Packet_AddFloat(packet, c->last_velocity.x);
-			FE_Net_Packet_AddFloat(packet, c->last_velocity.y);
-
-			/* Send to all clients */
-			BroadcastPacket(0, packet);
-			FE_Net_Packet_Destroy(packet);
+			BroadcastPacket(0, PACKET_TYPE_UPDATE, packet);
+			JSONPacket_Destroy(packet);
 		}
 	}
 	PresentGame->Timing.UpdateTime = ((FE_QueryPerformanceCounter() - PresentGame->Timing.UpdateTime) / FE_QueryPerformanceFrequency()) * 1000;

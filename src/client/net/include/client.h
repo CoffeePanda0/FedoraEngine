@@ -33,10 +33,10 @@ bool AwaitMap(ENetHost *client, size_t len, size_t u_len);
 
 
 /** Loads the recieved serverstate packet
- * \param packet The packet to load
+ * \param config The config file to load from
  * \param list The list of connected players to modify
  */
-void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list);
+void LoadServerState(ENetEvent *event, FE_List **list);
 
 
 #endif

@@ -9,25 +9,21 @@
 #include "../ui/include/messagebox.h"
 #include "../world/include/map.h"
 
-/* -- SENDING AND RECEIVING MAPS  --
-1. Server sends a packet with the map size to prepare the client
-2. Client receives the packet and allocates the memory for the map
-3. Server sends the compressed map data
-4. Client decompresses the map data and loads it into the map
 
-*/
-
-void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list)
+void LoadServerState(ENetEvent *event, FE_List **list)
 {
-    if (!packet) return;
-
 	// first load the server state json packet
 	json_t mem[32];
 	
-	// Load the server state JSON from the packet
-	char *buff = FE_Net_GetString(packet);
+	// use a buffer so we don't change the original packet
+	char *buff = xmalloc(event->packet->dataLength + 1);
+	mmemcpy(buff, event->packet->data, event->packet->dataLength);
 
     json_t const *json = json_create(buff, mem, sizeof mem / sizeof *mem);
+
+	int type = atoi(json_getPropertyValue(json, "type"));
+	if (type != PACKET_TYPE_SERVERSTATE)
+		return;
 
 	// load welcome message
 	int has_welcome = atoi(json_getPropertyValue(json, "hasmsg"));
@@ -63,6 +59,17 @@ void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list)
 
 	free(buff);
 }
+
+
+
+/* -- SENDING AND RECEIVING MAPS  --
+1. Server sends a packet with the map size to prepare the client
+2. Client receives the packet and allocates the memory for the map
+3. Server sends the compressed map data
+4. Client decompresses the map data and loads it into the map
+
+*/
+
 
 // parses and loads the map data from the server
 bool AwaitMap(ENetHost *client, size_t len, size_t u_len)
