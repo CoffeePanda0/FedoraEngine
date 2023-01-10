@@ -6,11 +6,13 @@
 
 #include "../world/include/collision.h"
 
+#define TICKRATE 100 /* How many times the physics engine will run per second */
+
 static FE_List *RigidBodies = 0;
 
 const float PHYS_SCALE = 10.0f; // to save us having to use huge forces
 
-static float dt = 1.0f / 100;
+static float dt = 1.0f / TICKRATE;
 static float friction_coef = 0.75f;
 
 void FE_UPDATE_RECT(vec2 position, SDL_Rect *rect)
@@ -319,7 +321,7 @@ void FE_Physics_Update()
 
     // Interpolate the positions of the objects to smooth out the movement
     const float alpha = accumulator / dt;
-    for (FE_List *l = RigidBodies; l; l = l->next) {        
+    for (FE_List *l = RigidBodies; l; l = l->next) {
         FE_Phys_Rigidbody *o = l->data;
         if (o->mass == 0) return;
 

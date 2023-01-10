@@ -1,6 +1,6 @@
-#include <fedoraengine.h>
-#include <utils.h>
-#include <../lib/string.h>
+#include <FE_Client.h>
+#include "../../common/net/include/packet.h"
+
 #include "include/include.h"
 #include "../ui/include/menu.h"
 
@@ -31,7 +31,6 @@ bool FE_Multiplayer_InitClient(char *addr, int port, char *username)
 
 void FE_RunClient()
 {
-    ClientEventHandle();
     ClientUpdate();
     ClientRender();
 }

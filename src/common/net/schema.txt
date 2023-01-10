@@ -27,7 +27,8 @@ SERVER -> CLIENT:
 0x04 - Chat Message
     Username (string)
     Chat message (string)
-0x05 - Client update
+0x05 - Server snapshot update
+    Packet contains data (bool)
     Username (string)
     Player X (double)
     Player Y (double)
@@ -44,3 +45,6 @@ SERVER -> CLIENT:
     Compressed map size (int)
     Uncopressed map size (int)
     (Prepares client for raw map data)
+0x09 - Server snapshot rate
+    Tickrate (int)
+0x10 - Heartbeat

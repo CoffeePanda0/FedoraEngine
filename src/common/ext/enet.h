@@ -1196,7 +1196,7 @@ extern "C" {
            The ({ }) syntax is a GCC extension called statement expression. It lets
            us return a value out of the macro.
 
-           TODO We should return bool here instead of the old value to avoid the ABA
+            We should return bool here instead of the old value to avoid the ABA
            problem. */
         #define ENET_ATOMIC_CAS(ptr, old_value, new_value)                                                      \
             ({                                                                                             \
@@ -4960,7 +4960,7 @@ extern "C" {
     #endif
 
     enet_uint32 enet_time_get() {
-        // TODO enet uses 32 bit timestamps. We should modify it to use
+        // enet uses 32 bit timestamps. We should modify it to use
         // 64 bit timestamps, but this is not trivial since we'd end up
         // changing half the structs in enet. For now, retain 32 bits, but
         // use an offset so we don't run out of bits. Basically, the first

@@ -70,6 +70,9 @@ bool AuthenticateClient(ENetHost *server, client_t *c, FE_List **clients, size_t
 				FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_LOGIN);
 				FE_Net_Packet_AddString(p, c->username);
 				FE_Net_Packet_Send(c->peer, p, true);
+
+				free(username);
+
 				success = true;
 			}
 
@@ -83,7 +86,7 @@ bool AuthenticateClient(ENetHost *server, client_t *c, FE_List **clients, size_t
 	if (!success) return false;
 
 	/* Send server state */
-	size_t size = 60 + (58 * (++*client_count));
+	size_t size = 64 + (58 * (++*client_count));
 	if (server_config.has_message) size += (mstrlen(server_config.message) + 4);
 
 	/* Generate the JSON server state */

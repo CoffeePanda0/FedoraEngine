@@ -385,6 +385,66 @@ static void UpdateHeldKeys()
 	}
 }
 
+void SendSnapshot()
+{
+	/* Only send snapshots depending on snapshot rate */
+	static uint64_t last_snapshot = 0;
+	uint64_t time_passed = FE_GetTicks64() - last_snapshot;
+
+	uint64_t snapshot_rate_ms = 1000 / server_config.snapshot_rate;
+	uint64_t dif = 0;
+
+	if (time_passed < snapshot_rate_ms)
+		return;
+	else
+		dif = time_passed - snapshot_rate_ms;
+
+	bool sentsnapshot = false; // Whether or not we have needed to send a snapshot
+
+	/* Check if any clients have moved, if so then send them the new position */
+	for (FE_List *l = clients; l; l = l->next) {
+		client_t *c = l->data;
+		if (
+		/* x-y any changes */	!vec2_cmp(c->last_location, vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y)) || 
+		/* velocity changes to 0 */ (c->last_velocity.x != 0 && c->player->PhysObj->velocity.x == 0) || (c->last_velocity.y != 0 && c->player->PhysObj->velocity.y == 0)
+		) {
+			
+			/* Record the last sent location so we don't keep resending */
+			c->last_location = vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y);
+			c->last_velocity = vec(c->player->PhysObj->velocity.x, c->player->PhysObj->velocity.y);
+
+			/* Create new packet */
+			FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
+
+			FE_Net_Packet_AddBool(packet, true);
+			FE_Net_Packet_AddString(packet, c->username);
+			
+			/* Attatch the player's position and velocity to the packet */
+			FE_Net_Packet_AddInt(packet, (int)c->last_location.x);
+			FE_Net_Packet_AddInt(packet, (int)c->last_location.y);
+
+			FE_Net_Packet_AddFloat(packet, c->last_velocity.x);
+			FE_Net_Packet_AddFloat(packet, c->last_velocity.y);
+
+			/* Send to all clients */
+			BroadcastPacket(0, packet);
+			FE_Net_Packet_Destroy(packet);
+			sentsnapshot = true;
+		}
+	}
+
+	if (!sentsnapshot) {
+		/* If we haven't needed to send any new positions, send snapshot to measure jitter */
+		FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
+		FE_Net_Packet_AddBool(packet, false);
+
+		/* Send to all clients */
+		BroadcastPacket(0, packet);
+		FE_Net_Packet_Destroy(packet);
+	}
+	last_snapshot = FE_GetTicks64() - dif;
+}
+
 void UpdateServer()
 {
 	PresentGame->Timing.UpdateTime = FE_QueryPerformanceCounter();
@@ -400,34 +460,8 @@ void UpdateServer()
 	FE_Physics_Update(); // run main game loop
 
 	FE_Timers_Update(); // update timers (if any are running)
-	
-	// check if any clients have moved, if so then send them the new position
-	for (FE_List *l = clients; l; l = l->next) {
-		client_t *c = l->data;
-		if (
-		/* x-y any changes */	!vec2_cmp(c->last_location, vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y)) || 
-		/* velocity changes to 0 */ (c->last_velocity.x != 0 && c->player->PhysObj->velocity.x == 0) || (c->last_velocity.y != 0 && c->player->PhysObj->velocity.y == 0)
-		) {
-			
-			/* Record the last sent location so we don't keep resending */
-			c->last_location = vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y);
-			c->last_velocity = vec(c->player->PhysObj->velocity.x, c->player->PhysObj->velocity.y);
 
-			/* Create new packet */
-			FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
-			FE_Net_Packet_AddString(packet, c->username);
-			
-			/* Attatch the player's position and velocity to the packet */
-			FE_Net_Packet_AddInt(packet, (int)c->last_location.x);
-			FE_Net_Packet_AddInt(packet, (int)c->last_location.y);
+	SendSnapshot(); // send a snapshot of the game to all clients
 
-			FE_Net_Packet_AddFloat(packet, c->last_velocity.x);
-			FE_Net_Packet_AddFloat(packet, c->last_velocity.y);
-
-			/* Send to all clients */
-			BroadcastPacket(0, packet);
-			FE_Net_Packet_Destroy(packet);
-		}
-	}
 	PresentGame->Timing.UpdateTime = ((FE_QueryPerformanceCounter() - PresentGame->Timing.UpdateTime) / FE_QueryPerformanceFrequency()) * 1000;
 }

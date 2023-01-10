@@ -1,6 +1,7 @@
 #ifndef _H_CLIENT_NET
 #define _H_CLIENT_NET
 
+#include "client.h"
 
 /** Initialises a client and connects to a server
  * \param addr The address of the server to connect to
@@ -23,7 +24,14 @@ void ClientUpdate();
 
 
 /* Handles inputs from client to send to server */
-void ClientEventHandle();
+void ClientEventHandle(FE_Camera *GameCamera, FE_Player *GamePlayer, FE_Net_Client *Client);
+
+
+/* Disconnects the client cleanly */
+void DisconnectClient(FE_Net_Client *client);
+
+/* For if we are disconnected by the server */
+void HandleDisconnect(ENetEvent *event, FE_Net_Client *Client);
 
 
 #endif

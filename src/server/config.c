@@ -42,6 +42,11 @@ static int ConfigParser(void *user, const char *section, const char *name, const
         server_config.max_players = atoi(value);
     else if (MATCH("SERVER", "rcon_password"))
         server_config.rcon_pass = mstrdup(value);
+
+    if (MATCH("TIMING", "tickrate"))
+        server_config.tickrate = atoi(value);
+    if (MATCH("TIMING", "snapshot_rate"))
+        server_config.snapshot_rate = atoi(value);
     
     if (MATCH("MESSAGE", "has_message"))
         server_config.has_message = (bool)atoi(value);
@@ -60,6 +65,8 @@ void LoadServerConfig()
     server_config.rcon_pass = 0;
     server_config.has_message = false;
     server_config.message = 0;
+    server_config.tickrate = 60;
+    server_config.snapshot_rate = 20;
 
     if (ini_parse("server.ini", ConfigParser, NULL) < 0)
         warn("[SERVER] Can't load server.ini file");
@@ -83,6 +90,9 @@ void GenerateServerState(char *buffer, size_t size, FE_List *clients)
 	buffer = json_int(buffer, "hasmsg", server_config.has_message, &size);
 	if (server_config.has_message)
 		buffer = json_str(buffer, "msg", server_config.message, &size);
+
+    // Send the server snapshot rate
+    buffer = json_int(buffer, "snaprate", server_config.snapshot_rate, &size);
 
 	if (clients) {
 		buffer = json_arrOpen(buffer, "players", &size);

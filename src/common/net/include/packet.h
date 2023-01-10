@@ -26,15 +26,16 @@ typedef enum PACKET_CLIENT {
 
 /* Packet from a server */
 typedef enum PACKET_SERVER {
-    PACKET_SERVER_LOGIN, //
-    PACKET_SERVER_STATE, //
-    PACKET_SERVER_KICK, //
-    PACKET_SERVER_SERVERMSG, //
-    PACKET_SERVER_CHAT, //
-    PACKET_SERVER_UPDATE, //
+    PACKET_SERVER_LOGIN,
+    PACKET_SERVER_STATE,
+    PACKET_SERVER_KICK,
+    PACKET_SERVER_SERVERMSG,
+    PACKET_SERVER_CHAT,
+    PACKET_SERVER_UPDATE,
     PACKET_SERVER_SPAWN,
     PACKET_SERVER_DESPAWN,
-    PACKET_SERVER_MAP //
+    PACKET_SERVER_MAP,
+    PACKET_SERVER_SNAPSHOTRATE
 } PACKET_SERVER;
 
 
@@ -51,12 +52,14 @@ typedef struct {
         KEY_SHORTINT,
         KEY_INT,
         KEY_FLOAT,
+        KEY_BOOL
     } type;
     union {
         char *str;
         uint8_t s;
         int i;
         float f;
+        bool b;
     } value;
 } Value;
 
@@ -129,6 +132,8 @@ void FE_Net_Packet_AddShortInt(FE_Net_Packet *packet, uint8_t s);
  */
 void FE_Net_Packet_AddString(FE_Net_Packet *packet, char *str);
 
+void FE_Net_Packet_AddBool(FE_Net_Packet *packet, bool b);
+bool FE_Net_GetBool(FE_Net_RcvPacket *packet);
 
 /**
  * @brief Creates a new packet

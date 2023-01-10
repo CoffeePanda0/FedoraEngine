@@ -102,6 +102,7 @@ void FE_Player_Render(FE_Player *player, FE_Camera *camera)
 
 void FE_Player_Update(FE_Player *player)
 {
+    FE_DebugUI_Update(player);
     FE_Trigger_Check(&player->player->PhysObj->body);
 
     player->render_rect = player->player->PhysObj->body;

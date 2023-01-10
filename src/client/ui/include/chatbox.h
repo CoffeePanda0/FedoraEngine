@@ -16,24 +16,24 @@ typedef struct {
 } FE_UI_Chatbox;
 
 
-/* Renders a given chatbox */
-void FE_UI_RenderChatbox(FE_UI_Chatbox *chatbox);
+/* Renders the active chatbox */
+void FE_UI_RenderChatbox();
 
 
 /* Creates and returns a new chatbox */
 FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)(), void *peer);
 
 
-/* Sends a message to the chatbox */
-void FE_UI_ChatboxMessage(FE_UI_Chatbox *chatbox, char *message);
+/* Sends a message to the active chatbox */
+void FE_UI_ChatboxMessage(char *message);
 
 
-/* Destroys and frees a given chatbox */
-void FE_UI_DestroyChatbox(FE_UI_Chatbox *chatbox);
+/* Destroys and frees the active chatbox */
+void FE_UI_DestroyChatbox();
 
 
-/* Toggles the visibility of a given chatbox */
-void FE_UI_ToggleChatbox(FE_UI_Chatbox *chatbox);
+/* Toggles the visibility of the active chatbox */
+void FE_UI_ToggleChatbox();
 
 
 #endif

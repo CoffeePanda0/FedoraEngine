@@ -17,7 +17,7 @@
 
 */
 
-void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list)
+void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list, FE_Net_Client *Client)
 {
     if (!packet) return;
 
@@ -28,6 +28,9 @@ void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list)
 	char *buff = FE_Net_GetString(packet);
 
     json_t const *json = json_create(buff, mem, sizeof mem / sizeof *mem);
+
+    // Get server snapshot rate (to allow for interpolation between packets)
+    Client->SnapshotRate = atoi(json_getPropertyValue(json, "snaprate"));
 
 	// load welcome message
 	int has_welcome = atoi(json_getPropertyValue(json, "hasmsg"));
@@ -47,7 +50,7 @@ void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list)
 				player *p = xmalloc(sizeof(player));
 
 				// load vars
-				char const* name = json_getPropertyValue(_player, "username");
+				const char* name = json_getPropertyValue(_player, "username");
 				p->rect.x = atoi(json_getPropertyValue(_player, "x"));
 				p->rect.y = atoi(json_getPropertyValue(_player, "y"));
 				p->rect.w = 120; p->rect.h = 100;
@@ -125,14 +128,14 @@ bool AwaitMap(ENetHost *client, size_t len, size_t u_len)
     // decompress map data
     int decompressed_size = LZ4_decompress_safe(compressed, data, len, u_len);
     if (decompressed_size == 0) {
-        printf("Could not decompress map data\n");
+        warn("Could not decompress map data");
         goto fail;
     }
 
     // write map data to file
     FILE *f = fopen("game/map/maps/multiplayer/mapdata", "wb");
     if (!f) {
-        printf("Could not open mapdata file\n");
+        warn("Could not create temporary mapdata file");
         goto fail;
     }
     fwrite(data, 1, u_len, f);

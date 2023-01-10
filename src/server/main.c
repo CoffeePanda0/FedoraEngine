@@ -5,6 +5,8 @@
 
 #define ENET_IMPLEMENTATION
 #include "../common/ext/enet.h"
+
+#include "include/server.h"
 #include "include/include.h"
 
 void FE_Server_Init()
@@ -30,7 +32,7 @@ void FE_RunServer()
     UpdateServer();
 
     // apply delay so that server won't use 100% cpu
-    static const float target = (1.0f / 60.0f) * 1000;
+    float target = (1000 / server_config.tickrate);
     int del = target - PresentGame->Timing.UpdateTime;
     if (del > 0)
         FE_Delay(del);

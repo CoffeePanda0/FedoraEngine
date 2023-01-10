@@ -7,6 +7,8 @@
 
 static FE_Font *chatbox_font;
 
+static FE_UI_Chatbox *active_chatbox = 0;
+
 static void (*callback)();
 static void *_peer;
 
@@ -36,6 +38,11 @@ FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)(), void *peer)
         warn("No callback provided for chatbox");
         return NULL;
     }
+    if (active_chatbox) {
+        warn("Chatbox is already active (FE_UI_CreateChatbox)");
+        /* Destroy the existing chatbox */
+        FE_UI_DestroyChatbox(active_chatbox);
+    }
 
     FE_UI_Chatbox *chatbox = xmalloc(sizeof(FE_UI_Chatbox));
     chatbox->body = (SDL_Rect) {
@@ -60,74 +67,75 @@ FE_UI_Chatbox *FE_UI_CreateChatbox(void (*cb)(), void *peer)
 
     chatbox->messages = 0;
     chatbox->message_count = 0;
+
+    active_chatbox = chatbox;
     
     return chatbox;
 }
 
-void FE_UI_ChatboxMessage(FE_UI_Chatbox *chatbox, char *message)
+void FE_UI_ChatboxMessage(char *message)
 {
-    chatbox->messages = xrealloc(chatbox->messages, sizeof(FE_UI_Label) * (chatbox->message_count + 1));
+    active_chatbox->messages = xrealloc(active_chatbox->messages, sizeof(FE_UI_Label) * (active_chatbox->message_count + 1));
 
-    chatbox->messages[chatbox->message_count] = FE_UI_CreateLabel(
+    active_chatbox->messages[active_chatbox->message_count] = FE_UI_CreateLabel(
         chatbox_font,
         message,
         CHATBOX_WIDTH - 5,
         0,
-        chatbox->message_count == 0 ? chatbox->body.y + 2 : chatbox->messages[chatbox->message_count-1]->r.y + chatbox->messages[chatbox->message_count-1]->r.h,
+        active_chatbox->message_count == 0 ? active_chatbox->body.y + 2 : active_chatbox->messages[active_chatbox->message_count-1]->r.y + active_chatbox->messages[active_chatbox->message_count-1]->r.h,
         COLOR_WHITE
     );
 
-    chatbox->message_count++;
+    active_chatbox->message_count++;
 
     // check if the labels have started to overflow
-    int last_y = chatbox->messages[chatbox->message_count-1]->r.y + chatbox->messages[chatbox->message_count-1]->r.h;
+    int last_y = active_chatbox->messages[active_chatbox->message_count-1]->r.y + active_chatbox->messages[active_chatbox->message_count-1]->r.h;
 
-    if (last_y > chatbox->input->r.y) {
-        int overflow = last_y - chatbox->input->r.y;
-        for (size_t i = 0; i < chatbox->message_count; i++) {
-            chatbox->messages[i]->r.y -= overflow; // todo scroll
+    if (last_y > active_chatbox->input->r.y) {
+        int overflow = last_y - active_chatbox->input->r.y;
+        for (size_t i = 0; i < active_chatbox->message_count; i++) {
+            active_chatbox->messages[i]->r.y -= overflow; // todo scroll
         }
     }
 }
 
-void FE_UI_RenderChatbox(FE_UI_Chatbox *chatbox)
+void FE_UI_RenderChatbox()
 {
-    if (chatbox->visible) {
-        SDL_RenderCopy(PresentGame->Client->Renderer, chatbox->texture, NULL, &chatbox->body);
-        for (size_t i = 0; i < chatbox->message_count; i++)
-            if (chatbox->messages[i]->r.y > chatbox->body.y)
-                FE_UI_RenderLabel(chatbox->messages[i]);
+    if (active_chatbox->visible) {
+        SDL_RenderCopy(PresentGame->Client->Renderer, active_chatbox->texture, NULL, &active_chatbox->body);
+        for (size_t i = 0; i < active_chatbox->message_count; i++)
+            if (active_chatbox->messages[i]->r.y > active_chatbox->body.y)
+                FE_UI_RenderLabel(active_chatbox->messages[i]);
     }
 }
 
-void FE_UI_DestroyChatbox(FE_UI_Chatbox *chatbox)
+void FE_UI_DestroyChatbox()
 {
-    if (!chatbox)
-        warn("Attempted to destroy null chatbox");
+    if (!active_chatbox) return;
 
-    for (size_t i = 0; i < chatbox->message_count; i++)
-        FE_UI_DestroyLabel(chatbox->messages[i], false);
-    if (chatbox->messages)
-        free(chatbox->messages);
+    for (size_t i = 0; i < active_chatbox->message_count; i++)
+        FE_UI_DestroyLabel(active_chatbox->messages[i], false);
+    if (active_chatbox->messages)
+        free(active_chatbox->messages);
 
-    if (chatbox->visible)
-        FE_UI_DestroyTextbox(chatbox->input, true);
-    SDL_DestroyTexture(chatbox->texture);
+    if (active_chatbox->visible)
+        FE_UI_DestroyTextbox(active_chatbox->input, true);
+    SDL_DestroyTexture(active_chatbox->texture);
 
-    free(chatbox);
+    free(active_chatbox);
 }
 
-void FE_UI_ToggleChatbox(FE_UI_Chatbox *chatbox)
+void FE_UI_ToggleChatbox()
 {
-    chatbox->visible = !chatbox->visible;
-    if (!chatbox->visible)
-        FE_UI_DestroyTextbox(chatbox->input, true);
+    active_chatbox->visible = !active_chatbox->visible;
+    if (!active_chatbox->visible)
+        FE_UI_DestroyTextbox(active_chatbox->input, true);
     else {
-        chatbox->input = FE_UI_CreateTextbox(0, chatbox->body.y + chatbox->body.h - 40, chatbox->body.w, 0);
-        chatbox->input->onenter = &SendMessage;
-        chatbox->input->data = chatbox;
-        FE_UI_ForceActiveTextbox(chatbox->input);
+        active_chatbox->input = FE_UI_CreateTextbox(0, active_chatbox->body.y + active_chatbox->body.h - 40, active_chatbox->body.w, 0);
+        active_chatbox->input->onenter = &SendMessage;
+        active_chatbox->input->data = active_chatbox;
+        FE_UI_ForceActiveTextbox(active_chatbox->input);
         
-        FE_UI_AddElement(FE_UI_TEXTBOX, chatbox->input);
+        FE_UI_AddElement(FE_UI_TEXTBOX, active_chatbox->input);
     }
 }

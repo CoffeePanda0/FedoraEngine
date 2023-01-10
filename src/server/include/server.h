@@ -15,6 +15,10 @@ typedef struct {
 
     bool has_message;
     char *message;
+
+    int tickrate;
+    int snapshot_rate;
+
 } ServerConfig;
 extern ServerConfig server_config;
 

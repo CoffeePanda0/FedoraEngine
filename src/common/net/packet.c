@@ -3,6 +3,13 @@
 #include "../ext/msgpack/cmp.h"
 #include "include/packet.h"
 
+size_t packets_sent = 0;
+
+typedef struct {
+    char *data;
+    size_t bytes_read;
+} data_buffer;
+
 FE_Net_Packet *FE_Net_Packet_Create(uint8_t type)
 {
     FE_Net_Packet *p = xmalloc(sizeof(FE_Net_Packet));
@@ -49,6 +56,21 @@ void FE_Net_Packet_AddString(FE_Net_Packet *packet, char *str)
     packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
     packet->values[packet->properties].type = KEY_STRING;
     packet->values[packet->properties++].value.str = mstrdup(str);
+
+    packet->serialised = false;
+    if (packet->serialised_data) free (packet->serialised_data);
+}
+
+void FE_Net_Packet_AddBool(FE_Net_Packet *packet, bool b)
+{
+    if (!packet) {
+        warn("Packet is NULL (FE_Net_Packet_AddBool)");
+        return;
+    }
+
+    packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
+    packet->values[packet->properties].type = KEY_BOOL;
+    packet->values[packet->properties++].value.b = b;
 
     packet->serialised = false;
     if (packet->serialised_data) free (packet->serialised_data);
@@ -109,12 +131,12 @@ static size_t file_writer(cmp_ctx_t *ctx, const void *data, size_t count)
     return count;
 }
 
-static size_t bytes_read = 0;
-
 static bool file_reader(cmp_ctx_t *ctx, void *data, size_t limit) {
     /* Read from bytes read to the limit */
-    memcpy(data, (char*)ctx->buf + bytes_read, limit);
-    bytes_read += limit;
+    data_buffer *buf = (data_buffer*)ctx->buf;
+
+    memcpy(data, (char*)buf->data + buf->bytes_read, limit);
+    buf->bytes_read += limit;
     return true;
 }
 
@@ -148,6 +170,9 @@ static char *FE_Net_Packet_Serialise(FE_Net_Packet *packet)
             case KEY_SHORTINT:
                 cmp_write_u8(&ctx, packet->values[i].value.s);
                 break;
+            case KEY_BOOL:
+                cmp_write_bool(&ctx, packet->values[i].value.b);
+                break;
         }
     }
 
@@ -175,6 +200,8 @@ void FE_Net_Packet_Send(ENetPeer *peer, FE_Net_Packet *packet, bool destroy)
         return;
     }
 
+    packets_sent++;
+
     /* Serialise the packet if it hasn't already been done */
     char *buf = packet->serialised ? packet->serialised_data : FE_Net_Packet_Serialise(packet);
     if (!buf) {
@@ -194,8 +221,6 @@ void FE_Net_Packet_Send(ENetPeer *peer, FE_Net_Packet *packet, bool destroy)
 
 FE_Net_RcvPacket *FE_Net_GetPacket(ENetEvent *event)
 {
-    bytes_read = 0; // todo: make this not global
-
     if (!event) {
         warn("Event is NULL (FE_Net_GetPacket)");
         return NULL;
@@ -218,8 +243,13 @@ FE_Net_RcvPacket *FE_Net_GetPacket(ENetEvent *event)
 
     packet->len = event->packet->dataLength;
 
+    /* Create a file reader buffer */
+    data_buffer *buffer = xmalloc(sizeof(data_buffer));
+    buffer->data = packet->data;
+    buffer->bytes_read = 0;
+
     /* Parse the packet */
-    cmp_init(ctx, packet->data, file_reader, NULL, NULL);
+    cmp_init(ctx, buffer, file_reader, NULL, NULL);
 
     /* Read the packet type */
     if (!cmp_read_u8(ctx, &packet->type)) {
@@ -290,6 +320,23 @@ float FE_Net_GetFloat(FE_Net_RcvPacket *packet)
     return f;
 }
 
+bool FE_Net_GetBool(FE_Net_RcvPacket *packet)
+{
+    if (!packet) {
+        warn("Packet is NULL (FE_Net_GetBool)");
+        return false;
+    }
+
+    cmp_ctx_t *ctx = packet->cmp;
+
+    /* Read the bool */
+    bool b = false;
+    if (!cmp_read_bool(ctx, &b))
+        warn("Courrupt Packet bool (FE_Net_GetBool)");
+
+    return b;
+}
+
 uint8_t FE_Net_GetShortInt(FE_Net_RcvPacket *packet)
 {
     if (!packet) {
@@ -314,8 +361,14 @@ void FE_Net_DestroyRcv(FE_Net_RcvPacket *packet)
         return;
     }
 
-    if (packet->cmp)
-        free(packet->cmp);
+    cmp_ctx_t *cmp = packet->cmp;
+    if (cmp) {
+        data_buffer *buf = cmp->buf;
+        if (buf)
+            free(buf);
+        free(cmp);
+    }
+
     if (packet->data)
         free(packet->data);
 
