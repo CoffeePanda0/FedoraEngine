@@ -8,7 +8,7 @@
 #include "../ui/include/chatbox.h"
 #include "../ui/include/menu.h"
 
-static FE_Net_Client Client = {0, 0, 0, 0, 0, 0, 0, 0};
+static FE_Net_Client Client = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 #define _connection_timeout 5000
 
@@ -59,16 +59,37 @@ static bool Connect(int port, char *addr)
 
 static void CalculateJitter()
 {
-    Client.Jitter = (1000 / Client.SnapshotRate) - (Client.LatestPacket - Client.LastPacket);
-    
-    /* Log data every 0.5s - TESTING 
-	static float timer = 0;
-	timer += FE_DT;
-	if (timer < 0.5f)
-		return;
+    /* Keep a buffer of the last five differences between packet timings to calculate jitter */
+    static long diffs[5] = {0};
+    static size_t index = 0;
 
-	timer -= 0.5f;
-    printf("JITTER: %li\n", Client.Jitter); */
+    /* Calculate difference */
+    long diff = Client.LatestPacket - Client.LastPacket;
+
+    diffs[index] = diff;
+    index = (index + 1) % 5;
+
+    /* Calculate jitter between differences */
+    int jitter = 0;
+    for (size_t i = 0; i < 4; i++) {
+        jitter += diffs[i] - diffs[i + 1];
+    }
+    jitter /= 4;
+
+    /* Normalise */
+    Client.Jitter = abs(jitter);
+    
+    /* Log data every 0.5s FOR TESTING  */
+    if (true) {
+        static float timer = 0;
+        timer += FE_DT;
+        if (timer < 0.5f)
+            return;
+
+        timer -= 0.5f;
+        printf("PING: %f | JITTER: %i\n",  Client.Ping, Client.Jitter);
+    }
+
 }
 
 static void HandleRecieve(ENetEvent *event)
@@ -85,7 +106,7 @@ static void HandleRecieve(ENetEvent *event)
 
             /* Update timing information*/
             Client.LastPacket = Client.LatestPacket;
-            Client.LatestPacket = FE_GetTicks64();
+            Client.LatestPacket = packet->timestamp;
 
             /* Check if the packet contains data or if it is just a heartbeat */
             bool hasdata = FE_Net_GetBool(packet);
@@ -108,6 +129,7 @@ static void HandleRecieve(ENetEvent *event)
                 GamePlayer->player->PhysObj->velocity.y = FE_Net_GetFloat(packet);
 
                 LastUpdate = FE_GetTicks64();
+                free(user);
  
             } else {
                 /* Find player in list, update position */
@@ -118,12 +140,11 @@ static void HandleRecieve(ENetEvent *event)
 
                         p->s.time_rcv = FE_GetTicks64();
                         p->s.new_position = vec(FE_Net_GetInt(packet), FE_Net_GetInt(packet));
-
+                        free(user);
                         return;
                     }
                 }
             }
-            free(user);
         break;
 
         case PACKET_SERVER_SERVERMSG: ;
@@ -151,7 +172,12 @@ static void HandleRecieve(ENetEvent *event)
                 .w = 120,
                 .h = 100
             };
+            p->last_position = vec(x, y);
+            p->s.new_position = vec(x, y);
+            p->s.time_rcv = packet->timestamp;
+
             p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png");
+
             mstrcpy(p->username, username);
             FE_List_Add(&players, p);
 
@@ -213,6 +239,10 @@ static void HandleRecieve(ENetEvent *event)
         case PACKET_SERVER_SNAPSHOTRATE: ;
             // set the snapshot rate
             Client.SnapshotRate = FE_Net_GetInt(packet);
+        break;
+
+        case PACKET_SERVER_TIME: ;
+            ParseTimeResponse(&Client, packet);
         break;
 
         default:
@@ -415,6 +445,9 @@ void ClientUpdate()
 
     /* Take inputs from the client */
     ClientEventHandle(GameCamera, GamePlayer, &Client);
+
+    /* Check if we need to poll for time */
+    KeepServerTime(&Client);
 
     /* Host the client (listen for packets from server) */
     HostClient();

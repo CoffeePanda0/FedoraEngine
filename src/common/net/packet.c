@@ -1,4 +1,5 @@
 #include <utils.h>
+#include <systime.h>
 #include <../lib/string.h>
 #include "../ext/msgpack/cmp.h"
 #include "include/packet.h"
@@ -16,7 +17,6 @@ FE_Net_Packet *FE_Net_Packet_Create(uint8_t type)
     p->type = type;
     p->values = 0;
     p->properties = 0;
-    p->serialised = false;
     p->serialised_size = 0;
     p->serialised_data = 0;
     return p;
@@ -34,7 +34,7 @@ void FE_Net_Packet_Destroy(FE_Net_Packet *packet)
     }
     free(packet->values);
 
-    if (packet->serialised)
+    if (packet->serialised_data)
         free(packet->serialised_data);
 
     free(packet);
@@ -56,9 +56,6 @@ void FE_Net_Packet_AddString(FE_Net_Packet *packet, char *str)
     packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
     packet->values[packet->properties].type = KEY_STRING;
     packet->values[packet->properties++].value.str = mstrdup(str);
-
-    packet->serialised = false;
-    if (packet->serialised_data) free (packet->serialised_data);
 }
 
 void FE_Net_Packet_AddBool(FE_Net_Packet *packet, bool b)
@@ -71,9 +68,6 @@ void FE_Net_Packet_AddBool(FE_Net_Packet *packet, bool b)
     packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
     packet->values[packet->properties].type = KEY_BOOL;
     packet->values[packet->properties++].value.b = b;
-
-    packet->serialised = false;
-    if (packet->serialised_data) free (packet->serialised_data);
 }
 
 void FE_Net_Packet_AddShortInt(FE_Net_Packet *packet, uint8_t s)
@@ -86,9 +80,6 @@ void FE_Net_Packet_AddShortInt(FE_Net_Packet *packet, uint8_t s)
     packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
     packet->values[packet->properties].type = KEY_SHORTINT;
     packet->values[packet->properties++].value.s = s;
-
-    packet->serialised = false;
-    if (packet->serialised_data) free (packet->serialised_data);
 }
 
 void FE_Net_Packet_AddInt(FE_Net_Packet *packet, int i)
@@ -101,9 +92,6 @@ void FE_Net_Packet_AddInt(FE_Net_Packet *packet, int i)
     packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
     packet->values[packet->properties].type = KEY_INT;
     packet->values[packet->properties++].value.i = i;
-
-    packet->serialised = false;
-    if (packet->serialised_data) free (packet->serialised_data);
 }
 
 void FE_Net_Packet_AddFloat(FE_Net_Packet *packet, float f)
@@ -116,9 +104,18 @@ void FE_Net_Packet_AddFloat(FE_Net_Packet *packet, float f)
     packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
     packet->values[packet->properties].type = KEY_FLOAT;
     packet->values[packet->properties++].value.f = f;
+}
 
-    packet->serialised = false;
-    if (packet->serialised_data) free (packet->serialised_data);
+void FE_Net_Packet_AddLong(FE_Net_Packet *packet, uint64_t l)
+{
+        if (!packet) {
+        warn("Packet is NULL (FE_Net_Packet_AddLong)");
+        return;
+    }
+
+    packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
+    packet->values[packet->properties].type = KEY_LONG;
+    packet->values[packet->properties++].value.l = l;
 }
 
 static size_t file_writer(cmp_ctx_t *ctx, const void *data, size_t count)
@@ -155,6 +152,10 @@ static char *FE_Net_Packet_Serialise(FE_Net_Packet *packet)
     /* Write the packet type */
     cmp_write_u8(&ctx, packet->type);
 
+    /* Write the packet sent time */
+    uint64_t time = FE_GetTimeUTC();
+    cmp_write_u64(&ctx, time);
+
     /* Write values by type */
     for (size_t i = 0; i < packet->properties; i++) {
         switch (packet->values[i].type) {
@@ -173,11 +174,16 @@ static char *FE_Net_Packet_Serialise(FE_Net_Packet *packet)
             case KEY_BOOL:
                 cmp_write_bool(&ctx, packet->values[i].value.b);
                 break;
+            case KEY_LONG:
+                cmp_write_u64(&ctx, packet->values[i].value.l);
+                break;
         }
     }
 
+    if (packet->serialised_data)
+        free(packet->serialised_data);
+
     /* Save the serialised data incase we want to use it again */
-    packet->serialised = true;
     packet->serialised_size = buff_size;
     packet->serialised_data = xmalloc(buff_size);
     memcpy(packet->serialised_data, ctx.buf, buff_size);
@@ -202,8 +208,8 @@ void FE_Net_Packet_Send(ENetPeer *peer, FE_Net_Packet *packet, bool destroy)
 
     packets_sent++;
 
-    /* Serialise the packet if it hasn't already been done */
-    char *buf = packet->serialised ? packet->serialised_data : FE_Net_Packet_Serialise(packet);
+    /* Serialise the packet */
+    char *buf = FE_Net_Packet_Serialise(packet);
     if (!buf) {
         warn("Failed to serialise packet (FE_Net_Packet_Send)");
         return;
@@ -259,6 +265,15 @@ FE_Net_RcvPacket *FE_Net_GetPacket(ENetEvent *event)
         free(packet);
         return 0;
     }
+    
+    /* Read the packet time */
+    if (!cmp_read_u64(ctx, &packet->timestamp)) {
+        warn("Courrupt Packet timestamp (FE_Net_GetPacket)");
+        free(packet->cmp);
+        free(packet->data);
+        free(packet);
+        return 0;
+    }
 
     return packet;
 }
@@ -299,6 +314,23 @@ int FE_Net_GetInt(FE_Net_RcvPacket *packet)
     int i;
     if (!cmp_read_int(ctx, &i))
         warn("Courrupt Packet int (FE_Net_GetInt)");
+
+    return i;
+}
+
+uint64_t FE_Net_GetLong(FE_Net_RcvPacket *packet)
+{
+    if (!packet) {
+        warn("Packet is NULL (FE_Net_GetLong)");
+        return 0;
+    }
+
+    cmp_ctx_t *ctx = packet->cmp;
+
+    /* Read the int */
+    uint64_t i;
+    if (!cmp_read_u64(ctx, &i))
+        warn("Courrupt Packet int (FE_Net_GetLong)");
 
     return i;
 }

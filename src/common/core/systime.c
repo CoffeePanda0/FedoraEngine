@@ -83,6 +83,17 @@ uint64_t FE_GetTicks64()
     #endif
 }
 
+uint64_t FE_GetTimeUTC()
+{
+    #ifdef _WIN32
+        return timeGetTime();
+    #else
+        struct timespec now;
+        timespec_get(&now, TIME_UTC);
+        return ((int64_t) now.tv_sec) * 1000 + ((int64_t) now.tv_nsec) / 1000000;
+    #endif
+}
+
 void FE_Delay(uint32_t ms)
 {
     #ifdef _WIN32

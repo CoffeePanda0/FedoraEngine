@@ -22,17 +22,25 @@ typedef struct {
 
 /* The struct for the client */
 typedef struct {
+
+    /* Connection information*/
     ENetPeer *Peer; // the Server connection peer
     ENetHost *Client; // The Client used to listen 
     char *Username; // The username given to the client by the server
+    bool Connected; // Whether or not this client is connected
 
+    /* Network connection statistics */
     uint32_t SnapshotRate; // The snapshot rate of the server
+    float Ping; // The last calculated ping
+    uint64_t RTT; // The last calculated rtt
+    int32_t ServerTimeOffset; // The difference between our time and server time
 
+
+    /* Snapshot information*/
     uint64_t LastPacket; // The last update packet that we have recieved
     uint64_t LatestPacket; // The most recent update packet that we have recieved
-    long int Jitter; // The server jitter from the snapshot rate
+    uint32_t Jitter; // The server jitter from the snapshot rate
 
-    bool Connected; // Whether or not this client is connected
 } FE_Net_Client;
 
 
@@ -60,5 +68,11 @@ bool AwaitMap(ENetHost *client, size_t len, size_t u_len);
  */
 void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list, FE_Net_Client *Client);
 
+
+void ParseTimeResponse(FE_Net_Client *client, FE_Net_RcvPacket *packet);
+
+void SendTimeRequest(FE_Net_Client *client);
+
+void KeepServerTime(FE_Net_Client *client);
 
 #endif

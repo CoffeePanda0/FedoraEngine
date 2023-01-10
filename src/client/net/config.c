@@ -55,6 +55,10 @@ void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list, FE_Net_Client *Cl
 				p->rect.y = atoi(json_getPropertyValue(_player, "y"));
 				p->rect.w = 120; p->rect.h = 100;
 
+                p->last_position = vec(p->rect.x, p->rect.y);
+                p->s.new_position = vec(p->rect.x, p->rect.y);
+                p->s.time_rcv = packet->timestamp;
+
 				p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png");
 				mstrcpy(p->username, name);
 

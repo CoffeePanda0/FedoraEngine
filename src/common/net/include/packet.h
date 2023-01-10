@@ -20,7 +20,8 @@ typedef enum PACKET_CLIENT {
     PACKET_CLIENT_KEYDOWN,
     PACKET_CLIENT_KEYUP,
     PACKET_CLIENT_CHAT,
-    PACKET_CLIENT_RCON
+    PACKET_CLIENT_RCON,
+    PACKET_CLIENT_TIMEREQUEST
 } PACKET_CLIENT;
 
 
@@ -35,7 +36,8 @@ typedef enum PACKET_SERVER {
     PACKET_SERVER_SPAWN,
     PACKET_SERVER_DESPAWN,
     PACKET_SERVER_MAP,
-    PACKET_SERVER_SNAPSHOTRATE
+    PACKET_SERVER_SNAPSHOTRATE,
+    PACKET_SERVER_TIME
 } PACKET_SERVER;
 
 
@@ -52,7 +54,8 @@ typedef struct {
         KEY_SHORTINT,
         KEY_INT,
         KEY_FLOAT,
-        KEY_BOOL
+        KEY_BOOL,
+        KEY_LONG
     } type;
     union {
         char *str;
@@ -60,6 +63,7 @@ typedef struct {
         int i;
         float f;
         bool b;
+        uint64_t l;
     } value;
 } Value;
 
@@ -71,15 +75,15 @@ typedef struct {
     Value *values;
     size_t properties;
 
-    bool serialised; // if the packet has already been serialised
     size_t serialised_size; // size of the serialised packet
-    char *serialised_data; // the serialised packet
+    char *serialised_data;
 } FE_Net_Packet;
 
 
 /* The parsed and received packet */
 typedef struct {
     uint8_t type;
+    uint64_t timestamp;
 
     void *cmp;
 
@@ -133,6 +137,17 @@ void FE_Net_Packet_AddShortInt(FE_Net_Packet *packet, uint8_t s);
 void FE_Net_Packet_AddString(FE_Net_Packet *packet, char *str);
 
 void FE_Net_Packet_AddBool(FE_Net_Packet *packet, bool b);
+
+
+/** 
+ * @brief Adds a long to a packet
+ * 
+ * @param packet The packet to add the long to
+ * @param l The long to add
+ */
+void FE_Net_Packet_AddLong(FE_Net_Packet *packet, uint64_t l);
+
+
 bool FE_Net_GetBool(FE_Net_RcvPacket *packet);
 
 /**
@@ -203,6 +218,15 @@ uint8_t FE_Net_GetShortInt(FE_Net_RcvPacket *packet);
  * @param packet The packet to destroy
  */
 void FE_Net_DestroyRcv(FE_Net_RcvPacket *packet);
+
+
+/**
+ * @brief Gets a long unsinged int from a packet
+ * 
+ * @param packet The packet to get the long int from
+ * @return uint64_t The long int
+ */
+uint64_t FE_Net_GetLong(FE_Net_RcvPacket *packet);
 
 
 #endif

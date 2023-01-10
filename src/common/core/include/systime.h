@@ -33,4 +33,10 @@ void FE_Time_Init();
 void FE_Delay(uint32_t ms);
 
 
+/** Returns UTC time in MS
+ * \return The time in milliseconds
+ */
+uint64_t FE_GetTimeUTC();
+
+
 #endif

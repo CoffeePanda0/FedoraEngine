@@ -146,6 +146,15 @@ static void HandleKeyUp(held_keys key, client_t *c)
 		c->held_keys[key] = 0;
 }
 
+/* Sends the server time to a client */
+static void SendServerTime(FE_Net_RcvPacket *packet, client_t *c)
+{
+	FE_Net_Packet *p = FE_Net_Packet_Create(PACKET_SERVER_TIME);
+	FE_Net_Packet_AddLong(p, packet->timestamp);
+	FE_Net_Packet_Send(c->peer, p, true);
+	enet_host_flush(server);
+}
+
 /* Handles receiving a packet from a client */
 static void HandleRecieve(ENetEvent *event)
 {
@@ -179,6 +188,10 @@ static void HandleRecieve(ENetEvent *event)
 
 		case PACKET_CLIENT_RCON: ;
 			RCON_ParseRequest(packet, c, clients);
+		break;
+
+		case PACKET_CLIENT_TIMEREQUEST: ;
+			SendServerTime(packet, c);
 		break;
 
 		default:

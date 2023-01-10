@@ -1,19 +1,23 @@
 NETWORKING SCHEMA:
 
-All packets start with Packet Type (short int, one byte)
+All packets start:
+Packet Type (u8)
+Packet Timestamp (u64)
 
 CLIENT -> SERVER:
 0x00 - Login Request:
     Username (string)
 0x01 - Key Down:
-    Key code (short int, one byte)
+    Key code (u8, one byte)
 0x02 - Key Up:
-    Key code (short int, one byte)
+    Key code (u8, one byte)
 0x03 - Chat Message:
     Message (string)
 0x04 - RCON Command:
     Command (string)
     Data (string)
+0x05 - Time Request:
+    (No need for packet data)
 
 SERVER -> CLIENT:
 0x00 - Login approved:
@@ -47,4 +51,6 @@ SERVER -> CLIENT:
     (Prepares client for raw map data)
 0x09 - Server snapshot rate
     Tickrate (int)
-0x10 - Heartbeat
+0x10 - Time Synchronisation
+    (NOTE packet sent time is already in the packet header)
+    Original client time (u64)
