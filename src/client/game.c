@@ -86,13 +86,15 @@ void FE_GameLoop()
 		return;
 	}
 
+
+	float event_start = FE_QueryPerformanceCounter();
+	FE_GameEventHandler(GameCamera, GamePlayer);
+	PresentGame->Timing.EventTime = (FE_QueryPerformanceCounter() - event_start) / (FE_QueryPerformanceFrequency() / 1000);
+
+	/* Upate Loop*/
+	float update_start = FE_QueryPerformanceCounter();
 	FE_DebugUI_Update(GamePlayer);
 	FE_Dialogue_Update();
-
-	PresentGame->Timing.EventTime = FE_QueryPerformanceCounter();
-	PresentGame->Timing.EventTime = ((FE_QueryPerformanceCounter() - PresentGame->Timing.EventTime) / FE_QueryPerformanceFrequency()) * 1000;
-	FE_GameEventHandler(GameCamera, GamePlayer);
-	PresentGame->Timing.UpdateTime = FE_QueryPerformanceCounter();
 	FE_Timers_Update();
 	FE_Particles_Update(); // todo can we multithread this
 	FE_Player_Update(GamePlayer);
@@ -100,10 +102,10 @@ void FE_GameLoop()
 	FE_Prefab_Update();
 	FE_UpdateCamera(GameCamera);
 	FE_Physics_Update();
+	PresentGame->Timing.UpdateTime = (FE_QueryPerformanceCounter() - update_start) / (FE_QueryPerformanceFrequency() / 1000);
 
-	PresentGame->Timing.UpdateTime = ((FE_QueryPerformanceCounter() - PresentGame->Timing.UpdateTime) / FE_QueryPerformanceFrequency()) * 1000;
-
-	PresentGame->Timing.RenderTime = FE_QueryPerformanceCounter();
+	/* Render Loop */
+	float render_start = FE_QueryPerformanceCounter();
 	FE_RenderGame();
-	PresentGame->Timing.RenderTime = ((FE_QueryPerformanceCounter() - PresentGame->Timing.RenderTime) / FE_QueryPerformanceFrequency()) * 1000;
+	PresentGame->Timing.RenderTime = (FE_QueryPerformanceCounter() - render_start) / (FE_QueryPerformanceFrequency() / 1000);
 }

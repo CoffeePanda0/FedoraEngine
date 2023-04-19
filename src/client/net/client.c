@@ -443,8 +443,13 @@ void ClientUpdate()
 		return;
 	}
 
+
+    float event_time = FE_QueryPerformanceCounter();
     /* Take inputs from the client */
     ClientEventHandle(GameCamera, GamePlayer, &Client);
+    PresentGame->Timing.EventTime = ((FE_QueryPerformanceCounter() - event_time) / (FE_QueryPerformanceFrequency()) * 1000);
+
+	float update_time = FE_QueryPerformanceCounter();
 
     /* Check if we need to poll for time */
     KeepServerTime(&Client);
@@ -456,8 +461,6 @@ void ClientUpdate()
     CalculateJitter();
 
 	FE_Dialogue_Update();
-
-	PresentGame->Timing.UpdateTime = FE_QueryPerformanceCounter();
 	FE_Timers_Update();
 	FE_Particles_Update();
 
@@ -472,7 +475,7 @@ void ClientUpdate()
 	FE_Prefab_Update();
 	FE_UpdateCamera(GameCamera);
     
-	PresentGame->Timing.UpdateTime = ((FE_QueryPerformanceCounter() - PresentGame->Timing.UpdateTime) / FE_QueryPerformanceFrequency()) * 1000;
+	PresentGame->Timing.UpdateTime = ((FE_QueryPerformanceCounter() - update_time) / (FE_QueryPerformanceFrequency()) * 1000);
 }
 // todo fix update time, cleanup header includes
 
