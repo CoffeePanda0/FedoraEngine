@@ -33,12 +33,22 @@ SERVER -> CLIENT:
     Chat message (string)
 0x05 - Server snapshot update
     Packet contains data (bool)
+    Update is about a player (bool)
+
+    If update is about a player:
+
     Username (string)
     Player X (double)
     Player Y (double)
     Player Z (double)
     Velocity X (double)
     Velocity Y (double)
+
+    If update is about an object:
+    ID (int)
+    Object X (double)
+    Object Y (double)
+
 0x06 - Client Spawn
     Username (string)
     Player X (double)

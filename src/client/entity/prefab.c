@@ -85,7 +85,7 @@ FE_Prefab *FE_Prefab_Create(const char *name, int x, int y)
     new->destroy_cb = &DestroyData;
 
     /* Attatches the gameobject, light and particles */
-    new->obj = FE_GameObject_Create(data->rect, data->texture_path, data->mass);
+    new->obj = FE_GameObject_Create(data->rect, data->texture_path, data->mass, "prefab");
 
     if (new->has_light) {
         if (!data->light_effect)

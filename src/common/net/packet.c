@@ -235,7 +235,7 @@ FE_Net_RcvPacket *FE_Net_GetPacket(ENetEvent *event)
     FE_Net_RcvPacket *packet = xmalloc(sizeof(FE_Net_RcvPacket));
 
     /* Parse data from the event */
-    if (event->packet->dataLength > 256) {
+    if (event->packet->dataLength > 1024) {
         warn("Packet is too large (FE_Net_GetPacket)");
         free(packet);
         return NULL;
@@ -288,8 +288,8 @@ char *FE_Net_GetString(FE_Net_RcvPacket *packet)
     cmp_ctx_t *ctx = packet->cmp;
 
     /* Read the string */
-    char *str = xmalloc(256);
-    uint32_t size = 256;
+    char *str = xmalloc(512);
+    uint32_t size = 512;
 
     if (!cmp_read_str(ctx, str, &size))
         warn("Courrupt Packet string (FE_Net_GetString)");

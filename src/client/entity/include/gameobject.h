@@ -14,9 +14,10 @@ void FE_GameObject_Render(FE_Camera *c);
  *\param body - The rectangle to draw of the object
  *\param texture_path - The name of the texture in the assets directory
  *\param mass - The mass to be applied to the physics of the object (or 0 to not fall)
+ *\param name - The name of the object (does not have to be unique)
  *\returns A pointer to the new object
 */
-FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int mass);
+FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int mass, char *name);
 
 
 #endif

@@ -10,6 +10,7 @@
 #include "../common/ext/lz4/lz4.h"
 
 #include "../common/net/include/packet.h"
+#include "../common/entity/include/gameobject.h"
 #include "include/server.h"
 
 ServerConfig server_config;
@@ -94,6 +95,7 @@ void GenerateServerState(char *buffer, size_t size, FE_List *clients)
     // Send the server snapshot rate
     buffer = json_int(buffer, "snaprate", server_config.snapshot_rate, &size);
 
+    // Send connected clients
 	if (clients) {
 		buffer = json_arrOpen(buffer, "players", &size);
 		for (FE_List *l = clients; l; l = l->next) {
@@ -108,6 +110,29 @@ void GenerateServerState(char *buffer, size_t size, FE_List *clients)
 		}
 		buffer = json_arrClose(buffer, &size);
 	}
+
+    if (FE_GameObjects) {
+        buffer = json_arrOpen(buffer, "gameobjects", &size);
+        for (FE_List *l = FE_GameObjects; l; l = l->next) {
+            FE_GameObject *obj = l->data;
+
+            if (mstrcmp(obj->name, "prefab") == 0) continue; // skip prefabs
+
+            buffer = json_objOpen(buffer, NULL, &size);
+            buffer = json_str(buffer, "name", obj->name, &size);
+            buffer = json_str(buffer, "tex", obj->texture_path, &size);
+
+            buffer = json_int(buffer, "id", obj->id, &size);
+            buffer = json_int(buffer, "x", obj->phys->body.x, &size);
+            buffer = json_int(buffer, "y", obj->phys->body.y, &size);
+            buffer = json_int(buffer, "w", obj->phys->body.w, &size);
+            buffer = json_int(buffer, "h", obj->phys->body.h, &size);
+            buffer = json_int(buffer, "mass", obj->phys->mass, &size);
+            
+            buffer = json_objClose(buffer, &size);
+        }
+        buffer = json_arrClose(buffer, &size);
+    }
 	buffer = json_objClose(buffer, &size);
 }
 

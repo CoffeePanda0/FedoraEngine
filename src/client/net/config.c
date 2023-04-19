@@ -8,6 +8,7 @@
 
 #include "../ui/include/messagebox.h"
 #include "../world/include/map.h"
+#include "../entity/include/gameobject.h"
 
 /* -- SENDING AND RECEIVING MAPS  --
 1. Server sends a packet with the map size to prepare the client
@@ -22,7 +23,7 @@ void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list, FE_Net_Client *Cl
     if (!packet) return;
 
 	// first load the server state json packet
-	json_t mem[32];
+	json_t mem[64];
 	
 	// Load the server state JSON from the packet
 	char *buff = FE_Net_GetString(packet);
@@ -67,6 +68,33 @@ void LoadServerState(FE_Net_RcvPacket *packet, FE_List **list, FE_Net_Client *Cl
 			}
 		}
 	}
+
+    // Load GameObjects
+    json_t const* gameobjects = json_getProperty(json, "gameobjects");
+    if (gameobjects) {
+        json_t const* _gameobject;
+
+        for (_gameobject = json_getChild(gameobjects); _gameobject != 0; _gameobject = json_getSibling(_gameobject)) {
+            if (JSON_OBJ == json_getType(_gameobject)) {
+                // for each gameobject
+                const char *name = json_getPropertyValue(_gameobject, "name");
+                const char *texture_path = json_getPropertyValue(_gameobject, "tex");
+
+                int x = atoi(json_getPropertyValue(_gameobject, "x"));
+                int y = atoi(json_getPropertyValue(_gameobject, "y"));
+                int w = atoi(json_getPropertyValue(_gameobject, "w"));
+                int h = atoi(json_getPropertyValue(_gameobject, "h"));
+                int mass = atoi(json_getPropertyValue(_gameobject, "mass"));
+
+                SDL_Rect rect = {x,y,w,h};
+
+                FE_GameObject *o = FE_GameObject_Create(rect, texture_path, mass, name);
+                o->id = atoi(json_getPropertyValue(_gameobject, "id"));
+                FE_GameObjectIDCounter = o->id + 1;
+
+            }
+        }
+    }
 
 	free(buff);
 }

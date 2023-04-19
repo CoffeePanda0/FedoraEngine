@@ -2,6 +2,7 @@
 #include "../common/net/include/packet.h"
 #include "include/server.h"
 #include "include/message.h"
+#include "../common/entity/include/gameobject.h"
 
 /* -- INFO ON CLIENT-SERVER CONNECTION --
     1. Client connects to server with ENET
@@ -85,9 +86,15 @@ bool AuthenticateClient(ENetHost *server, client_t *c, FE_List **clients, size_t
 	}
 	if (!success) return false;
 
-	/* Send server state */
+	/* Calculate state size*/
 	size_t size = 64 + (58 * (++*client_count));
 	if (server_config.has_message) size += (mstrlen(server_config.message) + 4);
+	if (FE_GameObjects) {
+		for (FE_List *l = FE_GameObjects; l; l = l->next) {
+			FE_GameObject *obj = l->data;
+			size += (68 + mstrlen(obj->name) + mstrlen(obj->texture_path));
+		}
+	}
 
 	/* Generate the JSON server state */
 	char *buffer = xcalloc(size, 1);

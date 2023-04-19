@@ -8,6 +8,7 @@
 #include "include/include.h"
 
 #include "../common/entity/include/timer.h"
+#include "../common/entity/include/gameobject.h"
 #include "../common/world/include/map.h"
 
 static const size_t key_count = 3;
@@ -316,6 +317,8 @@ int InitServer()
 
 	FE_ResetDT();
 
+	FE_GameObject_Create_Basic((SDL_Rect){200,1000,100,100}, 100, "doge.png", "bob");
+
     return 0;
 }
 
@@ -430,6 +433,8 @@ void SendSnapshot()
 			FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
 
 			FE_Net_Packet_AddBool(packet, true);
+			FE_Net_Packet_AddBool(packet, true);
+
 			FE_Net_Packet_AddString(packet, c->username);
 			
 			/* Attatch the player's position and velocity to the packet */
@@ -442,7 +447,34 @@ void SendSnapshot()
 			/* Send to all clients */
 			BroadcastPacket(0, packet);
 			FE_Net_Packet_Destroy(packet);
-			sentsnapshot = true;
+			sentsnapshot = true; // todo this is inneficient, we should only send one snapshot per update
+		}
+	}
+
+	for (FE_List *l = FE_GameObjects; l; l = l->next) {
+		FE_GameObject *obj = l->data;
+		if (mstrcmp(obj->name, "prefab") == 0) continue; // ignore prefabs
+
+		/* Check if the object has moved */
+		if (obj->last_position.x != obj->phys->body.x || obj->last_position.y != obj->phys->body.y) {
+			/* Create new packet */
+			FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
+
+			FE_Net_Packet_AddBool(packet, true);
+			FE_Net_Packet_AddBool(packet, false);
+
+			/* Attatch the object's position to the packet */
+			FE_Net_Packet_AddInt(packet, obj->id);
+			FE_Net_Packet_AddInt(packet, (int)obj->phys->body.x);
+			FE_Net_Packet_AddInt(packet, (int)obj->phys->body.y);
+
+			/* Send to all clients */
+			BroadcastPacket(0, packet);
+			FE_Net_Packet_Destroy(packet);
+			sentsnapshot = true; // todo this is inneficient, we should only send one snapshot per update
+
+			/* Record the last sent location so we don't keep resending */
+			obj->last_position = vec(obj->phys->body.x, obj->phys->body.y);
 		}
 	}
 

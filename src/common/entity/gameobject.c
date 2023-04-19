@@ -4,13 +4,16 @@
 #include "../../common/physics/include/physics.h"
 
 FE_List *FE_GameObjects = 0; // list of all gameobjects
+size_t FE_GameObjectIDCounter = 0;
 
-FE_GameObject *FE_GameObject_Create_Basic(SDL_Rect body, int mass)
+FE_GameObject *FE_GameObject_Create_Basic(SDL_Rect body, int mass, char *texture_path, char *name)
 {
 	/* fill data from passed parameters */
 	struct FE_GameObject *obj;
 	obj = xmalloc(sizeof(FE_GameObject));
 	
+	obj->texture_path = mstrdup(texture_path);
+
 	/* set texture to null for a basic object */
 	obj->texture = 0;
 
@@ -24,7 +27,12 @@ FE_GameObject *FE_GameObject_Create_Basic(SDL_Rect body, int mass)
 	FE_Physics_AddBody(p);
 
 	obj->phys = p;
+	obj->name = mstrdup(name);
+	obj->id = FE_GameObjectIDCounter++;
+	obj->last_position = vec(-1, -1);
+	
 	FE_List_Add(&FE_GameObjects, obj);
+
 	return obj;
 }
 
@@ -36,6 +44,11 @@ void FE_GameObject_Clean() // Destroys all game objects
 		FE_Physics_Remove(obj->phys);
 		if (obj->destroy_cb)
 			obj->destroy_cb(obj->destroy_data);
+		if (obj->name)
+			free(obj->name);
+		if (obj->texture_path)
+			free(obj->texture_path);
+
 		free(obj);
 	}
 
@@ -51,6 +64,9 @@ int FE_GameObject_Destroy(FE_GameObject *obj)
 	
 	if (FE_List_Remove(&FE_GameObjects, obj) == -1) // remove from list
 		return -1;
+	
+	free(obj->name); // free name (if it exists)
+	if (obj->texture_path) free(obj->texture_path); // free texture path (if it exists)
 	
 	free(obj); // free gameobject
 	return 1;

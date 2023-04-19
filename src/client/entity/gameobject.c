@@ -14,7 +14,7 @@ void FE_GameObject_Render(FE_Camera *c)
 	}
 }
 
-FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int mass)
+FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int mass, char *name)
 {
 	if (!texture_path) {
 		warn("NULL texture_path passed to FE_GameObject_Create");
@@ -24,7 +24,10 @@ FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int
 	/* fill data from passed parameters */
 	struct FE_GameObject *obj;
 	obj = xmalloc(sizeof(FE_GameObject));
-
+	
+	obj->texture_path = mstrdup(texture_path);
+	obj->id = FE_GameObjectIDCounter++;
+	obj->name = mstrdup(name);
 
 	// combine asset path and texture path
 	char *path = xmalloc(mstrlen(AssetPath) + mstrlen(texture_path) + 1);
@@ -43,6 +46,8 @@ FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int
 	FE_Physics_AddBody(p);
 
 	obj->phys = p;
+	obj->last_position = vec(-1, -1);
+
 	FE_List_Add(&FE_GameObjects, obj);
 	return obj;
 }

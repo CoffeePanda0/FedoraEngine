@@ -123,7 +123,7 @@ FE_Prefab *FE_Prefab_Create_Basic(const char *name, int x, int y)
     new->destroy_cb = NULL;
 
     /* Attatches the gameobject, light and particles */
-    new->obj = FE_GameObject_Create_Basic(data->rect, data->mass);
+    new->obj = FE_GameObject_Create_Basic(data->rect, data->mass, data->texture_path, "prefab");
 
     DestroyConfig(data);
 

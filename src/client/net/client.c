@@ -112,35 +112,57 @@ static void HandleRecieve(ENetEvent *event)
             bool hasdata = FE_Net_GetBool(packet);
             if (!hasdata) break;
 
-            /* Check if the updated player is us */
-            char *user = FE_Net_GetString(packet);
+            /* Whether or not the update is regarding a player or an object */
+            bool isplayer = FE_Net_GetBool(packet);
 
-            if (mstrcmp(user, Client.Username) == 0) {
-                /* Update our player */
 
-                /* Save last position for interpolation */
-                GamePlayer->player->PhysObj->last_position = GamePlayer->player->PhysObj->position;
+            if (isplayer) {
+                /* Check if the updated player is us */
+                char *user = FE_Net_GetString(packet);
 
-                /* New position */
-                GamePlayer->player->PhysObj->position.x = FE_Net_GetInt(packet);
-                GamePlayer->player->PhysObj->position.y = FE_Net_GetInt(packet);
-                /* New velocity */
-                GamePlayer->player->PhysObj->velocity.x = FE_Net_GetFloat(packet);
-                GamePlayer->player->PhysObj->velocity.y = FE_Net_GetFloat(packet);
+                if (mstrcmp(user, Client.Username) == 0) {
+                    /* Update our player */
 
-                LastUpdate = FE_GetTicks64();
-                free(user);
- 
+                    /* Save last position for interpolation */
+                    GamePlayer->player->PhysObj->last_position = GamePlayer->player->PhysObj->position;
+
+                    /* New position */
+                    GamePlayer->player->PhysObj->position.x = FE_Net_GetInt(packet);
+                    GamePlayer->player->PhysObj->position.y = FE_Net_GetInt(packet);
+                    /* New velocity */
+                    GamePlayer->player->PhysObj->velocity.x = FE_Net_GetFloat(packet);
+                    GamePlayer->player->PhysObj->velocity.y = FE_Net_GetFloat(packet);
+
+                    LastUpdate = FE_GetTicks64();
+                    free(user);
+    
+                } else {
+                    /* Find player in list, update position */
+                    for (FE_List *l = players; l; l = l->next) {
+                        player *p = l->data;
+                        if (mstrcmp(p->username, user) == 0) {
+                            p->last_position = vec(p->rect.x, p->rect.y);
+
+                            p->s.time_rcv = FE_GetTicks64();
+                            p->s.new_position = vec(FE_Net_GetInt(packet), FE_Net_GetInt(packet));
+                            free(user);
+                            return;
+                        }
+                    }
+                }
             } else {
-                /* Find player in list, update position */
-                for (FE_List *l = players; l; l = l->next) {
-                    player *p = l->data;
-                    if (mstrcmp(p->username, user) == 0) {
-                        p->last_position = vec(p->rect.x, p->rect.y);
+                /* Update object */
+                size_t id = FE_Net_GetInt(packet);
+                int x = FE_Net_GetInt(packet);
+                int y = FE_Net_GetInt(packet);
 
-                        p->s.time_rcv = FE_GetTicks64();
-                        p->s.new_position = vec(FE_Net_GetInt(packet), FE_Net_GetInt(packet));
-                        free(user);
+                /* Find object in list, update position */
+                for (FE_List *l = FE_GameObjects; l; l = l->next) {
+                    FE_GameObject *obj = l->data;
+                    if (obj->id == id) {
+                        obj->phys->position.x = x;
+                        obj->phys->position.y = y;
+                        FE_UPDATE_RECT(obj->phys->position, &obj->phys->body);
                         return;
                     }
                 }
