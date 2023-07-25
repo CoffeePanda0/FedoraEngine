@@ -47,16 +47,20 @@ typedef enum PACKET_MODE {
     CLIENT
 } PACKET_MODE;
 
-/* Allows the value to be of any type */
-typedef struct {
-    enum type {
+typedef enum KEY_TYPE {
         KEY_STRING,
         KEY_SHORTINT,
         KEY_INT,
         KEY_FLOAT,
         KEY_BOOL,
-        KEY_LONG
-    } type;
+        KEY_LONG,
+        KEY_ARRAY
+} KEY_TYPE;
+
+/* Allows the value to be of any type */
+typedef struct {
+    KEY_TYPE type;
+
     union {
         char *str;
         uint8_t s;
@@ -64,9 +68,19 @@ typedef struct {
         float f;
         bool b;
         uint64_t l;
+        struct FE_Net_Array *array;
     } value;
+
 } Value;
 
+
+/* Holds an array of items */
+typedef struct FE_Net_Array {
+	size_t size;
+	Value *values;
+
+    size_t ptr; 
+} FE_Net_Array;
 
 /* The packet before serialisation */
 typedef struct {
@@ -136,6 +150,13 @@ void FE_Net_Packet_AddShortInt(FE_Net_Packet *packet, uint8_t s);
  */
 void FE_Net_Packet_AddString(FE_Net_Packet *packet, char *str);
 
+
+/**
+ * @brief Adds a bool to a packet
+ * 
+ * @param packet  The packet to add the bool to
+ * @param b The bool to add
+ */
 void FE_Net_Packet_AddBool(FE_Net_Packet *packet, bool b);
 
 
@@ -148,7 +169,24 @@ void FE_Net_Packet_AddBool(FE_Net_Packet *packet, bool b);
 void FE_Net_Packet_AddLong(FE_Net_Packet *packet, uint64_t l);
 
 
+/**
+ * @brief Adds an array to a packet
+ * 
+ * @param packet The packet to add the array to
+ * @param array The array to add
+ */
+void FE_Net_Packet_AttatchArray(FE_Net_Packet *packet, FE_Net_Array *array);
+
+
+/**
+ * @brief Gets a bool from a packet
+ * 
+ * @param packet 
+ * @return true 
+ * @return false 
+ */
 bool FE_Net_GetBool(FE_Net_RcvPacket *packet);
+
 
 /**
  * @brief Creates a new packet
@@ -227,6 +265,70 @@ void FE_Net_DestroyRcv(FE_Net_RcvPacket *packet);
  * @return uint64_t The long int
  */
 uint64_t FE_Net_GetLong(FE_Net_RcvPacket *packet);
+
+
+/**
+ * @brief Creates a packet array
+ * 
+ * @return The packet array
+ */
+FE_Net_Array *FE_Net_Array_Create();
+
+
+/**
+ * @brief Destroys a packet array
+ * 
+ * @param array The array to destroy
+ */
+void FE_Net_Array_Destroy(FE_Net_Array *array);
+
+
+/** 
+ * @brief Adds a value to a packet array
+ * 
+ * @param array The array to add the value to
+ * @param value The value to add
+*/
+void FE_Net_Array_Add(FE_Net_Array *array, Value value);
+
+
+/**
+ * @brief Gets a string from a Network Array
+ * 
+ * @param array 
+ * @return char* 
+ */
+char *FE_Net_Array_GetString(FE_Net_Array *array);
+
+
+/**
+ * @brief Gets a network array from a packet
+ * 
+ * @param packet The packet to get the array from
+ * @param types The data types for each value in the array
+ * @param expected_len The expected number of values in the array
+ * @param repeats Whether the array contains repeats (e.g for different players)
+ * @return FE_Net_Array* 
+ */
+FE_Net_Array *FE_Net_GetArray(FE_Net_RcvPacket *packet, uint8_t *types, size_t expected_len, bool repeats);
+
+
+/**
+ * @brief Gets an int from a network array
+ * 
+ * @param array The array to get the int from
+ * @return int 
+ */
+int FE_Net_Array_GetInt(FE_Net_Array *array);
+
+
+/**
+ * @brief Gets a float from a network array
+ * 
+ * @param array The array to get the float from
+ * @return float 
+ */
+float FE_Net_Array_GetFloat(FE_Net_Array *array);
 
 
 #endif

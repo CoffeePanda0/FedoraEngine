@@ -317,7 +317,7 @@ int InitServer()
 
 	FE_ResetDT();
 
-	FE_GameObject_Create_Basic((SDL_Rect){200,1000,100,100}, 100, "doge.png", "bob");
+	// FE_GameObject_Create_Basic((SDL_Rect){200,1000,100,100}, 100, "doge.png", "bob");
 
     return 0;
 }
@@ -415,7 +415,11 @@ void SendSnapshot()
 	else
 		dif = time_passed - snapshot_rate_ms;
 
-	bool sentsnapshot = false; // Whether or not we have needed to send a snapshot
+
+	FE_Net_Packet *snapshot = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
+
+	FE_Net_Array *player_snapshot = FE_Net_Array_Create(); /* Store player changes in array here */
+	FE_Net_Array *object_snapshot = FE_Net_Array_Create(); /* Store object changes in array here */
 
 	/* Check if any clients have moved, if so then send them the new position */
 	for (FE_List *l = clients; l; l = l->next) {
@@ -429,27 +433,19 @@ void SendSnapshot()
 			c->last_location = vec(c->player->PhysObj->body.x, c->player->PhysObj->body.y);
 			c->last_velocity = vec(c->player->PhysObj->velocity.x, c->player->PhysObj->velocity.y);
 
-			/* Create new packet */
-			FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
-
-			FE_Net_Packet_AddBool(packet, true);
-			FE_Net_Packet_AddBool(packet, true);
-
-			FE_Net_Packet_AddString(packet, c->username);
+			/* Add player username */
+			FE_Net_Array_Add(player_snapshot, (Value){.type = KEY_STRING, .value.str = mstrdup(c->username)});
 			
-			/* Attatch the player's position and velocity to the packet */
-			FE_Net_Packet_AddInt(packet, (int)c->last_location.x);
-			FE_Net_Packet_AddInt(packet, (int)c->last_location.y);
+			/* Attatch the player's position */
+			FE_Net_Array_Add(player_snapshot, (Value){.type = KEY_INT, .value.i = (int)c->last_location.x});
+			FE_Net_Array_Add(player_snapshot, (Value){.type = KEY_INT, .value.i = (int)c->last_location.y});
 
-			FE_Net_Packet_AddFloat(packet, c->last_velocity.x);
-			FE_Net_Packet_AddFloat(packet, c->last_velocity.y);
-
-			/* Send to all clients */
-			BroadcastPacket(0, packet);
-			FE_Net_Packet_Destroy(packet);
-			sentsnapshot = true; // todo this is inneficient, we should only send one snapshot per update
+			/* Attatch velocity */
+			FE_Net_Array_Add(player_snapshot, (Value){.type = KEY_FLOAT, .value.f = c->last_velocity.x});
+			FE_Net_Array_Add(player_snapshot, (Value){.type = KEY_FLOAT, .value.f = c->last_velocity.y});
 		}
 	}
+	FE_Net_Packet_AttatchArray(snapshot, player_snapshot); /* Add the finished array to the packet */
 
 	for (FE_List *l = FE_GameObjects; l; l = l->next) {
 		FE_GameObject *obj = l->data;
@@ -457,37 +453,29 @@ void SendSnapshot()
 
 		/* Check if the object has moved */
 		if (obj->last_position.x != obj->phys->body.x || obj->last_position.y != obj->phys->body.y) {
-			/* Create new packet */
-			FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
 
-			FE_Net_Packet_AddBool(packet, true);
-			FE_Net_Packet_AddBool(packet, false);
+			/* Attatch the object's id to the packet */
+			FE_Net_Array_Add(object_snapshot, (Value){.type = KEY_INT, .value.i = obj->id});
 
-			/* Attatch the object's position to the packet */
-			FE_Net_Packet_AddInt(packet, obj->id);
-			FE_Net_Packet_AddInt(packet, (int)obj->phys->body.x);
-			FE_Net_Packet_AddInt(packet, (int)obj->phys->body.y);
-
-			/* Send to all clients */
-			BroadcastPacket(0, packet);
-			FE_Net_Packet_Destroy(packet);
-			sentsnapshot = true; // todo this is inneficient, we should only send one snapshot per update
+			/* Attatch object position */
+			FE_Net_Array_Add(object_snapshot, (Value){.type = KEY_INT, .value.i = (int)obj->phys->body.x});
+			FE_Net_Array_Add(object_snapshot, (Value){.type = KEY_INT, .value.i = (int)obj->phys->body.y});
 
 			/* Record the last sent location so we don't keep resending */
 			obj->last_position = vec(obj->phys->body.x, obj->phys->body.y);
 		}
 	}
+	FE_Net_Packet_AttatchArray(snapshot, object_snapshot); /* Add the finished array to the packet */
 
-	if (!sentsnapshot) {
-		/* If we haven't needed to send any new positions, send snapshot to measure jitter */
-		FE_Net_Packet *packet = FE_Net_Packet_Create(PACKET_SERVER_UPDATE);
-		FE_Net_Packet_AddBool(packet, false);
-
-		/* Send to all clients */
-		BroadcastPacket(0, packet);
-		FE_Net_Packet_Destroy(packet);
-	}
 	last_snapshot = FE_GetTicks64() - dif;
+
+	/* Send the snapshot */
+	BroadcastPacket(0, snapshot);
+
+	/* Clean up */
+	FE_Net_Array_Destroy(player_snapshot);
+	FE_Net_Array_Destroy(object_snapshot);
+	FE_Net_Packet_Destroy(snapshot);
 }
 
 void UpdateServer()

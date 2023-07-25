@@ -87,7 +87,7 @@ static void CalculateJitter()
             return;
 
         timer -= 0.5f;
-        printf("PING: %f | JITTER: %i\n",  Client.Ping, Client.Jitter);
+      // debugging:  printf("PING: %f | JITTER: %i\n",  Client.Ping, Client.Jitter);
     }
 
 }
@@ -108,17 +108,16 @@ static void HandleRecieve(ENetEvent *event)
             Client.LastPacket = Client.LatestPacket;
             Client.LatestPacket = packet->timestamp;
 
-            /* Check if the packet contains data or if it is just a heartbeat */
-            bool hasdata = FE_Net_GetBool(packet);
-            if (!hasdata) break;
+            /* Expected types for player: str, int, int, float, float */
+            FE_Net_Array *player_array = FE_Net_GetArray(packet, (uint8_t[]) {KEY_STRING, KEY_INT, KEY_INT, KEY_FLOAT, KEY_FLOAT}, 5, true);
+            if (!player_array) {
+                warn("Invalid player array");
+                return;
+            }
 
-            /* Whether or not the update is regarding a player or an object */
-            bool isplayer = FE_Net_GetBool(packet);
-
-
-            if (isplayer) {
+            if (player_array->size > 0) {
                 /* Check if the updated player is us */
-                char *user = FE_Net_GetString(packet);
+                char *user = FE_Net_Array_GetString(player_array);
 
                 if (mstrcmp(user, Client.Username) == 0) {
                     /* Update our player */
@@ -127,15 +126,14 @@ static void HandleRecieve(ENetEvent *event)
                     GamePlayer->player->PhysObj->last_position = GamePlayer->player->PhysObj->position;
 
                     /* New position */
-                    GamePlayer->player->PhysObj->position.x = FE_Net_GetInt(packet);
-                    GamePlayer->player->PhysObj->position.y = FE_Net_GetInt(packet);
+                    GamePlayer->player->PhysObj->position.x = FE_Net_Array_GetInt(player_array);
+                    GamePlayer->player->PhysObj->position.y = FE_Net_Array_GetInt(player_array);
                     /* New velocity */
-                    GamePlayer->player->PhysObj->velocity.x = FE_Net_GetFloat(packet);
-                    GamePlayer->player->PhysObj->velocity.y = FE_Net_GetFloat(packet);
+                    GamePlayer->player->PhysObj->velocity.x = FE_Net_Array_GetFloat(player_array);
+                    GamePlayer->player->PhysObj->velocity.y = FE_Net_Array_GetFloat(player_array);
 
                     LastUpdate = FE_GetTicks64();
-                    free(user);
-    
+
                 } else {
                     /* Find player in list, update position */
                     for (FE_List *l = players; l; l = l->next) {
@@ -144,17 +142,26 @@ static void HandleRecieve(ENetEvent *event)
                             p->last_position = vec(p->rect.x, p->rect.y);
 
                             p->s.time_rcv = FE_GetTicks64();
-                            p->s.new_position = vec(FE_Net_GetInt(packet), FE_Net_GetInt(packet));
-                            free(user);
-                            return;
+                            p->s.new_position = vec(FE_Net_Array_GetInt(player_array), FE_Net_Array_GetInt(player_array));
+
+                            break;
                         }
                     }
                 }
-            } else {
+            }
+
+            FE_Net_Array *object_array = FE_Net_GetArray(packet, (uint8_t[]) {KEY_INT, KEY_INT, KEY_INT}, 3, true);
+            if (!object_array) {
+                warn("Invalid object array");
+                return;
+            }
+
+            if (object_array->size > 0) {
+
                 /* Update object */
-                size_t id = FE_Net_GetInt(packet);
-                int x = FE_Net_GetInt(packet);
-                int y = FE_Net_GetInt(packet);
+                size_t id = FE_Net_Array_GetInt(object_array);
+                int x = FE_Net_Array_GetInt(object_array);
+                int y = FE_Net_Array_GetInt(object_array);
 
                 /* Find object in list, update position */
                 for (FE_List *l = FE_GameObjects; l; l = l->next) {
@@ -163,10 +170,15 @@ static void HandleRecieve(ENetEvent *event)
                         obj->phys->position.x = x;
                         obj->phys->position.y = y;
                         FE_UPDATE_RECT(obj->phys->position, &obj->phys->body);
-                        return;
+                        break;
                     }
                 }
             }
+
+            /* Clean up */
+            FE_Net_Array_Destroy(player_array);
+            FE_Net_Array_Destroy(object_array);
+            
         break;
 
         case PACKET_SERVER_SERVERMSG: ;
@@ -183,19 +195,19 @@ static void HandleRecieve(ENetEvent *event)
 
         case PACKET_SERVER_SPAWN: ;
             char *username = FE_Net_GetString(packet);
-            int x = FE_Net_GetInt(packet);
-            int y = FE_Net_GetInt(packet);
+            int x_ = FE_Net_GetInt(packet);
+            int y_ = FE_Net_GetInt(packet);
 
             // add player to list
             player *p = xmalloc(sizeof(player));
             p->rect = (SDL_Rect) {
-                .x = x,
-                .y = y,
+                .x = x_,
+                .y = y_,
                 .w = 120,
                 .h = 100
             };
-            p->last_position = vec(x, y);
-            p->s.new_position = vec(x, y);
+            p->last_position = vec(x_, y_);
+            p->s.new_position = vec(x_, y_);
             p->s.time_rcv = packet->timestamp;
 
             p->texture = FE_LoadResource(FE_RESOURCE_TYPE_TEXTURE, "game/sprites/doge.png");
@@ -499,7 +511,6 @@ void ClientUpdate()
     
 	PresentGame->Timing.UpdateTime = ((FE_QueryPerformanceCounter() - update_time) / (FE_QueryPerformanceFrequency()) * 1000);
 }
-// todo fix update time, cleanup header includes
 
 
 int InitClient(char *addr, int port, char *_username)

@@ -22,6 +22,29 @@ FE_Net_Packet *FE_Net_Packet_Create(uint8_t type)
     return p;
 }
 
+
+FE_Net_Array *FE_Net_Array_Create()
+{
+    FE_Net_Array *a = xmalloc(sizeof(FE_Net_Array));
+    a->size = 0;
+    a->values = 0;
+    return a;
+}
+
+void FE_Net_Array_Destroy(FE_Net_Array *array)
+{
+    if (!array) {
+        warn("Array is NULL (FE_Net_Array_Destroy)");
+        return;
+    }
+    for (size_t i = 0; i < array->size; i++) {
+        if (array->values[i].type == KEY_STRING)
+            free(array->values[i].value.str);
+    }
+    free(array->values);
+    free(array);
+}
+
 void FE_Net_Packet_Destroy(FE_Net_Packet *packet)
 {
     if (!packet) {
@@ -38,6 +61,34 @@ void FE_Net_Packet_Destroy(FE_Net_Packet *packet)
         free(packet->serialised_data);
 
     free(packet);
+}
+
+void FE_Net_Array_Add(FE_Net_Array *array, Value value)
+{
+    if (!array) {
+        warn("Array is NULL (FE_Net_Array_Add)");
+        return;
+    }
+
+    array->values = xrealloc(array->values, sizeof(Value) * (array->size + 1));
+    array->values[array->size++] = value;
+}
+
+
+void FE_Net_Packet_AttatchArray(FE_Net_Packet *packet, FE_Net_Array *array)
+{
+    if (!packet) {
+        warn("Packet is NULL (FE_Net_Packet_AttatchArray)");
+        return;
+    }
+    if (!array) {
+        warn("Array is NULL (FE_Net_Packet_AttatchArray)");
+        return;
+    }
+
+    packet->values = xrealloc(packet->values, sizeof(Value) * (packet->properties + 1));
+    packet->values[packet->properties].type = KEY_ARRAY;
+    packet->values[packet->properties++].value.array = array;
 }
 
 static size_t buff_size = 0;
@@ -176,6 +227,36 @@ static char *FE_Net_Packet_Serialise(FE_Net_Packet *packet)
                 break;
             case KEY_LONG:
                 cmp_write_u64(&ctx, packet->values[i].value.l);
+                break;
+            case KEY_ARRAY: ;
+                FE_Net_Array *array = packet->values[i].value.array;
+                cmp_write_array(&ctx, array->size);
+
+                for (size_t j = 0; j < array->size; j++) {
+                    switch (array->values[j].type) {
+                        case KEY_STRING:
+                            cmp_write_str(&ctx, array->values[j].value.str, mstrlen(array->values[j].value.str));
+                            break;
+                        case KEY_FLOAT:
+                            cmp_write_float(&ctx, array->values[j].value.f);
+                            break;
+                        case KEY_INT:
+                            cmp_write_int(&ctx, array->values[j].value.i);
+                            break;
+                        case KEY_SHORTINT:
+                            cmp_write_u8(&ctx, array->values[j].value.s);
+                            break;
+                        case KEY_BOOL:
+                            cmp_write_bool(&ctx, array->values[j].value.b);
+                            break;
+                        case KEY_LONG:
+                            cmp_write_u64(&ctx, array->values[j].value.l);
+                            break;
+                        default:
+                            warn("Unknown array type (FE_Net_Packet_Serialise)");
+                            break;
+                    }
+                }
                 break;
         }
     }
@@ -384,6 +465,92 @@ uint8_t FE_Net_GetShortInt(FE_Net_RcvPacket *packet)
         warn("Courrupt Packet shortint (FE_Net_GetShortInt)");
 
     return s;
+}
+
+FE_Net_Array *FE_Net_GetArray(FE_Net_RcvPacket *packet, uint8_t *types, size_t expected_len, bool repeats)
+{
+    if (!packet) {
+        warn("Packet is NULL (FE_Net_GetArray)");
+        return NULL;
+    }
+
+    cmp_ctx_t *ctx = packet->cmp;
+
+    /* Create the array object */
+    FE_Net_Array *array = xmalloc(sizeof(FE_Net_Array));
+    
+    /* Read the array size */
+    uint32_t size;
+    if (!cmp_read_array(ctx, &size)) {
+        warn("Courrupt Packet array (FE_Net_GetArray)");
+        free(array);
+        return 0;
+    }
+    
+    array->size = size;
+    array->ptr = 0;
+    array->values = xmalloc(size * sizeof(Value));
+
+    /* Check if the array repeats */
+    bool array_repeats = false;
+    size_t array_repeats_count = 0;
+    if (repeats) {
+        if (size > expected_len) {
+            if (size % expected_len == 0) {
+                array_repeats = true;
+                array_repeats_count = size / expected_len;
+            } else {
+                warn("Array size is not a multiple of expected length (FE_Net_GetArray)");
+            }
+        }
+    }
+
+    /* Read the array values */
+    for (size_t i = 0; i < size; i++) {
+        Value *value = &array->values[i];
+        array->values[i].type = types[i % (expected_len)];
+
+        switch (types[i % (expected_len)]) {
+            case KEY_STRING:
+                value->value.str = FE_Net_GetString(packet);
+                break;
+            case KEY_INT:
+                value->value.i = FE_Net_GetInt(packet);
+                break;
+            case KEY_LONG:
+                value->value.l = FE_Net_GetLong(packet);
+                break;
+            case KEY_FLOAT:
+                value->value.f = FE_Net_GetFloat(packet);
+                break;
+            case KEY_BOOL:
+                value->value.b = FE_Net_GetBool(packet);
+                break;
+            case KEY_SHORTINT:
+                value->value.s = FE_Net_GetShortInt(packet);
+                break;
+            default:
+                warn("Unknown array type (FE_Net_GetArray)");
+                break;
+        } 
+    }
+
+    return array;
+}
+
+char *FE_Net_Array_GetString(FE_Net_Array *array)
+{
+    return (array->ptr < array->size) ? array->values[array->ptr++].value.str : 0;
+}
+
+float FE_Net_Array_GetFloat(FE_Net_Array *array)
+{
+    return (array->ptr < array->size) ? array->values[array->ptr++].value.f : 0;
+}
+
+int FE_Net_Array_GetInt(FE_Net_Array *array)
+{
+    return (array->ptr < array->size) ? array->values[array->ptr++].value.i : 0;
 }
 
 void FE_Net_DestroyRcv(FE_Net_RcvPacket *packet)
