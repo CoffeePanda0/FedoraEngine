@@ -91,7 +91,7 @@ void FE_UI_ChatboxMessage(char *message)
     // check if the labels have started to overflow
     int last_y = active_chatbox->messages[active_chatbox->message_count-1]->r.y + active_chatbox->messages[active_chatbox->message_count-1]->r.h;
 
-    if (last_y > active_chatbox->input->r.y) {
+    if (active_chatbox->visible && last_y > active_chatbox->input->r.y) {
         int overflow = last_y - active_chatbox->input->r.y;
         for (size_t i = 0; i < active_chatbox->message_count; i++) {
             active_chatbox->messages[i]->r.y -= overflow; // todo scroll

@@ -116,35 +116,43 @@ static void HandleRecieve(ENetEvent *event)
             }
 
             if (player_array->size > 0) {
-                /* Check if the updated player is us */
-                char *user = FE_Net_Array_GetString(player_array);
 
-                if (mstrcmp(user, Client.Username) == 0) {
-                    /* Update our player */
+                /* Check if multiple player updates have occured */
+                size_t update_count = (size_t)(player_array->size / 5);
+                for (size_t i = 0; i < update_count; i++) {
 
-                    /* Save last position for interpolation */
-                    GamePlayer->player->PhysObj->last_position = GamePlayer->player->PhysObj->position;
+                    /* Check if the updated player is us */
+                    char *user = FE_Net_Array_GetString(player_array);
 
-                    /* New position */
-                    GamePlayer->player->PhysObj->position.x = FE_Net_Array_GetInt(player_array);
-                    GamePlayer->player->PhysObj->position.y = FE_Net_Array_GetInt(player_array);
-                    /* New velocity */
-                    GamePlayer->player->PhysObj->velocity.x = FE_Net_Array_GetFloat(player_array);
-                    GamePlayer->player->PhysObj->velocity.y = FE_Net_Array_GetFloat(player_array);
+                    if (mstrcmp(user, Client.Username) == 0) {
+                        /* Update our player */
 
-                    LastUpdate = FE_GetTicks64();
+                        /* Save last position for interpolation */
+                        GamePlayer->player->PhysObj->last_position = GamePlayer->player->PhysObj->position;
 
-                } else {
-                    /* Find player in list, update position */
-                    for (FE_List *l = players; l; l = l->next) {
-                        player *p = l->data;
-                        if (mstrcmp(p->username, user) == 0) {
-                            p->last_position = vec(p->rect.x, p->rect.y);
+                        /* New position */
+                        GamePlayer->player->PhysObj->position.x = FE_Net_Array_GetInt(player_array);
+                        GamePlayer->player->PhysObj->position.y = FE_Net_Array_GetInt(player_array);
+                        /* New velocity */
+                        GamePlayer->player->PhysObj->velocity.x = FE_Net_Array_GetFloat(player_array);
+                        GamePlayer->player->PhysObj->velocity.y = FE_Net_Array_GetFloat(player_array);
 
-                            p->s.time_rcv = FE_GetTicks64();
-                            p->s.new_position = vec(FE_Net_Array_GetInt(player_array), FE_Net_Array_GetInt(player_array));
+                        LastUpdate = FE_GetTicks64();
 
-                            break;
+                    } else {
+                        /* Find player in list, update position */
+                        for (FE_List *l = players; l; l = l->next) {
+                            player *p = l->data;
+                            if (mstrcmp(p->username, user) == 0) {
+                                p->last_position = vec(p->rect.x, p->rect.y);
+
+                                p->s.time_rcv = FE_GetTicks64();
+                                p->s.new_position = vec(FE_Net_Array_GetInt(player_array), FE_Net_Array_GetInt(player_array));
+
+                                /* Skip pointer to end of this character */
+                                player_array->ptr += 2;
+                                break;
+                            }
                         }
                     }
                 }
@@ -158,19 +166,24 @@ static void HandleRecieve(ENetEvent *event)
 
             if (object_array->size > 0) {
 
-                /* Update object */
-                size_t id = FE_Net_Array_GetInt(object_array);
-                int x = FE_Net_Array_GetInt(object_array);
-                int y = FE_Net_Array_GetInt(object_array);
+                /* Check if multiple objects in the same update have moved */
+                size_t update_count = (size_t)(object_array->size / 3);
 
-                /* Find object in list, update position */
-                for (FE_List *l = FE_GameObjects; l; l = l->next) {
-                    FE_GameObject *obj = l->data;
-                    if (obj->id == id) {
-                        obj->phys->position.x = x;
-                        obj->phys->position.y = y;
-                        FE_UPDATE_RECT(obj->phys->position, &obj->phys->body);
-                        break;
+                for (size_t i = 0; i < update_count; i++) {
+                    /* Update object */
+                    size_t id = FE_Net_Array_GetInt(object_array);
+                    int x = FE_Net_Array_GetInt(object_array);
+                    int y = FE_Net_Array_GetInt(object_array);
+
+                    /* Find object in list, update position */
+                    for (FE_List *l = FE_GameObjects; l; l = l->next) {
+                        FE_GameObject *obj = l->data;
+                        if (obj->id == id) {
+                            obj->phys->position.x = x;
+                            obj->phys->position.y = y;
+                            FE_UPDATE_RECT(obj->phys->position, &obj->phys->body);
+                            break;
+                        }
                     }
                 }
             }
