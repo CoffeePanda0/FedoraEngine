@@ -36,17 +36,18 @@ void FE_StartGame(const char *mapname)
 	GameCamera->follow = &GamePlayer->render_rect;
 
 	// test particle system
-	SnowParticles = FE_ParticleSystem_Create(
+	FE_ParticleSystem *rain = FE_ParticleSystem_Create(
 		(SDL_Rect){0, -20, PresentGame->MapConfig.MapWidth, 20}, // Position for the whole screen, slightly above the top to create more random
-		350, // Emission rate
-		3000, // Max particles
-		10000, // Max lifetime
+		4000, // Emission rate
+		99999, // Max particles
+		5000, // Max lifetime
 		true, // Particles to respawn once they go off screen
 		"rain.png", // Texture
-		(vec2){15, 15}, // Max size of each particle
+		(vec2){5, 40}, // Max size of each particle
 		(vec2){3, 3}, // Set initial velocity so particle doesn't float until they accelerate
 		false
 	);
+	rain->has_splash = true;
 
 	world = FE_CreateRenderTexture(PresentGame->WindowWidth, PresentGame->WindowHeight);
 	FE_ResetDT();
@@ -63,16 +64,20 @@ void FE_RenderGame()
 	if (PresentGame->DebugConfig.LightingEnabled)
 		SDL_SetRenderTarget(PresentGame->Client->Renderer, world);
 	SDL_RenderClear(PresentGame->Client->Renderer);
-	FE_Map_RenderBackground(GameCamera);
-	FE_Particles_Render(GameCamera);
-	FE_Map_RenderLoaded(GameCamera);
+	
+	FE_Map_RenderBackground(GameCamera);	
 	FE_Trigger_Render(GameCamera);
 	FE_GameObject_Render(GameCamera);
 	FE_Trigger_Render(GameCamera);
+
+	FE_Particles_Render(GameCamera);
 	FE_Player_Render(GamePlayer, GameCamera);
+
+	FE_Map_RenderLoaded(GameCamera);
 
 	if (PresentGame->DebugConfig.LightingEnabled)
 		FE_Light_Render(GameCamera, world);
+		
 	FE_UI_Render();
 	SDL_RenderPresent(PresentGame->Client->Renderer);
 }
@@ -96,7 +101,7 @@ void FE_GameLoop()
 	FE_DebugUI_Update(GamePlayer);
 	FE_Dialogue_Update();
 	FE_Timers_Update();
-	FE_Particles_Update(); // todo can we multithread this
+	FE_Particles_Update(GameCamera); // todo can we multithread this
 	FE_Player_Update(GamePlayer);
 	FE_Animations_Update();
 	FE_Prefab_Update();

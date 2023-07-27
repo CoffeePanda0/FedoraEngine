@@ -63,6 +63,19 @@ bool FE_AABB_Collision(SDL_Rect *a, SDL_Rect *b)
     return true;
 }
 
+bool FE_AABB_FCollision(SDL_FRect *a, SDL_FRect *b)
+{
+    if (a->x + a->w < b->x) // to the left of b
+        return false;
+    if (a->x > b->x + b->w) // to the right of b
+        return false;
+    if (a->y + a->h < b->y) // above b
+        return false;
+    if (a->y > b->y + b->h) // below b
+        return false;
+    return true;
+}
+
 bool FE_AABB_Intersect(const SDL_FRect *a, const SDL_FRect *b, SDL_FRect *result)
 {
     /* Custom implementation of SDL_IntersectFRect for portability */

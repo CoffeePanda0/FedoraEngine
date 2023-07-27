@@ -21,7 +21,7 @@ FE_InitConfig *FE_NewInitConfig()
 	config->WindowWidth = 1280;
 	config->WindowHeight = 720;
 	config->Headless = false;
-	config->Vsync = true;
+	config->Vsync = false;
 	config->ShowFPS = true;
 	config->default_font = "OpenSans";
 	return config;

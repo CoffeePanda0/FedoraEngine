@@ -444,10 +444,12 @@ void InterpolateState()
     if (FE_FPS > Client.SnapshotRate) {
         float snapshot_ms = 1.0f / Client.SnapshotRate;
 
+        uint64_t time = FE_GetTicks64();
+
         /* Interpolate our player state */
         if (LastUpdate != 0) {
             /* Calculate the difference since the last snapshot was recieved */
-            float time_taken = (FE_GetTicks64() - LastUpdate) / 1000.0f;
+            float time_taken = (time - LastUpdate) / 1000.0f;
             
             /* If there have been no updates to process */
             if (time_taken > snapshot_ms) {
@@ -465,7 +467,7 @@ void InterpolateState()
         for (FE_List *l = players; l; l = l->next) {
             player *p = l->data;
             if (p->s.time_rcv != 0) {
-                float time_taken = (FE_GetTicks64() - p->s.time_rcv) / 1000.0f;
+                float time_taken = (time - p->s.time_rcv) / 1000.0f;
 
                 if (time_taken > snapshot_ms) {
                     p->s.time_rcv = 0;
@@ -509,7 +511,7 @@ void ClientUpdate()
 
 	FE_Dialogue_Update();
 	FE_Timers_Update();
-	FE_Particles_Update();
+	FE_Particles_Update(GameCamera);
 
     GamePlayer->player->PhysObj->grounded = (GamePlayer->player->PhysObj->velocity.y == 0) ? true : false;
     

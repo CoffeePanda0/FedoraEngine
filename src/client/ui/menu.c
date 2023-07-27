@@ -206,7 +206,7 @@ void FE_Menu_Render()
 
     SDL_RenderCopy(PresentGame->Client->Renderer, MenuTexture->Texture, NULL, NULL);
 
-    FE_Particles_Update();
+    FE_Particles_Update(Camera);
     FE_Particles_Render(Camera);
 
     FE_UI_Render();

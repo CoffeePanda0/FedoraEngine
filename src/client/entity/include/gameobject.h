@@ -20,4 +20,11 @@ void FE_GameObject_Render(FE_Camera *c);
 FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int mass, char *name);
 
 
+/** Checks if there is a collision above the rect
+ *\param o - The rect to check
+ *\returns The y position of the collision, or -1 if there is no collision
+*/
+int FE_GameObject_CollisionAbove(SDL_Rect *o);
+
+
 #endif

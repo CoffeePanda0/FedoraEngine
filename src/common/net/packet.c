@@ -492,16 +492,9 @@ FE_Net_Array *FE_Net_GetArray(FE_Net_RcvPacket *packet, uint8_t *types, size_t e
     array->values = xmalloc(size * sizeof(Value));
 
     /* Check if the array repeats */
-    bool array_repeats = false;
-    size_t array_repeats_count = 0;
-    if (repeats) {
-        if (size > expected_len) {
-            if (size % expected_len == 0) {
-                array_repeats = true;
-                array_repeats_count = size / expected_len;
-            } else {
-                warn("Array size is not a multiple of expected length (FE_Net_GetArray)");
-            }
+    if (repeats && size > expected_len) {
+        if (size % expected_len != 0) {
+            warn("Array size is not a multiple of expected length (FE_Net_GetArray)");
         }
     }
 

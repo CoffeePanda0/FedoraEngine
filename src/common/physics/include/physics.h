@@ -8,7 +8,7 @@
     bouncing off walls
     stop players being sticky on walls
     fix jumping
-    benchmark
+    change all rects to FRects
 */
 
 extern const float PHYS_SCALE;

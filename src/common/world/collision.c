@@ -25,7 +25,7 @@ static size_t LeftTileRange(SDL_FRect *r) // calculates the left-most tile near 
     else
         arr_pt++;
 
-    /* find the tile closest to the player's left side using a binary search */
+    /* find the tile closest to the objects's left side using a binary search */
     uint16_t left = 0;
     uint16_t right = PresentMap->tilecount - 1;
     uint16_t mid = 0;
@@ -73,6 +73,27 @@ static size_t RightTileRange(size_t left, SDL_FRect *r) /* calculates the right-
     }
     prev_mid[arr_pt] = PresentMap->tilecount -1;
     return PresentMap->tilecount -1;
+}
+
+int FE_Map_CollisionAbove(Phys_AABB *aabb)
+{
+    if (!PresentMap)
+        return -1;
+
+    /* Checks the ground particles within range for a basic intersection */
+    SDL_FRect tmp = (SDL_FRect) {aabb->min.x, aabb->min.y, aabb->max.x - aabb->min.x, aabb->max.y - aabb->min.y};
+    size_t left = LeftTileRange(&tmp);
+    size_t right = (tmp.w == 0) ? left : RightTileRange(left, &tmp);
+
+    for (size_t i = left; i < right; i++) {
+        FE_Map_Tile *t = &PresentMap->tiles[i];
+        SDL_FRect tile = (SDL_FRect){t->position.x, t->position.y, PresentMap->tilesize, PresentMap->tilesize};
+        
+        if (FE_AABB_FCollision(&tmp, &tile))
+            return t->position.y;
+    }
+
+    return -1;
 }
 
 void FE_Map_Collisions(Phys_AABB *aabb, FE_CollisionInfo *result)

@@ -1,6 +1,7 @@
 // basic gameobject functions
 #include "../core/include/include.h"
 #include "../../common/physics/include/physics.h"
+#include "../../common/physics/include/collision.h"
 #include "include/gameobject.h"
 
 #define AssetPath "game/sprites/"
@@ -12,6 +13,23 @@ void FE_GameObject_Render(FE_Camera *c)
         if (obj->texture)
 		    FE_RenderCopy(c, false, obj->texture, NULL, &obj->phys->body);
 	}
+}
+
+int FE_GameObject_CollisionAbove(SDL_Rect *o)
+{
+	for (FE_List *f = FE_GameObjects; f; f = f->next) {
+		FE_GameObject *obj = f->data;
+
+		if (obj->phys->mass == 0) /* Skip if no mass */
+			continue;
+
+		SDL_Rect b = (SDL_Rect){obj->phys->position.x, obj->phys->position.y, obj->phys->body.w, obj->phys->body.h};
+		
+		if (FE_AABB_Collision(o, &b))
+			return b.y;
+	}
+
+	return -1;
 }
 
 FE_GameObject *FE_GameObject_Create(SDL_Rect body, const char *texture_path, int mass, char *name)
